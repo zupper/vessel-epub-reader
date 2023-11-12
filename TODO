@@ -1,0 +1,24 @@
+Application layer
+
+- contents
+- bookmark
+- remove bookmark
+- list books
+- add book
+- remove book
+--
+- book tts
+  - read sentence
+  - start playback
+  - pause playback
+  - stop playback
+  - next sentence
+  - prev sentence
+
+
+DONE
+- open book
+- next page
+- prev page
+- goToLocation
+- open last read page per book
