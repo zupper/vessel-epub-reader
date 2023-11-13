@@ -28,6 +28,7 @@
     "epubjs": "^0.3.93",
     "jszip": "^3.10.1",
     "mocha-chrome": "^2.2.0",
+    "tiny-popup-menu": "^1.0.9",
     "webpack": "^5.89.0"
   }
 }

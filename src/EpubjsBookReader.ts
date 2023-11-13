@@ -1,24 +1,33 @@
-import { Book, BookReader, ReadingArea, PageRef, ToCItem } from "./App";
 import * as ePubjs from "epubjs";
+import { Book, BookReader, ReadingArea, PageRef, ToCItem } from "./App";
 
 export default class EpubjsBookReader implements BookReader {
-  book: ePubjs.Book;
+  epubjsBook: ePubjs.Book;
   rendition: ePubjs.Rendition;
+  book: Book;
+  #readingArea: ReadingArea;
 
   constructor() {
-    this.book = new ePubjs.Book();
+    this.epubjsBook = new ePubjs.Book();
+  }
+
+  set readingArea(ra: ReadingArea) {
+    this.#readingArea = ra;
   }
 
   open(filename: string): Promise<Book> {
-    this.book.open(filename);
+    this.epubjsBook.open(filename);
     return Promise.all([
-      this.book.opened,
-      this.book.loaded.navigation,
+      this.epubjsBook.opened,
+      this.epubjsBook.loaded.navigation,
     ])
-    .then(([opened, nav]) => ({
-      title: opened.packaging.metadata.title,
-      toc: nav.toc.map(this.#toTocItem),
-    }));
+    .then(([opened, nav]) => {
+      this.book = {
+        title: opened.packaging.metadata.title,
+        toc: nav.toc.map(this.#toTocItem),
+      };
+      return this.book;
+    });
   }
 
   #toTocItem = (navItem: ePubjs.NavItem):ToCItem => ({
@@ -27,8 +36,13 @@ export default class EpubjsBookReader implements BookReader {
     subitems: navItem.subitems.map(this.#toTocItem),
   });
 
-  render(el: ReadingArea) {
-    this.rendition = this.book.renderTo(el.view as Element, { width: "100%", height: "90%" });
+  render() {
+    if (!this.#readingArea) {
+      throw new Error('Must provide ReadinArea first');
+    }
+
+    this.#readingArea.book = this.book;
+    this.rendition = this.epubjsBook.renderTo(this.#readingArea.view as Element, { width: "100%", height: "90%" });
     this.rendition.display();
   }
 
@@ -47,7 +61,7 @@ export default class EpubjsBookReader implements BookReader {
   }
 
   loaded() {
-    return this.book.loaded;
+    return this.epubjsBook.loaded;
   }
 
   get currentCfi() {

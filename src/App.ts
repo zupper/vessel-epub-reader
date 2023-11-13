@@ -7,19 +7,18 @@ export type Book = {
 
 export type ToCItem = {
   label: string;
-  link: string;
+  link: PageRef;
   subitems: ToCItem[];
 }
 
 export interface ReadingArea {
   view: unknown;
-  addOnNextListener: (e: EventListener) => void;
-  addOnPrevListener: (e: EventListener) => void;
+  book: Book;
 }
 
 export interface BookReader {
   open(filename: string): Promise<Book>;
-  render(area: ReadingArea): void;
+  render(): void;
   nextPage: () => Promise<PageRef>;
   prevPage: () => Promise<PageRef>;
   moveTo: (ref: PageRef) => void;
@@ -32,28 +31,22 @@ export interface StringStorage {
 
 export type AppConsructorParams = {
   bookReader: BookReader;
-  readingArea: ReadingArea;
   storage: StringStorage;
 }
 
 export class App {
   reader: BookReader;
-  readingArea: ReadingArea;
   currentBook: Book;
   #storage: StringStorage;
 
   constructor(params: AppConsructorParams) {
     this.reader = params.bookReader;
-    this.readingArea = params.readingArea;
     this.#storage = params.storage;
-
-    this.readingArea.addOnNextListener(() => this.moveTo("next"));
-    this.readingArea.addOnPrevListener(() => this.moveTo("prev"));
   }
 
   async openBook(filename: string) {
     this.currentBook = await this.reader.open(filename);
-    this.reader.render(this.readingArea);
+    this.reader.render();
 
     if (this.#lastPageRef) {
       this.reader.moveTo(this.#lastPageRef);
