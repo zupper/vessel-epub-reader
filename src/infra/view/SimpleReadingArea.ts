@@ -1,4 +1,5 @@
-import { ToCItem, Book, App } from "../App";
+import { ToCItem, Book } from "../../app/Book";
+import App from "../../app/App";
 import TableOfContents from "./TableOfContents";
 
 const template = document.createElement('template');

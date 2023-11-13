@@ -33,7 +33,7 @@ module.exports = {
       patterns: [
         { from: path.resolve(__dirname, "index.html") },
         { from: path.resolve(__dirname, "src/books"), to: "books" },
-        { from: path.resolve(__dirname, "src/style"), to: "style" },
+        { from: path.resolve(__dirname, "src/infra/view/style"), to: "style" },
       ],
     }),
   ],

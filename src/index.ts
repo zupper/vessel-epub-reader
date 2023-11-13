@@ -1,6 +1,6 @@
-import { App } from './App';
-import EpubjsBookReader from "./EpubjsBookReader";
-import SimpleReadingArea from './view/SimpleReadingArea';
+import App from './app/App';
+import EpubjsBookReader from "./infra/EpubjsBookReader";
+import SimpleReadingArea from './infra/view/SimpleReadingArea';
 
 
 window.addEventListener(

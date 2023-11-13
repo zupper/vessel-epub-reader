@@ -1,23 +1,5 @@
-export type PageRef = string;
-
-export type Book = {
-  title: string;
-  toc: ToCItem[];
-}
-
-export type ToCItem = {
-  label: string;
-  link: PageRef;
-  subitems: ToCItem[];
-}
-
-export interface BookReader {
-  open(filename: string): Promise<Book>;
-  render(): void;
-  nextPage: () => Promise<PageRef>;
-  prevPage: () => Promise<PageRef>;
-  moveTo: (ref: PageRef) => void;
-}
+import { Book, PageRef } from './Book';
+import { BookReader } from './BookReader';
 
 export interface StringStorage {
   set: (key: string, value: string) => void;
@@ -29,7 +11,7 @@ export type AppConsructorParams = {
   storage: StringStorage;
 }
 
-export class App {
+export default class App {
   reader: BookReader;
   currentBook: Book;
   #storage: StringStorage;
