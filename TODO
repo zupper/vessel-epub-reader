@@ -1,10 +1,16 @@
 Application layer
 
-- bookmark
-- remove bookmark
-- list books
 - add book
+- list books
 - remove book
+- bookmark
+- list bookmarks
+- remove bookmark
+- define word
+- save snippet/highlight
+- list snippets
+- delete snippet
+- share snippet
 --
 - book tts
   - read sentence
@@ -14,10 +20,10 @@ Application layer
   - next sentence
   - prev sentence
 
-
 DONE
 - open book
 - next page
 - prev page
 - goToLocation
 - open last read page per book
+- contents
