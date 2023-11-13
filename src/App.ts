@@ -11,11 +11,6 @@ export type ToCItem = {
   subitems: ToCItem[];
 }
 
-export interface ReadingArea {
-  view: unknown;
-  book: Book;
-}
-
 export interface BookReader {
   open(filename: string): Promise<Book>;
   render(): void;

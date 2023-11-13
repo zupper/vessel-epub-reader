@@ -1,4 +1,4 @@
-import { ReadingArea, ToCItem, Book, App } from "../App";
+import { ToCItem, Book, App } from "../App";
 import TableOfContents from "./TableOfContents";
 
 const template = document.createElement('template');
@@ -24,6 +24,7 @@ reading-area {
   style="position: relative; height: 100%">
   <div id="view"></div>
   <div id="menu">
+    <button id="open">Open</button>
     <button id="prev">Prev</button>
     <button id="next">Next</button>
     <button id="toc-button">Contents</button>
@@ -31,11 +32,12 @@ reading-area {
 </div>
 `;
 
-export default class SimpleReadingArea extends HTMLElement implements ReadingArea {
+export default class SimpleReadingArea extends HTMLElement {
   view: HTMLElement;
   #app: App;
   #book: Book;
   #wrapper: HTMLElement;
+  #openButton: HTMLButtonElement;
   #nextButton: HTMLButtonElement;
   #prevButton: HTMLButtonElement;
   #contentsButton: HTMLButtonElement;
@@ -44,21 +46,26 @@ export default class SimpleReadingArea extends HTMLElement implements ReadingAre
   constructor(app: App) {
     super();
     this.#app = app;
-  }
-
-  connectedCallback() {
     this.attachShadow({ mode: 'open' });
     this.shadowRoot.append(template.content.cloneNode(true));
 
     this.view = this.shadowRoot.querySelector("#view");
     this.#wrapper = this.shadowRoot.querySelector("#wrapper");
+    this.#openButton = this.shadowRoot.querySelector("#open");
     this.#nextButton = this.shadowRoot.querySelector("#next");
     this.#prevButton = this.shadowRoot.querySelector("#prev");
     this.#contentsButton = this.shadowRoot.querySelector("#toc-button");
+  }
 
+  connectedCallback() {
+    this.#openButton.addEventListener("click", () => this.openBook());
     this.#nextButton.addEventListener("click", () => this.#app.moveTo("next"));
     this.#prevButton.addEventListener("click", () => this.#app.moveTo("prev"));
     this.#contentsButton.addEventListener("click", () => this.toggleContents());
+  }
+
+  async openBook() {
+    this.#book = await this.#app.openBook("https://s3.amazonaws.com/moby-dick/moby-dick.epub");
   }
 
   toggleContents() {
@@ -85,10 +92,6 @@ export default class SimpleReadingArea extends HTMLElement implements ReadingAre
 
   #onToCItemClick(i: ToCItem) {
     this.#app.moveTo(i.link);
-  }
-
-  set book(book: Book) {
-    this.#book = book;
   }
 }
 

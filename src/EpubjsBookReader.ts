@@ -1,18 +1,18 @@
 import * as ePubjs from "epubjs";
-import { Book, BookReader, ReadingArea, PageRef, ToCItem } from "./App";
+import { Book, BookReader, PageRef, ToCItem } from "./App";
 
 export default class EpubjsBookReader implements BookReader {
   epubjsBook: ePubjs.Book;
   rendition: ePubjs.Rendition;
   book: Book;
-  #readingArea: ReadingArea;
+  #view: Element;
 
   constructor() {
     this.epubjsBook = new ePubjs.Book();
   }
 
-  set readingArea(ra: ReadingArea) {
-    this.#readingArea = ra;
+  set view(v: Element) {
+    this.#view = v;
   }
 
   open(filename: string): Promise<Book> {
@@ -37,12 +37,11 @@ export default class EpubjsBookReader implements BookReader {
   });
 
   render() {
-    if (!this.#readingArea) {
-      throw new Error('Must provide ReadinArea first');
+    if (!this.#view) {
+      throw new Error('Must provide view first');
     }
 
-    this.#readingArea.book = this.book;
-    this.rendition = this.epubjsBook.renderTo(this.#readingArea.view as Element, { width: "100%", height: "90%" });
+    this.rendition = this.epubjsBook.renderTo(this.#view, { width: "100%", height: "90%" });
     this.rendition.display();
   }
 
@@ -72,4 +71,3 @@ export default class EpubjsBookReader implements BookReader {
     this.rendition.display(ref);
   }
 }
-

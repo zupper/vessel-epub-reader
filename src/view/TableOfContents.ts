@@ -1,4 +1,4 @@
-import {ToCItem} from '../App';
+import { ToCItem } from '../App';
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -12,7 +12,6 @@ template.innerHTML = `
   height: 100%;
   background-color: rgba(0, 0, 0, .65);
   display: none;
-  
 }
 
 #blackout.is-blacked-out {

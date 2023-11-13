@@ -16,9 +16,7 @@ window.addEventListener(
     });
 
     const readingArea = new SimpleReadingArea(app);
-    reader.readingArea = readingArea;
+    reader.view = readingArea.view;
 
     document.querySelector('body').appendChild(readingArea);
-
-    console.log(await app.openBook("https://s3.amazonaws.com/moby-dick/moby-dick.epub"));
   });
