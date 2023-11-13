@@ -1,4 +1,4 @@
-import { ToCItem } from '../../app/Book';
+import { ToCItem } from 'app/Book';
 
 const template = document.createElement('template');
 template.innerHTML = `

@@ -1,6 +1,6 @@
 import * as ePubjs from "epubjs";
-import { Book, PageRef, ToCItem } from "../app/Book";
-import { BookReader } from "../app/BookReader";
+import { Book, PageRef, ToCItem } from "app/Book";
+import { BookReader } from "app/BookReader";
 
 export default class EpubjsBookReader implements BookReader {
   epubjsBook: ePubjs.Book;
