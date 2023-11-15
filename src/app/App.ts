@@ -45,6 +45,14 @@ export default class App {
     }
   }
 
+  async startPlayback() {
+    if (!this.currentBook) {
+      throw new Error('Must open book first');
+    }
+
+    console.log(await this.reader.getDisplayedText());
+  }
+
   set #lastPageRef(ref: PageRef) {
     this.#storage.set(this.#getPageRefKey(), ref);
   }

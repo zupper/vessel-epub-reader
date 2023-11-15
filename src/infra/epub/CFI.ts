@@ -1,0 +1,37 @@
+import * as ePubjs from "epubjs";
+
+export const getRange = (start: string, end: string) => {
+  const cfiObj = new ePubjs.EpubCFI();
+  try {
+    cfiObj.parse(start);
+    cfiObj.parse(end);
+  }
+  catch (e) {
+    throw new Error('cannot parse start or cfi');
+  }
+
+  const base = getBase(start, end);
+  const startPath = barebones(start).replace(base, '');
+  const endPath = barebones(end).replace(base, '');
+  return `epubcfi(${base},${startPath},${endPath})`;
+};
+
+const getBase = (cfi1: string, cfi2: string) => {
+
+  const bare1 = barebones(cfi1);
+  const bare2 = barebones(cfi2);
+
+  let base = '';
+  for (let i = 0; bare1[i] === bare2[i]; i++) {
+    base += bare1[i];
+  }
+
+  if (base.length === 0) {
+    throw new Error('cannot determine cfi base');
+  }
+
+  return base.substring(0, base.length - 1);
+};
+
+
+const barebones = (cfi: string) => cfi.replace('epubcfi(', '').replace(')', '');

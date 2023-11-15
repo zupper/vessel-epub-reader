@@ -1,5 +1,12 @@
 Application layer
 
+- book tts
+  - read sentence
+  - start playback
+  - pause playback
+  - stop playback
+  - next sentence
+  - prev sentence
 - add book
 - list books
 - remove book
@@ -12,13 +19,6 @@ Application layer
 - delete snippet
 - share snippet
 --
-- book tts
-  - read sentence
-  - start playback
-  - pause playback
-  - stop playback
-  - next sentence
-  - prev sentence
 
 DONE
 - open book

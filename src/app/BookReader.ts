@@ -6,5 +6,6 @@ export interface BookReader {
   nextPage: () => Promise<PageRef>;
   prevPage: () => Promise<PageRef>;
   moveTo: (ref: PageRef) => void;
+  getDisplayedText: () => Promise<string>;
 }
 

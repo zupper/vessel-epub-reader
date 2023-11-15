@@ -1,5 +1,5 @@
 import App from './app/App';
-import EpubjsBookReader from "./infra/EpubjsBookReader";
+import EpubjsBookReader from "./infra/epub/EpubjsBookReader";
 import SimpleReadingArea from './infra/view/SimpleReadingArea';
 
 
