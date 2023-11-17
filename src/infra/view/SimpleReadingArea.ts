@@ -66,7 +66,7 @@ export default class SimpleReadingArea extends HTMLElement {
     this.#nextButton.addEventListener("click", () => this.#app.moveTo("next"));
     this.#prevButton.addEventListener("click", () => this.#app.moveTo("prev"));
     this.#contentsButton.addEventListener("click", () => this.toggleContents());
-    this.#audioButton.addEventListener("click", () => this.#app.startPlayback());
+    this.#audioButton.addEventListener("click", () => this.#app.startReading());
   }
 
   async openBook() {
