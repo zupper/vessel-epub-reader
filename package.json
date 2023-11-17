@@ -30,6 +30,7 @@
     "howler": "^2.2.4",
     "jszip": "^3.10.1",
     "mocha-chrome": "^2.2.0",
+    "murmurhash": "^2.0.1",
     "tiny-popup-menu": "^1.0.9",
     "webpack": "^5.89.0"
   }

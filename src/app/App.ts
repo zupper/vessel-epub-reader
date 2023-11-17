@@ -1,6 +1,6 @@
 import { Book, PageRef } from './Book';
 import { BookReader } from './BookReader';
-import { AudioPlayer } from './AudioPlayer';
+import { AudioPlayer, SentenceCompleteEvent } from './AudioPlayer';
 import { TTSSource } from 'app/TTSSource';
 
 export interface StringStorage {
@@ -21,6 +21,8 @@ export default class App {
   #storage: StringStorage;
   #player: AudioPlayer;
   #ttsSource: TTSSource;
+
+  #remainingText: string[];
 
   constructor(params: AppConsructorParams) {
     this.reader = params.bookReader;
@@ -58,11 +60,24 @@ export default class App {
       throw new Error('Must open book first');
     }
 
-    const sentences = (await this.reader.getDisplayedText()).match(/[^\.!\?]+[\.!\?]+/g).map(s => s.trim());
+    const sentences =
+      (await this.reader.getDisplayedText())
+        .match(/[^\.!\?]+[\.!\?]+/g)
+        .map(s => s.trim());
+
     const startingSequence = sentences.slice(0, 3);
-    const rest = sentences.slice(3);
+    this.#remainingText = sentences.slice(3);
     const buffered = await this.#ttsSource.generate(startingSequence);
-    this.#player.play(buffered);
+    this.#player.enqueue(buffered);
+    this.#player.play();
+    this.#player.addEventListener('sentencecomplete', this.#onSentenceComplete.bind(this));
+  }
+
+  async #onSentenceComplete(e: SentenceCompleteEvent) {
+    if (this.#remainingText.length === 0) return;
+
+    const next = this.#remainingText.shift();
+    this.#player.enqueue(await this.#ttsSource.generate([next]));
   }
 
   set #lastPageRef(ref: PageRef) {
