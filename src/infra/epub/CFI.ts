@@ -30,6 +30,10 @@ const getBase = (cfi1: string, cfi2: string) => {
     throw new Error('cannot determine cfi base');
   }
 
+  while (base.charAt(base.length - 1) !== '/') {
+    base = base.substring(0, base.length - 1);
+  }
+
   return base.substring(0, base.length - 1);
 };
 
