@@ -1,4 +1,4 @@
-import { Book, PageRef } from './Book';
+import { Book, PageRef, Sentence } from './Book';
 
 export interface BookReader {
   open(filename: string): Promise<Book>;
@@ -6,6 +6,6 @@ export interface BookReader {
   nextPage: () => Promise<PageRef>;
   prevPage: () => Promise<PageRef>;
   moveTo: (ref: PageRef) => void;
-  getDisplayedText: () => Promise<string>;
+  getDisplayedSentences: () => Promise<Sentence[]>;
 }
 

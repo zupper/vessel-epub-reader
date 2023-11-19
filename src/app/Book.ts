@@ -11,3 +11,7 @@ export type ToCItem = {
   subitems: ToCItem[];
 }
 
+export type Sentence = {
+  id: string;
+  text: string;
+}

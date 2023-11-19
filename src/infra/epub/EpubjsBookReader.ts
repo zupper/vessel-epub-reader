@@ -1,3 +1,4 @@
+import * as murmurhash from "murmurhash";
 import * as ePubjs from "epubjs";
 import { Book, PageRef, ToCItem } from "app/Book";
 import { BookReader } from "app/BookReader";
@@ -65,9 +66,64 @@ export default class EpubjsBookReader implements BookReader {
     });
   }
 
-  async getDisplayedText() {
+  async getDisplayedSentences() {
     const range = await this.#epubjsBook.getRange(this.#displayedCfiRange);
-    return range.toString();
+    const nodes = this.walkRange(range);
+    return nodes
+      .map(n => n.textContent)
+      .map((t, idx, ts) => {
+        if (idx === 0) { return t.substring(range.startOffset, t.length); }
+        if (idx === ts.length - 1) { return t.substring(0, range.endOffset); }
+        return t;
+      })
+      .map(t => t.match(/[^\.!\?]+[\.!\?]*/g))
+      .filter(t => t !== null)
+      .flat()
+      .map(s => s.trim())
+      .filter(t => !!t)
+      .map(t => this.#toSentence(t));
+  }
+
+  #toSentence(t: string) {
+    return ({
+      id: this.#getHash(t),
+      text: t,
+    });
+  }
+
+  walkRange(range: Range) {
+    const root = range.commonAncestorContainer;
+    const doc = root.ownerDocument;
+    const walker = doc.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+    const result = [];
+
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (this.nodeWithinRange(node, range) && this.isTextNode(node)) {
+        result.push(node);
+      }
+    }
+
+    return result;
+  }
+
+  #getHash(s: string) {
+    return murmurhash.v3(s).toString();
+  }
+
+  isTextNode(node: Node) {
+    return node.nodeType === 3
+  }
+
+  nodeWithinRange(node: Node, range: Range) {
+    const followingStart = (range.startContainer.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING) > 0;
+    const precedingEnd = (range.endContainer.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_PRECEDING) > 0;
+
+    return (
+      node === range.startContainer ||
+      node === range.endContainer ||
+      (followingStart && precedingEnd)
+    );
   }
 
   get currentCfi() {

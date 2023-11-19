@@ -1,3 +1,4 @@
+import { Sentence } from "app/Book";
 import { TTSSource } from "app/TTSSource";
 import * as murmurhash from "murmurhash";
 
@@ -10,9 +11,9 @@ export default class Mimic3TTSSource implements TTSSource {
     this.#ttsEndpoint = `${apiUrl}/tts?voice=en_UK%2Fapope_low%23default&noiseScale=0.667&noiseW=0.8&lengthScale=1.1&ssml=false&audioTarget=client&text=`;
   }
 
-  async generate(ss: string[]) {
-    const hashes = ss.map(this.#getHash);
-    const sounds = await Promise.all(ss.map(s => this.#fetchSentence(s)));
+  async generate(ss: Sentence[]) {
+    const hashes = ss.map(s => s.id);
+    const sounds = await Promise.all(ss.map(s => this.#fetchSentence(s.text)));
     console.log('hashes', hashes);
     return zip(hashes, sounds).map(this.#toSound);
   }

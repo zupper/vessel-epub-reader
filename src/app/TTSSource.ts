@@ -1,5 +1,6 @@
 import { Sound } from "app/AudioPlayer";
+import { Sentence } from "app/Book";
 
 export interface TTSSource {
-  generate: (ss: string[]) => Promise<Sound[]>;
+  generate: (ss: Sentence[]) => Promise<Sound[]>;
 }

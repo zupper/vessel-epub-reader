@@ -1,3 +1,3 @@
 export default {
-  mimicApiUrl: 'http://localhost:59125/api',
+  mimicApiUrl: 'http://192.168.1.10:59125/api',
 };
