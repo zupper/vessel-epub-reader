@@ -25,7 +25,8 @@ export default class HowlerPlayer extends EventTarget implements AudioPlayer {
 
     this.#sound.play();
     this.#sound.once("end", () => {
-      this.dispatchEvent(new SentenceCompleteEvent(thisSound.id));
+      const nextSentenceId = this.#q.length ? this.#q[0].id : null;
+      this.dispatchEvent(new SentenceCompleteEvent(thisSound.id, nextSentenceId));
       this.play();
     });
   }

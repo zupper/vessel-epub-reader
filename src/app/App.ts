@@ -67,10 +67,17 @@ export default class App {
     const buffered = await this.#ttsSource.generate(startingSequence);
     this.#player.enqueue(buffered);
     this.#player.play();
+    this.reader.highlight(startingSequence[0].id);
     this.#player.addEventListener('sentencecomplete', this.#onSentenceComplete.bind(this));
   }
 
   async #onSentenceComplete(e: SentenceCompleteEvent) {
+    this.reader.unhighlight(e.sentenceId);
+
+    if (e.nextSentenceId) {
+      this.reader.highlight(e.nextSentenceId);
+    }
+
     if (this.#remainingSentences.length === 0) return;
 
     const next = this.#remainingSentences.shift();

@@ -1,6 +1,5 @@
 import { Sentence } from "app/Book";
 import { TTSSource } from "app/TTSSource";
-import * as murmurhash from "murmurhash";
 
 const zip = <A, B>(arr1: A[], arr2: B[]): [A, B][] => arr1.map((val, i) => [val, arr2[i]]);
 
@@ -14,7 +13,6 @@ export default class Mimic3TTSSource implements TTSSource {
   async generate(ss: Sentence[]) {
     const hashes = ss.map(s => s.id);
     const sounds = await Promise.all(ss.map(s => this.#fetchSentence(s.text)));
-    console.log('hashes', hashes);
     return zip(hashes, sounds).map(this.#toSound);
   }
 
@@ -26,10 +24,6 @@ export default class Mimic3TTSSource implements TTSSource {
     }
 
     return (await res.blob()).arrayBuffer();
-  }
-
-  #getHash(s: string) {
-    return murmurhash.v3(s).toString();
   }
 
   #toSound([h, d]: [string, ArrayBuffer]) {

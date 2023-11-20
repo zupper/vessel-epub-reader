@@ -7,5 +7,7 @@ export interface BookReader {
   prevPage: () => Promise<PageRef>;
   moveTo: (ref: PageRef) => void;
   getDisplayedSentences: () => Promise<Sentence[]>;
+  highlight: (sentenceId: string) => void;
+  unhighlight: (sentenceId: string) => void;
 }
 

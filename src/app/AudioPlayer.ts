@@ -5,10 +5,12 @@ export type Sound = {
 
 export class SentenceCompleteEvent extends Event {
   sentenceId: string;
+  nextSentenceId: string;
 
-  constructor(sentenceId: string) {
+  constructor(sentenceId: string, nextSentenceId: string) {
     super('sentencecomplete', { bubbles: true, cancelable: false });
     this.sentenceId = sentenceId;
+    this.nextSentenceId = nextSentenceId;
   }
 }
 
