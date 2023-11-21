@@ -12,7 +12,13 @@ export default class Mimic3TTSSource implements TTSSource {
 
   async generate(ss: Sentence[]) {
     const hashes = ss.map(s => s.id);
-    const sounds = await Promise.all(ss.map(s => this.#fetchSentence(s.text)));
+    // the model seems to perform poorly with semicolumns and em dashes
+    const texts = 
+      ss
+        .map(s => s.text)
+        .map(s => s.replace(';', ', '))
+        .map(s => s.replace('—', ', '));
+    const sounds = await Promise.all(texts.map(t => this.#fetchSentence(t)));
     return zip(hashes, sounds).map(this.#toSound);
   }
 
