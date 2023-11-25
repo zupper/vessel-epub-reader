@@ -1,12 +1,10 @@
 Application layer
 
 - book tts
-  - read sentence
-  - start playback
   - pause playback
   - stop playback
-  - next sentence
-  - prev sentence
+  - skip to next sentence
+  - return to prev sentence
 - add book
 - list books
 - remove book
@@ -18,6 +16,7 @@ Application layer
 - list snippets
 - delete snippet
 - share snippet
+- BUG: exact repeated sentences in the same paragraph are highlighted wrong
 --
 
 DONE
@@ -27,3 +26,6 @@ DONE
 - goToLocation
 - open last read page per book
 - contents
+- book tts
+  - read sentence
+  - start playback

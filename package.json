@@ -26,6 +26,7 @@
     "webpack-dev-server": "^4.15.1"
   },
   "dependencies": {
+    "compromise": "^14.10.1",
     "epubjs": "^0.3.93",
     "howler": "^2.2.4",
     "jszip": "^3.10.1",

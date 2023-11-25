@@ -1,4 +1,5 @@
 import * as murmurhash from "murmurhash";
+import nlp from "compromise/one";
 import { Sentence } from 'app/Book';
 
 export type NodeWithSentences = {
@@ -13,32 +14,32 @@ export default class SentenceExtractor {
     let result: NodeWithSentences[] = [];
 
     for (let node of nodes) {
-      const localResult: NodeWithSentences = {
-        node,
-        sentences: [],
-      };
-
       let textContent = node.textContent;
       if (node === r.startContainer) {
+        // ignore the start of the sentence from the previous page for now
         textContent = textContent.substring(r.startOffset, textContent.length);
       }
 
       if (node === r.endContainer) {
+        // if we have a sentence that continues on the next page, we should include all of it
         let idxOffPage = textContent.slice(r.endOffset).search(/[\.!\?]/);
         idxOffPage = idxOffPage < 0 ? r.endOffset : idxOffPage + r.endOffset + 1;
         textContent = textContent.substring(0, idxOffPage);
       }
 
-      const sentenceStrings = textContent.match(/[^\.!\?]+[\.!\?]*/g)
-      if (sentenceStrings !== null) {
+      const sentenceStrings: string[] =
+        nlp(textContent)
+          .json()
+          .map((o: { text: string }): string => o.text);
 
-        localResult.sentences =
+      if (sentenceStrings.length > 0) {
+        const sentences =
           sentenceStrings
             .map(s => s.trim())
             .filter(t => !!t)
             .map(t => this.#toSentence(t));
 
-        result.push(localResult)
+        result.push({ node, sentences })
       }
     }
 
