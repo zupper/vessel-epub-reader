@@ -9,10 +9,12 @@ export default class EpubjsBookReader implements BookReader {
   #epubjsBook: ePubjs.Book;
   #rendition: ePubjs.Rendition;
   #assistant: ReaderAssistant;
+  #isRendered: boolean;
 
   constructor() {
     this.#epubjsBook = new ePubjs.Book();
     this.#assistant = new ReaderAssistant(this.#epubjsBook)
+    this.#isRendered = false;
   }
 
   set view(v: Element) {
@@ -47,6 +49,7 @@ export default class EpubjsBookReader implements BookReader {
 
     this.#rendition = this.#epubjsBook.renderTo(this.#view, { width: "100%", height: "90%" });
     this.#rendition.display();
+    this.#isRendered = true;
   }
 
   nextPage(): Promise<PageRef> {
@@ -83,5 +86,9 @@ export default class EpubjsBookReader implements BookReader {
 
   unhighlight(sentenceId: string) {
     this.#assistant.removeHighlight(sentenceId);
+  }
+
+  isRendered() {
+    return this.#isRendered;
   }
 }
