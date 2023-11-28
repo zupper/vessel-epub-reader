@@ -1,7 +1,8 @@
 import { TTSSource } from "app/TTSSource";
-import { AudioPlayer, SentenceCompleteEvent, Sound } from "app/AudioPlayer";
+import { AudioPlayer, SentenceCompleteEvent } from "app/AudioPlayer";
 import { BookReader } from "app/BookReader";
-import { Sentence } from "app/Book";
+import PlaybackQueue from "app/PlaybackQueue";
+import SoundSource from "app/SoundSource";
 
 export type TTSControlParams = {
   ttsSource: TTSSource;
@@ -13,9 +14,11 @@ export default class TTSControl {
   #ttsSource: TTSSource;
   #player: AudioPlayer;
   #reader: BookReader;
-  #remainingSentences: Sentence[];
   #sentenceCompleteBoundCallback: EventListener;
   #isPlaying: boolean;
+  #q: PlaybackQueue;
+  #soundSource: SoundSource;
+  #isTransitioningBetweenSentences: boolean;
 
   constructor(params: TTSControlParams) {
     this.#player = params.player;
@@ -23,6 +26,7 @@ export default class TTSControl {
     this.#reader = params.reader;
     this.#sentenceCompleteBoundCallback = this.#onSentenceComplete.bind(this);
     this.#isPlaying = false;
+    this.#isTransitioningBetweenSentences = false;
   }
 
   async startReading() {
@@ -31,53 +35,48 @@ export default class TTSControl {
     if (this.#isPlaying) return;
     this.#isPlaying = true;
 
-    const buffered = await this.#getStartingSentences();
-
-    // as the above is async, we may have stopped playing, so we shouldn't enqueue
-    if (this.#isPlaying) {
-      this.#startPlayback(buffered);
-    }
-  }
-
-  #startPlayback(buf: Sound[]) {
-    this.#player.enqueue(buf);
-    this.#player.play();
-    this.#reader.highlight(buf[0].id);
-    this.#player.addEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback);
-  }
-
-  async #getStartingSentences() {
     const sentences = await this.#reader.getDisplayedSentences();
+    this.#q = new PlaybackQueue(sentences);
+    this.#soundSource = new SoundSource({ ttsSource: this.#ttsSource, sentences });
+    this.#player.addEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback);
 
-    const startingSequence = sentences.slice(0, 3);
-    this.#remainingSentences = sentences.slice(3);
-    return this.#ttsSource.generate(startingSequence);
+    this.#resumePlayback();
+  }
+
+  async #resumePlayback() {
+    const sound = await this.#soundSource.get(this.#q.current().id);
+    if (sound && this.#isPlaying) {
+      this.#player.play(sound);
+      this.#reader.highlight(sound.id);
+    }
   }
 
   async #onSentenceComplete(e: SentenceCompleteEvent) {
+    if (this.#isTransitioningBetweenSentences) return;
+
+    this.#isTransitioningBetweenSentences = true;
     this.#reader.unhighlight(e.sentenceId);
-
-    if (e.nextSentenceId) {
-      this.#reader.highlight(e.nextSentenceId);
-    }
-
-    if (this.#remainingSentences.length === 0) return;
-
-    const next = this.#remainingSentences.shift();
-    const nextSound = await this.#ttsSource.generate([next]);
-
-    // as the above is async, we may have stopped playing, so we shouldn't enqueue
-    if (this.#isPlaying) {
-      this.#player.enqueue(nextSound);
-    }
+    this.#q.next();
+    await this.#resumePlayback();
+    this.#isTransitioningBetweenSentences = false;
   }
 
   stopReading() {
-    this.#player.clearQueue();
     this.#player.removeEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback)
     this.#reader.removeAllHighlights();
     this.#player.stop();
     this.#isPlaying = false;
+  }
+
+  async nextSentence() {
+    if (this.#isTransitioningBetweenSentences) return;
+
+    this.#isTransitioningBetweenSentences = true;
+    this.#reader.unhighlight(this.#q.current().id);
+    this.#player.stop();
+    this.#q.next();
+    await this.#resumePlayback();
+    this.#isTransitioningBetweenSentences = false;
   }
 }
 

@@ -1,39 +1,17 @@
 import { Howl } from 'howler';
-import { AudioPlayer, Sound, SentenceCompleteEvent } from "app/AudioPlayer";
+import { AudioPlayer, Sound, SentenceCompleteEvent  } from "app/AudioPlayer";
 
 export default class HowlerPlayer extends EventTarget implements AudioPlayer {
   #sound: Howl;
-  #q: Sound[];
 
-  constructor() {
-    super();
-    this.#q = [];
-    this.#sound = null;
-  }
-
-  enqueue(ss: Sound[]) {
-    this.#q = this.#q.concat(ss);
-  }
-
-  play() {
-    if (this.#q.length === 0) return;
-
-    const thisSound = this.#q.shift();
+  play(s: Sound) {
     this.#sound = new Howl({
-      src: [this.#bufToUrl(thisSound.data)],
+      src: [this.#bufToUrl(s.data)],
       format: "wav",
     });
 
     this.#sound.play();
-    this.#sound.once("end", () => {
-      const nextSentenceId = this.#q.length ? this.#q[0].id : null;
-      this.dispatchEvent(new SentenceCompleteEvent(thisSound.id, nextSentenceId));
-      this.play();
-    });
-  }
-
-  clearQueue() {
-    this.#q = [];
+    this.#sound.once("end", () => this.dispatchEvent(new SentenceCompleteEvent(s.id)));
   }
 
   #bufToUrl(b: ArrayBuffer) {
