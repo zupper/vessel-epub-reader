@@ -88,6 +88,10 @@ export default class EpubjsBookReader implements BookReader {
     this.#assistant.removeHighlight(sentenceId);
   }
 
+  removeAllHighlights() {
+    this.#assistant.removeAllHightlights();
+  }
+
   isRendered() {
     return this.#isRendered;
   }

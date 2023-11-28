@@ -9,6 +9,7 @@ export interface BookReader {
   getDisplayedSentences: () => Promise<Sentence[]>;
   highlight: (sentenceId: string) => void;
   unhighlight: (sentenceId: string) => void;
+  removeAllHighlights: () => void;
   isRendered: () => boolean;
 }
 

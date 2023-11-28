@@ -8,6 +8,7 @@ export default class HowlerPlayer extends EventTarget implements AudioPlayer {
   constructor() {
     super();
     this.#q = [];
+    this.#sound = null;
   }
 
   enqueue(ss: Sound[]) {
@@ -17,7 +18,7 @@ export default class HowlerPlayer extends EventTarget implements AudioPlayer {
   play() {
     if (this.#q.length === 0) return;
 
-    const thisSound =this.#q.shift();
+    const thisSound = this.#q.shift();
     this.#sound = new Howl({
       src: [this.#bufToUrl(thisSound.data)],
       format: "wav",
@@ -31,10 +32,20 @@ export default class HowlerPlayer extends EventTarget implements AudioPlayer {
     });
   }
 
+  clearQueue() {
+    this.#q = [];
+  }
+
   #bufToUrl(b: ArrayBuffer) {
     const blob = new Blob([b], { type: "audio/wav" });
     return URL.createObjectURL(blob);
   }
 
-  stop() {}
+  stop() {
+    if (this.#sound) {
+      this.#sound.off('end');
+      this.#sound.stop();
+      this.#sound = null;
+    }
+  }
 }

@@ -2,7 +2,6 @@ Application layer
 
 - book tts
   - pause playback
-  - stop playback
   - skip to next sentence
   - return to prev sentence
 - add book
@@ -17,6 +16,7 @@ Application layer
 - delete snippet
 - share snippet
 - BUG: exact repeated sentences in the same paragraph are highlighted wrong
+- BUG: page start is sometimes off - when chapter 1, page 3 starts with 'lilies' playback starts with 'is the one charm wanting'
 --
 
 DONE
@@ -29,3 +29,4 @@ DONE
 - book tts
   - read sentence
   - start playback
+  - stop playback

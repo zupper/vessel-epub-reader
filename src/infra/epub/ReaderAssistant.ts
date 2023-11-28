@@ -63,6 +63,7 @@ export default class ReaderAssistant {
 
     const sentenceCfi = CFI.fromDOMRangeWithScreenCfi(range, this.#displayedCfiRange);
     this.#rendition.annotations.highlight(sentenceCfi);
+    this.#highlighted.push(sentenceId);
   }
 
   removeHighlight(sentenceId: string) {
@@ -71,7 +72,10 @@ export default class ReaderAssistant {
 
     const sentenceCfi = CFI.fromDOMRangeWithScreenCfi(range, this.#displayedCfiRange);
     this.#rendition.annotations.remove(sentenceCfi, "highlight");
+    this.#highlighted = this.#highlighted.filter(s => s !== sentenceId);
   }
 
-  removeAllHightlights() {}
+  removeAllHightlights() {
+    this.#highlighted.forEach(s => this.removeHighlight(s));
+  }
 }

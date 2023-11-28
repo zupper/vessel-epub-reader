@@ -17,5 +17,6 @@ export class SentenceCompleteEvent extends Event {
 export interface AudioPlayer extends EventTarget {
   play: () => void;
   enqueue: (ss: Sound[]) => void;
+  clearQueue: () => void;
   stop: () => void;
 }
