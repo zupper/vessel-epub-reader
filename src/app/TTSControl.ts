@@ -1,4 +1,5 @@
 import { TTSSource } from "app/TTSSource";
+import { Sentence } from "app/Book";
 import { AudioPlayer  } from "app/AudioPlayer";
 import { BookReader } from "app/BookReader";
 import PlaybackQueue from "app/PlaybackQueue";
@@ -38,11 +39,14 @@ export default class TTSControl {
     this.#isPlaying = true;
 
     const sentences = await this.#reader.getDisplayedSentences();
-    this.#q = new PlaybackQueue(sentences);
-    this.#soundSource = new SoundSource({ ttsSource: this.#ttsSource, sentences });
+    this.#setupPlaybackSupport(sentences);
     this.#player.addEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback);
-
     this.#resumePlayback();
+  }
+
+  #setupPlaybackSupport(ss: Sentence[]) {
+    this.#q = new PlaybackQueue(ss);
+    this.#soundSource = new SoundSource({ ttsSource: this.#ttsSource, sentences: ss });
   }
 
   async #resumePlayback() {
@@ -73,6 +77,12 @@ export default class TTSControl {
     this.#isPaused = false;
   }
 
+  async #pageTransition() {
+    await this.#reader.nextPage();
+    const [_first, ...rest] = await this.#reader.getDisplayedSentences();
+    this.#setupPlaybackSupport(rest);
+  }
+
   async #sentenceTransition(direction: 'next' | 'prev') {
     if (this.#isTransitioningBetweenSentences) return;
 
@@ -80,8 +90,16 @@ export default class TTSControl {
     this.#reader.unhighlight(this.#q.current().id);
     this.#player.stop();
 
-    if (direction === 'next') this.#q.next();
-    else if (direction === 'prev') this.#q.prev();
+    if (direction === 'next') {
+      if (this.#q.hasNext()) this.#q.next();
+      else await this.#pageTransition();
+    }
+    else if (direction === 'prev') {
+      const upcomingSentence = this.#q.prev();
+      if (!upcomingSentence) {
+        // todo
+      }
+    }
 
     await this.#resumePlayback();
     this.#isPaused = false;
