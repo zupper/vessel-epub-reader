@@ -4,14 +4,19 @@ import { AudioPlayer, Sound, SentenceCompleteEvent  } from "app/AudioPlayer";
 export default class HowlerPlayer extends EventTarget implements AudioPlayer {
   #sound: Howl;
 
-  play(s: Sound) {
-    this.#sound = new Howl({
-      src: [this.#bufToUrl(s.data)],
-      format: "wav",
-    });
+  play(s?: Sound) {
+    if (!s && !this.#sound) throw new Error("can't resume without a previous sound");
+
+    if (s) {
+      this.#sound = new Howl({
+        src: [this.#bufToUrl(s.data)],
+        format: "wav",
+      });
+
+      this.#sound.once("end", () => this.dispatchEvent(new SentenceCompleteEvent(s.id)));
+    }
 
     this.#sound.play();
-    this.#sound.once("end", () => this.dispatchEvent(new SentenceCompleteEvent(s.id)));
   }
 
   #bufToUrl(b: ArrayBuffer) {
@@ -24,6 +29,12 @@ export default class HowlerPlayer extends EventTarget implements AudioPlayer {
       this.#sound.off('end');
       this.#sound.stop();
       this.#sound = null;
+    }
+  }
+
+  pause() {
+    if (this.#sound) {
+      this.#sound.pause();
     }
   }
 }

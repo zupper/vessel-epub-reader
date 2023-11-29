@@ -1,7 +1,8 @@
 Application layer
 
 - book tts
-  - pause playback
+  - hangle end of page and moving to next page
+  - implement state machine for tts control
 - add book
 - list books
 - remove book
@@ -31,3 +32,4 @@ DONE
   - stop playback
   - skip to next sentence
   - return to prev sentence
+  - pause playback

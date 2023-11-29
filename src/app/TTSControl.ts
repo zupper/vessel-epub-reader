@@ -1,5 +1,5 @@
 import { TTSSource } from "app/TTSSource";
-import { AudioPlayer, SentenceCompleteEvent } from "app/AudioPlayer";
+import { AudioPlayer  } from "app/AudioPlayer";
 import { BookReader } from "app/BookReader";
 import PlaybackQueue from "app/PlaybackQueue";
 import SoundSource from "app/SoundSource";
@@ -16,6 +16,7 @@ export default class TTSControl {
   #reader: BookReader;
   #sentenceCompleteBoundCallback: EventListener;
   #isPlaying: boolean;
+  #isPaused: boolean;
   #q: PlaybackQueue;
   #soundSource: SoundSource;
   #isTransitioningBetweenSentences: boolean;
@@ -26,6 +27,7 @@ export default class TTSControl {
     this.#reader = params.reader;
     this.#sentenceCompleteBoundCallback = this.#onSentenceComplete.bind(this);
     this.#isPlaying = false;
+    this.#isPaused = false;
     this.#isTransitioningBetweenSentences = false;
   }
 
@@ -51,21 +53,8 @@ export default class TTSControl {
     }
   }
 
-  async #onSentenceComplete(e: SentenceCompleteEvent) {
-    if (this.#isTransitioningBetweenSentences) return;
-
-    this.#isTransitioningBetweenSentences = true;
-    this.#reader.unhighlight(e.sentenceId);
-    this.#q.next();
-    await this.#resumePlayback();
-    this.#isTransitioningBetweenSentences = false;
-  }
-
-  stopReading() {
-    this.#player.removeEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback)
-    this.#reader.removeAllHighlights();
-    this.#player.stop();
-    this.#isPlaying = false;
+  #onSentenceComplete() {
+    this.#sentenceTransition('next');
   }
 
   nextSentence() {
@@ -74,6 +63,14 @@ export default class TTSControl {
 
   previousSentence() {
     this.#sentenceTransition('prev');
+  }
+
+  stopReading() {
+    this.#player.removeEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback)
+    this.#reader.removeAllHighlights();
+    this.#player.stop();
+    this.#isPlaying = false;
+    this.#isPaused = false;
   }
 
   async #sentenceTransition(direction: 'next' | 'prev') {
@@ -87,7 +84,22 @@ export default class TTSControl {
     else if (direction === 'prev') this.#q.prev();
 
     await this.#resumePlayback();
+    this.#isPaused = false;
     this.#isTransitioningBetweenSentences = false;
+  }
+
+  pauseReading() {
+    if (this.#isTransitioningBetweenSentences || !this.#isPlaying) return;
+
+    this.#player.pause();
+    this.#isPaused = true;
+  }
+
+  resumeReading() {
+    if (!this.#isPaused) return;
+
+    this.#player.play();
+    this.#isPaused = false;
   }
 }
 

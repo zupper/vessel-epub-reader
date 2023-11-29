@@ -13,6 +13,7 @@ export class SentenceCompleteEvent extends Event {
 }
 
 export interface AudioPlayer extends EventTarget {
-  play: (s: Sound) => void;
+  play: (s?: Sound) => void;
   stop: () => void;
+  pause: () => void;
 }

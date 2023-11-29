@@ -30,6 +30,8 @@ reading-area {
     <button id="next">Next</button>
     <button id="toc-button">Contents</button>
     <button id="audio-button-play">Play Audio</button>
+    <button id="audio-button-pause">Pause Audio</button>
+    <button id="audio-button-resume">Resume Audio</button>
     <button id="audio-button-stop">Stop Audio</button>
     <button id="audio-button-next">Audio Next</button>
     <button id="audio-button-prev">Audio Prev</button>
@@ -48,6 +50,8 @@ export default class SimpleReadingArea extends HTMLElement {
   #contentsButton: HTMLButtonElement;
   #tableOfContents: TableOfContents;
   #playButton: HTMLButtonElement;
+  #pauseButton: HTMLButtonElement;
+  #resumeButton: HTMLButtonElement;
   #stopButton: HTMLButtonElement;
   #audioNextButton: HTMLButtonElement;
   #audioPrevButton: HTMLButtonElement;
@@ -65,6 +69,8 @@ export default class SimpleReadingArea extends HTMLElement {
     this.#prevButton = this.shadowRoot.querySelector("#prev");
     this.#contentsButton = this.shadowRoot.querySelector("#toc-button");
     this.#playButton = this.shadowRoot.querySelector("#audio-button-play");
+    this.#pauseButton = this.shadowRoot.querySelector("#audio-button-pause");
+    this.#resumeButton = this.shadowRoot.querySelector("#audio-button-resume");
     this.#stopButton = this.shadowRoot.querySelector("#audio-button-stop");
     this.#audioNextButton = this.shadowRoot.querySelector("#audio-button-next");
     this.#audioPrevButton = this.shadowRoot.querySelector("#audio-button-prev");
@@ -76,6 +82,8 @@ export default class SimpleReadingArea extends HTMLElement {
     this.#prevButton.addEventListener("click", () => this.#app.moveTo("prev"));
     this.#contentsButton.addEventListener("click", () => this.toggleContents());
     this.#playButton.addEventListener("click", () => this.#app.ttsControl.startReading());
+    this.#pauseButton.addEventListener("click", () => this.#app.ttsControl.pauseReading());
+    this.#resumeButton.addEventListener("click", () => this.#app.ttsControl.resumeReading());
     this.#stopButton.addEventListener("click", () => this.#app.ttsControl.stopReading());
     this.#audioNextButton.addEventListener("click", () => this.#app.ttsControl.nextSentence());
     this.#audioPrevButton.addEventListener("click", () => this.#app.ttsControl.previousSentence());
