@@ -2,7 +2,6 @@ Application layer
 
 - book tts
   - pause playback
-  - return to prev sentence
 - add book
 - list books
 - remove book
@@ -31,3 +30,4 @@ DONE
   - start playback
   - stop playback
   - skip to next sentence
+  - return to prev sentence

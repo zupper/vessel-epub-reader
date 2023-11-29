@@ -68,13 +68,24 @@ export default class TTSControl {
     this.#isPlaying = false;
   }
 
-  async nextSentence() {
+  nextSentence() {
+    this.#sentenceTransition('next');
+  }
+
+  previousSentence() {
+    this.#sentenceTransition('prev');
+  }
+
+  async #sentenceTransition(direction: 'next' | 'prev') {
     if (this.#isTransitioningBetweenSentences) return;
 
     this.#isTransitioningBetweenSentences = true;
     this.#reader.unhighlight(this.#q.current().id);
     this.#player.stop();
-    this.#q.next();
+
+    if (direction === 'next') this.#q.next();
+    else if (direction === 'prev') this.#q.prev();
+
     await this.#resumePlayback();
     this.#isTransitioningBetweenSentences = false;
   }

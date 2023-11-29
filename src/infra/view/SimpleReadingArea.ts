@@ -32,6 +32,7 @@ reading-area {
     <button id="audio-button-play">Play Audio</button>
     <button id="audio-button-stop">Stop Audio</button>
     <button id="audio-button-next">Audio Next</button>
+    <button id="audio-button-prev">Audio Prev</button>
   </div>
 </div>
 `;
@@ -49,6 +50,7 @@ export default class SimpleReadingArea extends HTMLElement {
   #playButton: HTMLButtonElement;
   #stopButton: HTMLButtonElement;
   #audioNextButton: HTMLButtonElement;
+  #audioPrevButton: HTMLButtonElement;
 
   constructor(app: App) {
     super();
@@ -65,6 +67,7 @@ export default class SimpleReadingArea extends HTMLElement {
     this.#playButton = this.shadowRoot.querySelector("#audio-button-play");
     this.#stopButton = this.shadowRoot.querySelector("#audio-button-stop");
     this.#audioNextButton = this.shadowRoot.querySelector("#audio-button-next");
+    this.#audioPrevButton = this.shadowRoot.querySelector("#audio-button-prev");
   }
 
   connectedCallback() {
@@ -75,6 +78,7 @@ export default class SimpleReadingArea extends HTMLElement {
     this.#playButton.addEventListener("click", () => this.#app.ttsControl.startReading());
     this.#stopButton.addEventListener("click", () => this.#app.ttsControl.stopReading());
     this.#audioNextButton.addEventListener("click", () => this.#app.ttsControl.nextSentence());
+    this.#audioPrevButton.addEventListener("click", () => this.#app.ttsControl.previousSentence());
   }
 
   async openBook() {
