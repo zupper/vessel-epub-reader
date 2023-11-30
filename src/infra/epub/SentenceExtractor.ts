@@ -15,16 +15,24 @@ export default class SentenceExtractor {
 
     for (let node of nodes) {
       let textContent = node.textContent;
+      let lastSentenceTrailingOffPage = false;
+
       if (node === r.startContainer) {
         // ignore the start of the sentence from the previous page for now
         textContent = textContent.substring(r.startOffset, textContent.length);
       }
 
       if (node === r.endContainer) {
+        const offPageSentences: string[] =
+          nlp(textContent.slice(r.endOffset))
+            .json()
+            .map((o: { text: string }) => o.text);
+
+        const trailingPartOfLastSentence = offPageSentences.length > 0 ? offPageSentences[0] : '';
+
         // if we have a sentence that continues on the next page, we should include all of it
-        let idxOffPage = textContent.slice(r.endOffset).search(/[\.!\?]/);
-        idxOffPage = idxOffPage < 0 ? r.endOffset : idxOffPage + r.endOffset + 1;
-        textContent = textContent.substring(0, idxOffPage);
+        textContent = textContent.substring(0, r.endOffset) + trailingPartOfLastSentence;
+        lastSentenceTrailingOffPage = !!trailingPartOfLastSentence;
       }
 
       const sentenceStrings: string[] =
@@ -39,6 +47,10 @@ export default class SentenceExtractor {
             .filter(t => !!t)
             .map(t => this.#toSentence(t));
 
+        if (lastSentenceTrailingOffPage) {
+          sentences[sentences.length - 1].trailingOffPage = true;
+        }
+
         result.push({ node, sentences })
       }
     }
@@ -50,6 +62,7 @@ export default class SentenceExtractor {
     return ({
       id: this.#getHash(t),
       text: t,
+      trailingOffPage: false,
     });
   }
 

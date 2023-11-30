@@ -31,5 +31,10 @@ export default class PlaybackQueue {
   enqueue(ss: Sentence[]) {
     this.#q.push(...ss);
   }
+
+  last() {
+    if (this.#q.length === 0) return null;
+    return this.#q[this.#q.length - 1];
+  }
 }
 

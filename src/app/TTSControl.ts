@@ -116,8 +116,11 @@ export default class TTSControl {
 
   async #pageTransition() {
     await this.#reader.nextPage();
-    const [_first, ...rest] = await this.#reader.getDisplayedSentences();
-    this.#setupPlaybackSupport(rest);
+    const sentences = await this.#reader.getDisplayedSentences();
+
+    if (this.#q.last().trailingOffPage) sentences.shift();
+
+    this.#setupPlaybackSupport(sentences);
   }
 }
 
