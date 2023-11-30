@@ -1,4 +1,4 @@
-import * as ePubjs from "epubjs";
+import { Book as EpubjsBook, Rendition, NavItem } from "epubjs";
 import { Book, PageRef, ToCItem } from "app/Book";
 import { BookReader } from "app/BookReader";
 import ReaderAssistant from "./ReaderAssistant";
@@ -6,13 +6,13 @@ import ReaderAssistant from "./ReaderAssistant";
 export default class EpubjsBookReader implements BookReader {
   #book: Book;
   #view: Element;
-  #epubjsBook: ePubjs.Book;
-  #rendition: ePubjs.Rendition;
+  #epubjsBook: EpubjsBook;
+  #rendition: Rendition;
   #assistant: ReaderAssistant;
   #isRendered: boolean;
 
   constructor() {
-    this.#epubjsBook = new ePubjs.Book();
+    this.#epubjsBook = new EpubjsBook();
     this.#assistant = new ReaderAssistant(this.#epubjsBook)
     this.#isRendered = false;
   }
@@ -36,7 +36,7 @@ export default class EpubjsBookReader implements BookReader {
     });
   }
 
-  #toTocItem = (navItem: ePubjs.NavItem):ToCItem => ({
+  #toTocItem = (navItem: NavItem):ToCItem => ({
     link: navItem.href,
     label: navItem.label.trim(),
     subitems: navItem.subitems.map(this.#toTocItem),

@@ -1,17 +1,17 @@
 import { Sentence } from 'app/Book';
-import * as ePubjs from "epubjs";
+import { Book as EpubjsBook, Rendition, Location } from "epubjs";
 import * as CFI from './CFI';
 import SentenceExtractor from "./SentenceExtractor";
 
 export default class ReaderAssistant {
-  #epubjsBook: ePubjs.Book;
+  #epubjsBook: EpubjsBook;
   #displayedCfiRange: string;
   #sentenceRanges: { [key: string]: Range };
   #sentenceExtractor: SentenceExtractor;
-  #rendition: ePubjs.Rendition;
+  #rendition: Rendition;
   #highlighted: string[];
 
-  constructor(book: ePubjs.Book) {
+  constructor(book: EpubjsBook) {
     this.#epubjsBook = book;
     this.#sentenceExtractor = new SentenceExtractor();
     this.#sentenceRanges = {};
@@ -20,7 +20,7 @@ export default class ReaderAssistant {
 
   #resolveRendition() {
     this.#rendition = this.#epubjsBook.rendition;
-    this.#epubjsBook.rendition.on("relocated", (l: ePubjs.Location) => {
+    this.#epubjsBook.rendition.on("relocated", (l: Location) => {
       this.#displayedCfiRange = CFI.getRange(l.start.cfi, l.end.cfi);
     });
 

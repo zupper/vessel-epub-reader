@@ -1,4 +1,4 @@
-import * as murmurhash from "murmurhash";
+import { v3 as murmurhashV3 } from "murmurhash";
 import nlp from "compromise/one";
 import { Sentence } from 'app/Book';
 
@@ -54,7 +54,7 @@ export default class SentenceExtractor {
   }
 
   #getHash(s: string) {
-    return murmurhash.v3(s).toString();
+    return murmurhashV3(s).toString();
   }
 
   #walkRange(range: Range) {

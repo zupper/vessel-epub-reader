@@ -5,7 +5,7 @@ import { BookReader } from "app/BookReader";
 import PlaybackQueue from "app/PlaybackQueue";
 import SoundSource from "app/SoundSource";
 
-export type TTSControlParams = {
+export type TTSControlConstructorParams = {
   ttsSource: TTSSource;
   player: AudioPlayer;
   reader: BookReader;
@@ -22,7 +22,7 @@ export default class TTSControl {
   #soundSource: SoundSource;
   #isTransitioningBetweenSentences: boolean;
 
-  constructor(params: TTSControlParams) {
+  constructor(params: TTSControlConstructorParams) {
     this.#player = params.player;
     this.#ttsSource = params.ttsSource;
     this.#reader = params.reader;
@@ -44,6 +44,14 @@ export default class TTSControl {
     this.#resumePlayback();
   }
 
+  stopReading() {
+    this.#player.removeEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback)
+    this.#reader.removeAllHighlights();
+    this.#player.stop();
+    this.#isPlaying = false;
+    this.#isPaused = false;
+  }
+
   #setupPlaybackSupport(ss: Sentence[]) {
     this.#q = new PlaybackQueue(ss);
     this.#soundSource = new SoundSource({ ttsSource: this.#ttsSource, sentences: ss });
@@ -57,10 +65,6 @@ export default class TTSControl {
     }
   }
 
-  #onSentenceComplete() {
-    this.#sentenceTransition('next');
-  }
-
   nextSentence() {
     this.#sentenceTransition('next');
   }
@@ -69,18 +73,22 @@ export default class TTSControl {
     this.#sentenceTransition('prev');
   }
 
-  stopReading() {
-    this.#player.removeEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback)
-    this.#reader.removeAllHighlights();
-    this.#player.stop();
-    this.#isPlaying = false;
-    this.#isPaused = false;
+  #onSentenceComplete() {
+    this.#sentenceTransition('next');
   }
 
-  async #pageTransition() {
-    await this.#reader.nextPage();
-    const [_first, ...rest] = await this.#reader.getDisplayedSentences();
-    this.#setupPlaybackSupport(rest);
+  pauseReading() {
+    if (this.#isTransitioningBetweenSentences || !this.#isPlaying) return;
+
+    this.#player.pause();
+    this.#isPaused = true;
+  }
+
+  resumeReading() {
+    if (!this.#isPaused) return;
+
+    this.#player.play();
+    this.#isPaused = false;
   }
 
   async #sentenceTransition(direction: 'next' | 'prev') {
@@ -106,18 +114,10 @@ export default class TTSControl {
     this.#isTransitioningBetweenSentences = false;
   }
 
-  pauseReading() {
-    if (this.#isTransitioningBetweenSentences || !this.#isPlaying) return;
-
-    this.#player.pause();
-    this.#isPaused = true;
-  }
-
-  resumeReading() {
-    if (!this.#isPaused) return;
-
-    this.#player.play();
-    this.#isPaused = false;
+  async #pageTransition() {
+    await this.#reader.nextPage();
+    const [_first, ...rest] = await this.#reader.getDisplayedSentences();
+    this.#setupPlaybackSupport(rest);
   }
 }
 

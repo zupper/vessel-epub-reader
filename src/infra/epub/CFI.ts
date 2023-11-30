@@ -1,14 +1,14 @@
-import * as ePubjs from "epubjs";
+import { EpubCFI } from "epubjs";
 
 export const fromDOMRangeWithScreenCfi = (r: Range, scfi: string) => {
-  const screenCfi = (new ePubjs.EpubCFI()).parse(scfi);
-  const sentenceCfi = new ePubjs.EpubCFI(r);
+  const screenCfi = (new EpubCFI()).parse(scfi);
+  const sentenceCfi = new EpubCFI(r);
   sentenceCfi.base = screenCfi.base;
   return sentenceCfi.toString();
 };
 
 export const getRange = (start: string, end: string) => {
-  const cfiObj = new ePubjs.EpubCFI();
+  const cfiObj = new EpubCFI();
   try {
     cfiObj.parse(start);
     cfiObj.parse(end);
