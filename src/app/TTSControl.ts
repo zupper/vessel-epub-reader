@@ -1,9 +1,11 @@
-import { TTSSource } from "app/TTSSource";
-import { Sentence } from "app/Book";
-import { AudioPlayer  } from "app/AudioPlayer";
-import { BookReader } from "app/BookReader";
-import PlaybackQueue from "app/PlaybackQueue";
 import SoundSource from "app/SoundSource";
+import TTSPlaybackState, {StateChangeAction} from "app/TTSPlaybackState";
+import { TTSSource } from "app/TTSSource";
+import { BookReader } from "app/BookReader";
+import { AudioPlayer } from "app/AudioPlayer";
+import { Sentence } from "app/Book";
+
+import { StateDetails } from "app/TTSPlaybackState";
 
 export type TTSControlConstructorParams = {
   ttsSource: TTSSource;
@@ -12,115 +14,115 @@ export type TTSControlConstructorParams = {
 };
 
 export default class TTSControl {
-  #ttsSource: TTSSource;
-  #player: AudioPlayer;
+
   #reader: BookReader;
-  #sentenceCompleteBoundCallback: EventListener;
-  #isPlaying: boolean;
-  #isPaused: boolean;
-  #q: PlaybackQueue;
+  #player: AudioPlayer;
+  #state: TTSPlaybackState;
   #soundSource: SoundSource;
-  #isTransitioningBetweenSentences: boolean;
+  #stateTransitionInProgress: boolean;
+  #ttsSource: TTSSource;
+
+  #sentenceCompleteBoundCallback: EventListener;
 
   constructor(params: TTSControlConstructorParams) {
+    this.#reader = params.reader;
     this.#player = params.player;
     this.#ttsSource = params.ttsSource;
-    this.#reader = params.reader;
     this.#sentenceCompleteBoundCallback = this.#onSentenceComplete.bind(this);
-    this.#isPlaying = false;
-    this.#isPaused = false;
-    this.#isTransitioningBetweenSentences = false;
   }
 
   async startReading() {
     if (!this.#reader.isRendered()) throw new Error('Must open book first');
-
-    if (this.#isPlaying) return;
-    this.#isPlaying = true;
+    if (this.#state) return;
 
     const sentences = await this.#reader.getDisplayedSentences();
-    this.#setupPlaybackSupport(sentences);
+    this.#state = new TTSPlaybackState();
+    this.#state.append(sentences);
+    this.#soundSource = new SoundSource({ ttsSource: this.#ttsSource, sentences });
+
     this.#player.addEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback);
-    this.#resumePlayback();
+    this.#handleNewState(this.#state.changeState('play'));
   }
 
-  stopReading() {
-    this.#player.removeEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback)
-    this.#reader.removeAllHighlights();
-    this.#player.stop();
-    this.#isPlaying = false;
-    this.#isPaused = false;
+  #handleInput(action: StateChangeAction) {
+    if (!this.#state || this.#stateTransitionInProgress) return;
+    this.#handleNewState(this.#state.changeState(action));
   }
 
-  #setupPlaybackSupport(ss: Sentence[]) {
-    this.#q = new PlaybackQueue(ss);
-    this.#soundSource = new SoundSource({ ttsSource: this.#ttsSource, sentences: ss });
-  }
-
-  async #resumePlayback() {
-    const sound = await this.#soundSource.get(this.#q.current().id);
-    if (sound && this.#isPlaying) {
-      this.#player.play(sound);
-      this.#reader.highlight(sound.id);
-    }
-  }
-
-  nextSentence() {
-    this.#sentenceTransition('next');
-  }
-
-  previousSentence() {
-    this.#sentenceTransition('prev');
-  }
+  stopReading() { this.#handleInput('stop'); }
+  pauseReading() { this.#handleInput('pause'); }
+  resumeReading() { this.#handleInput('resume'); }
+  nextSentence() { this.#handleInput('next'); }
+  previousSentence() { this.#handleInput('prev'); }
 
   #onSentenceComplete() {
-    this.#sentenceTransition('next');
+    this.#handleNewState(this.#state.changeState('next'));
   }
 
-  pauseReading() {
-    if (this.#isTransitioningBetweenSentences || !this.#isPlaying) return;
-
-    this.#player.pause();
-    this.#isPaused = true;
-  }
-
-  resumeReading() {
-    if (!this.#isPaused) return;
-
-    this.#player.play();
-    this.#isPaused = false;
-  }
-
-  async #sentenceTransition(direction: 'next' | 'prev') {
-    if (this.#isTransitioningBetweenSentences) return;
-
-    this.#isTransitioningBetweenSentences = true;
-    this.#reader.unhighlight(this.#q.current().id);
-    this.#player.stop();
-
-    if (direction === 'next') {
-      if (this.#q.hasNext()) this.#q.next();
-      else await this.#pageTransition();
-    }
-    else if (direction === 'prev') {
-      const upcomingSentence = this.#q.prev();
-      if (!upcomingSentence) {
-        // todo
+  async #handleNewState(st: StateDetails) {
+    console.log(st);
+    this.#stateTransitionInProgress = true;
+    switch(st.state) {
+      case 'PLAYING': {
+        if (st.prev?.state === 'PAUSED' && st.prev?.sentence === st.sentence)
+          this.#resume()
+        else
+          await this.#play(st.sentence);
+        break;
+      }
+      case 'PAUSED': {
+        if (st.prev?.state === 'PLAYING') this.#pause();
+        else this.#loadPaused(st.sentence);
+        break;
+      }
+      case 'STOPPED': {
+        this.#stop();
+        break;
+      }
+      case 'FINISHED_PAUSED':
+      case 'FINISHED_PLAYING': {
+        await this.#nextPage();
+        break;
       }
     }
 
-    await this.#resumePlayback();
-    this.#isPaused = false;
-    this.#isTransitioningBetweenSentences = false;
+    this.#stateTransitionInProgress = false;
   }
 
-  async #pageTransition() {
+  async #play(s: Sentence) {
+    await this.#loadPaused(s);
+    this.#player.play();
+  }
+
+  async #loadPaused(s: Sentence) {
+    const sound = await this.#soundSource.get(s.id);
+    this.#player.stop();
+    this.#reader.removeAllHighlights();
+    this.#reader.highlight(sound.id);
+    this.#player.load(sound);
+  }
+
+  #stop() {
+    this.#player.removeEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback)
+    this.#reader.removeAllHighlights();
+    this.#player.stop();
+    this.#state = null;
+  }
+
+  #pause() {
+    this.#player.pause();
+  }
+
+  #resume() {
+    this.#player.play();
+  }
+
+  async #nextPage() {
     await this.#reader.nextPage();
+
     const sentences = await this.#reader.getDisplayedSentences();
-
-    if (this.#q.last().trailingOffPage) sentences.shift();
-
-    this.#setupPlaybackSupport(sentences);
+    this.#state.append(sentences);
+    this.#soundSource.append(sentences);
+    this.#handleNewState(this.#state.changeState('next'));
   }
 }
-

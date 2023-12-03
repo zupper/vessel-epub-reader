@@ -4,18 +4,19 @@ import { AudioPlayer, Sound, SentenceCompleteEvent  } from "app/AudioPlayer";
 export default class HowlerPlayer extends EventTarget implements AudioPlayer {
   #sound: Howl;
 
+  load(s: Sound) {
+    this.#sound = new Howl({
+      src: [this.#bufToUrl(s.data)],
+      format: "wav",
+    });
+
+    this.#sound.once("end", () => this.dispatchEvent(new SentenceCompleteEvent(s.id)));
+  }
+
   play(s?: Sound) {
     if (!s && !this.#sound) throw new Error("can't resume without a previous sound");
 
-    if (s) {
-      this.#sound = new Howl({
-        src: [this.#bufToUrl(s.data)],
-        format: "wav",
-      });
-
-      this.#sound.once("end", () => this.dispatchEvent(new SentenceCompleteEvent(s.id)));
-    }
-
+    if (s) this.load(s);
     this.#sound.play();
   }
 

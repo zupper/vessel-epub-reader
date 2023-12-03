@@ -3,6 +3,7 @@ import { TTSSource } from "app/TTSSource";
 import { Sound } from "app/AudioPlayer";
 
 const INITIAL_BUFFER_SIZE = 5;
+const ONGOING_PRE_BUFFER_COUNT = 2;
 
 export type SoundSourceConstructorParams = {
   ttsSource: TTSSource;
@@ -28,9 +29,7 @@ export default class SoundSource {
     const sentence = this.#sentencesMap.get(id);
     if (!sentence) throw new Error('asking for sentence id that has not been enqueued');
 
-    if (this.#buffer.size === 0) {
-      await this.#bufferSounds(INITIAL_BUFFER_SIZE);
-    }
+    if (this.#buffer.size === 0) await this.#bufferSounds(INITIAL_BUFFER_SIZE);
 
     let sound = this.#buffer.get(id);
     if (!sound) {
@@ -38,9 +37,14 @@ export default class SoundSource {
       this.#buffer.set(id, sound);
     }
 
-    this.#bufferSounds(1);
+    this.#bufferSounds(ONGOING_PRE_BUFFER_COUNT);
 
     return sound;
+  }
+
+  append(ss: Sentence[]) {
+    this.#sentences.push(...ss)
+    ss.forEach(s => this.#sentencesMap.set(s.id, s));
   }
 
   async #bufferSounds(count: number) {

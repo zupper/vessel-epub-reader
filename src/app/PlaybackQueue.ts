@@ -19,6 +19,10 @@ export default class PlaybackQueue {
     return this.#q[++this.#current];
   }
 
+  hasPrev() {
+    return (this.#current - 1 >= 0);
+  }
+
   hasNext() {
     return (this.#current + 1 < this.#q.length);
   }
