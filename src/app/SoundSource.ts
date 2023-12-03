@@ -47,6 +47,12 @@ export default class SoundSource {
     ss.forEach(s => this.#sentencesMap.set(s.id, s));
   }
 
+  prepend(ss: Sentence[]) {
+    this.#sentences.unshift(...ss);
+    ss.forEach(s => this.#sentencesMap.set(s.id, s));
+    this.#bufferedOffset += ss.length;
+  }
+
   async #bufferSounds(count: number) {
     const startIdx = this.#bufferedOffset;
     const endIdx = this.#bufferedOffset + count;

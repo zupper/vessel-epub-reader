@@ -60,7 +60,6 @@ export default class TTSControl {
   }
 
   async #handleNewState(st: StateDetails) {
-    console.log(st);
     this.#stateTransitionInProgress = true;
     switch(st.state) {
       case 'PLAYING': {
@@ -77,6 +76,11 @@ export default class TTSControl {
       }
       case 'STOPPED': {
         this.#stop();
+        break;
+      }
+      case 'BEGINNING_PAUSED':
+      case 'BEGINNING_PLAYING': {
+        await this.#prevPage();
         break;
       }
       case 'FINISHED_PAUSED':
@@ -124,5 +128,14 @@ export default class TTSControl {
     this.#state.append(sentences);
     this.#soundSource.append(sentences);
     this.#handleNewState(this.#state.changeState('next'));
+  }
+
+  async #prevPage() {
+    await this.#reader.prevPage();
+
+    const sentences = await this.#reader.getDisplayedSentences();
+    this.#state.prepend(sentences);
+    this.#soundSource.prepend(sentences);
+    this.#handleNewState(this.#state.changeState('prev'));
   }
 }

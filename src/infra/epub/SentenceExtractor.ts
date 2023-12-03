@@ -15,24 +15,30 @@ export default class SentenceExtractor {
 
     for (let node of nodes) {
       let textContent = node.textContent;
-      let lastSentenceTrailingOffPage = false;
 
       if (node === r.startContainer) {
-        // ignore the start of the sentence from the previous page for now
-        textContent = textContent.substring(r.startOffset, textContent.length);
+
+        const offPage: string[] =
+          nlp(textContent.slice(0, r.startOffset))
+            .json()
+            .map((o: { text: string }) => o.text);
+
+        const offPagePartOfFirstSentence = offPage.length > 0 ? offPage.pop() : '';
+
+        // if we have a sentence that continues from the prev page, we should include all of it
+        textContent = offPagePartOfFirstSentence + textContent.substring(r.startOffset);
       }
 
       if (node === r.endContainer) {
-        const offPageSentences: string[] =
+        const offPage: string[] =
           nlp(textContent.slice(r.endOffset))
             .json()
             .map((o: { text: string }) => o.text);
 
-        const trailingPartOfLastSentence = offPageSentences.length > 0 ? offPageSentences[0] : '';
+        const trailingPartOfLastSentence = offPage.length > 0 ? offPage.shift() : '';
 
         // if we have a sentence that continues on the next page, we should include all of it
         textContent = textContent.substring(0, r.endOffset) + trailingPartOfLastSentence;
-        lastSentenceTrailingOffPage = !!trailingPartOfLastSentence;
       }
 
       const sentenceStrings: string[] =
@@ -47,10 +53,6 @@ export default class SentenceExtractor {
             .filter(t => !!t)
             .map(t => this.#toSentence(t));
 
-        if (lastSentenceTrailingOffPage) {
-          sentences[sentences.length - 1].trailingOffPage = true;
-        }
-
         result.push({ node, sentences })
       }
     }
@@ -62,7 +64,6 @@ export default class SentenceExtractor {
     return ({
       id: this.#getHash(t),
       text: t,
-      trailingOffPage: false,
     });
   }
 

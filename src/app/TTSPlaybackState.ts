@@ -83,8 +83,12 @@ export default class TTSPlaybackState {
   }
 
   append(ss: Sentence[]) {
-    if (this.#q.last()?.trailingOffPage) ss = ss.slice(1); // don't know if it's a good idea to handle this here
-    this.#q.enqueue(ss);
+    this.#q = new PlaybackQueue(ss);
+  }
+
+  prepend(ss: Sentence[]) {
+    this.#q = new PlaybackQueue(ss);
+    this.#q.jumpToLast();
   }
 
   changeState(action: StateChangeAction): StateDetails {

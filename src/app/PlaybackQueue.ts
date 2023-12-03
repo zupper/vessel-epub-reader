@@ -19,26 +19,21 @@ export default class PlaybackQueue {
     return this.#q[++this.#current];
   }
 
-  hasPrev() {
-    return (this.#current - 1 >= 0);
+  prev() {
+    if (this.#current - 1 < 0) return null;
+    return this.#q[--this.#current];
   }
 
   hasNext() {
     return (this.#current + 1 < this.#q.length);
   }
 
-  prev() {
-    if (this.#current - 1 < 0) return null;
-    return this.#q[--this.#current];
+  hasPrev() {
+    return (this.#current - 1 >= 0);
   }
 
-  enqueue(ss: Sentence[]) {
-    this.#q.push(...ss);
-  }
-
-  last() {
-    if (this.#q.length === 0) return null;
-    return this.#q[this.#q.length - 1];
+  jumpToLast() {
+    this.#current = this.#q.length - 1;
   }
 }
 
