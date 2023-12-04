@@ -127,7 +127,9 @@ export default class TTSControl {
     const sentences = await this.#reader.getDisplayedSentences();
     this.#state.append(sentences);
     this.#soundSource.append(sentences);
-    this.#handleNewState(this.#state.changeState('next'));
+
+    const action = sentences[0].partiallyOffPage ? 'next' : 'continue';
+    this.#handleNewState(this.#state.changeState(action));
   }
 
   async #prevPage() {
@@ -136,6 +138,8 @@ export default class TTSControl {
     const sentences = await this.#reader.getDisplayedSentences();
     this.#state.prepend(sentences);
     this.#soundSource.prepend(sentences);
-    this.#handleNewState(this.#state.changeState('prev'));
+
+    const action = sentences[sentences.length - 1].partiallyOffPage ? 'prev' : 'continue';
+    this.#handleNewState(this.#state.changeState(action));
   }
 }

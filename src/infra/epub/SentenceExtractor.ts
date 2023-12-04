@@ -16,42 +16,30 @@ export default class SentenceExtractor {
     for (let node of nodes) {
       let textContent = node.textContent;
 
-      if (node === r.startContainer) {
-
-        const offPage: string[] =
-          nlp(textContent.slice(0, r.startOffset))
-            .json()
-            .map((o: { text: string }) => o.text);
-
-        const offPagePartOfFirstSentence = offPage.length > 0 ? offPage.pop() : '';
-
-        // if we have a sentence that continues from the prev page, we should include all of it
-        textContent = offPagePartOfFirstSentence + textContent.substring(r.startOffset);
-      }
-
-      if (node === r.endContainer) {
-        const offPage: string[] =
-          nlp(textContent.slice(r.endOffset))
-            .json()
-            .map((o: { text: string }) => o.text);
-
-        const trailingPartOfLastSentence = offPage.length > 0 ? offPage.shift() : '';
-
-        // if we have a sentence that continues on the next page, we should include all of it
-        textContent = textContent.substring(0, r.endOffset) + trailingPartOfLastSentence;
-      }
-
-      const sentenceStrings: string[] =
+      let sentences =
         nlp(textContent)
           .json()
-          .map((o: { text: string }): string => o.text);
+          .map((o: { text: string }): string => o.text)
+          .map((t: string) => this.#toSentence(t));
 
-      if (sentenceStrings.length > 0) {
-        const sentences =
-          sentenceStrings
-            .map(s => s.trim())
-            .filter(t => !!t)
-            .map(t => this.#toSentence(t));
+      if (sentences.length > 0) {
+        if (node === r.startContainer) {
+          const { idx: leftBoundary, inclusionType } = this.#findSentenceIncludingIndex(textContent, sentences, r.startOffset);
+          sentences = sentences.slice(leftBoundary);
+
+          if (inclusionType === 'internal') {
+            sentences[0].partiallyOffPage = true;
+          }
+        }
+
+        if (node === r.endContainer) {
+          const { idx: rightBoundary, inclusionType } = this.#findSentenceIncludingIndex(textContent, sentences, r.endOffset);
+          sentences = sentences.slice(0, rightBoundary + 1);
+
+          if (inclusionType === 'internal') {
+            sentences[sentences.length - 1].partiallyOffPage = true;
+          }
+        }
 
         result.push({ node, sentences })
       }
@@ -60,10 +48,21 @@ export default class SentenceExtractor {
     return result;
   }
 
+  #findSentenceIncludingIndex(p: string, ss: Sentence[], idx: number) {
+    for (let i = 0; i < ss.length; i++) {
+      const startIdx = p.indexOf(ss[i].text);
+      const endIdx = startIdx + ss[i].text.length;
+      if (startIdx === idx || endIdx === idx) return ({ idx: i, inclusionType: 'border' });
+      if (startIdx !== -1 && startIdx < idx && endIdx > idx) return ({ idx: i, inclusionType: 'internal' });
+    }
+    return null;
+  }
+
   #toSentence(t: string) {
     return ({
       id: this.#getHash(t),
       text: t,
+      partiallyOffPage: false,
     });
   }
 

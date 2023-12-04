@@ -10,7 +10,7 @@ export type StateOption =
   'BEGINNING_PLAYING' |
   'BEGINNING_PAUSED';
 
-export type StateChangeAction = 'play' | 'next' | 'prev' | 'pause' | 'resume' | 'stop';
+export type StateChangeAction = 'play' | 'next' | 'prev' | 'pause' | 'resume' | 'stop' | 'continue';
 
 export type StateDetails = {
   state: StateOption;
@@ -25,6 +25,8 @@ type StateTransitionSpec = {
   nextState: StateOption;
 };
 
+const hasCurrent = (q: PlaybackQueue) => q.current() !== null;
+const hasNoCurrent = (q: PlaybackQueue) => q.current() === null;
 const hasNextSound = (q: PlaybackQueue) => q.hasNext();
 const hasNoNextSound = (q: PlaybackQueue) => !q.hasNext();
 
@@ -36,8 +38,8 @@ const prev = (q: PlaybackQueue) => q.prev();
 
 const stateMap: {[K in StateOption]: StateTransitionSpec[]} = {
   STOPPED: [
-    { action: 'play', condition: hasNextSound,                   nextState: 'PLAYING' },
-    { action: 'play', condition: hasNoNextSound,                 nextState: 'FINISHED_PLAYING' },
+    { action: 'play', condition: hasCurrent,                   nextState: 'PLAYING' },
+    { action: 'play', condition: hasNoCurrent,                 nextState: 'FINISHED_PLAYING' },
   ],
   PLAYING: [
     { action: 'next', condition: hasNextSound,   mutation: next, nextState: 'PLAYING' },
@@ -56,19 +58,23 @@ const stateMap: {[K in StateOption]: StateTransitionSpec[]} = {
     { action: 'resume',                                          nextState: 'PLAYING' },
   ],
   FINISHED_PLAYING: [
-    { action: 'next', condition: hasNextSound,   mutation: next, nextState: 'PLAYING' },
-    { action: 'stop',                                            nextState: 'STOPPED' },
+    { action: 'next',     condition: hasNextSound,   mutation: next, nextState: 'PLAYING' },
+    { action: 'continue', condition: hasCurrent,                     nextState: 'PLAYING' },
+    { action: 'stop',                                                nextState: 'STOPPED' },
   ],
   FINISHED_PAUSED: [
-    { action: 'next', condition: hasNextSound,   mutation: next, nextState: 'PAUSED' },
-    { action: 'stop',                                            nextState: 'STOPPED' },
+    { action: 'next',     condition: hasNextSound,   mutation: next, nextState: 'PAUSED' },
+    { action: 'continue', condition: hasCurrent,                     nextState: 'PAUSED' },
+    { action: 'stop',                                                nextState: 'STOPPED' },
   ],
   BEGINNING_PLAYING: [
-    { action: 'stop',                                            nextState: 'STOPPED' },
-    { action: 'prev', condition: hasPrevSound,   mutation: prev, nextState: 'PLAYING' },
+    { action: 'stop',                                                nextState: 'STOPPED' },
+    { action: 'continue', condition: hasCurrent,                     nextState: 'PLAYING' },
+    { action: 'prev',     condition: hasPrevSound,   mutation: prev, nextState: 'PLAYING' },
   ],
   BEGINNING_PAUSED: [
     { action: 'stop',                                            nextState: 'STOPPED' },
+    { action: 'continue', condition: hasCurrent,                     nextState: 'PAUSED' },
     { action: 'prev', condition: hasPrevSound,   mutation: prev, nextState: 'PAUSED' },
   ]
 };
