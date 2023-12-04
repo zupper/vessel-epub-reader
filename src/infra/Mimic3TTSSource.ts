@@ -1,5 +1,5 @@
 import { Sentence } from "app/Book";
-import { TTSSource } from "app/TTSSource";
+import { TTSSource } from "app/tts/TTSSource";
 
 const zip = <A, B>(arr1: A[], arr2: B[]): [A, B][] => arr1.map((val, i) => [val, arr2[i]]);
 

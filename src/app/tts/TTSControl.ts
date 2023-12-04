@@ -1,26 +1,29 @@
-import SoundSource from "app/SoundSource";
-import TTSPlaybackState, {StateChangeAction} from "app/TTSPlaybackState";
-import { TTSSource } from "app/TTSSource";
 import { BookReader } from "app/BookReader";
 import { AudioPlayer } from "app/AudioPlayer";
 import { Sentence } from "app/Book";
+import Navigation from "app/Navigation";
 
-import { StateDetails } from "app/TTSPlaybackState";
+import SoundCache from "./SoundCache";
+import PlaybackState, { StateChangeAction } from "./PlaybackState";
+import { TTSSource } from "./TTSSource";
+import { StateDetails } from "./PlaybackState";
 
 export type TTSControlConstructorParams = {
   ttsSource: TTSSource;
   player: AudioPlayer;
   reader: BookReader;
+  nav: Navigation;
 };
 
 export default class TTSControl {
 
   #reader: BookReader;
   #player: AudioPlayer;
-  #state: TTSPlaybackState;
-  #soundSource: SoundSource;
+  #state: PlaybackState;
+  #soundSource: SoundCache;
   #stateTransitionInProgress: boolean;
   #ttsSource: TTSSource;
+  #nav: Navigation
 
   #sentenceCompleteBoundCallback: EventListener;
 
@@ -29,6 +32,7 @@ export default class TTSControl {
     this.#player = params.player;
     this.#ttsSource = params.ttsSource;
     this.#sentenceCompleteBoundCallback = this.#onSentenceComplete.bind(this);
+    this.#nav = params.nav;
   }
 
   async startReading() {
@@ -36,9 +40,9 @@ export default class TTSControl {
     if (this.#state) return;
 
     const sentences = await this.#reader.getDisplayedSentences();
-    this.#state = new TTSPlaybackState();
+    this.#state = new PlaybackState();
     this.#state.append(sentences);
-    this.#soundSource = new SoundSource({ ttsSource: this.#ttsSource, sentences });
+    this.#soundSource = new SoundCache({ ttsSource: this.#ttsSource, sentences });
 
     this.#player.addEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback);
     this.#handleNewState(this.#state.changeState('play'));
@@ -122,7 +126,7 @@ export default class TTSControl {
   }
 
   async #nextPage() {
-    await this.#reader.nextPage();
+    await this.#nav.nextPage();
 
     const sentences = await this.#reader.getDisplayedSentences();
     this.#state.append(sentences);
@@ -133,7 +137,7 @@ export default class TTSControl {
   }
 
   async #prevPage() {
-    await this.#reader.prevPage();
+    await this.#nav.prevPage();
 
     const sentences = await this.#reader.getDisplayedSentences();
     this.#state.prepend(sentences);

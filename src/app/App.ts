@@ -1,13 +1,9 @@
-import { Book, PageRef } from './Book';
 import { BookReader } from './BookReader';
 import { AudioPlayer  } from './AudioPlayer';
-import { TTSSource } from 'app/TTSSource';
-import TTSControl from 'app/TTSControl';
-
-export interface StringStorage {
-  set: (key: string, value: string) => void;
-  get: (key: string) => string;
-}
+import { TTSSource } from './tts/TTSSource';
+import TTSControl from './tts/TTSControl';
+import Navigation from './Navigation';
+import StringStorage from './StringStorage';
 
 export type AppConsructorParams = {
   bookReader: BookReader;
@@ -17,51 +13,29 @@ export type AppConsructorParams = {
 }
 
 export default class App {
-  reader: BookReader;
-  currentBook: Book;
-  #storage: StringStorage;
-  ttsControl: TTSControl;
+  tts: TTSControl;
+  nav: Navigation;
+  #reader: BookReader;
 
   constructor(params: AppConsructorParams) {
-    this.reader = params.bookReader;
-    this.#storage = params.storage;
-    this.ttsControl = new TTSControl({ player: params.player, ttsSource: params.tts, reader: this.reader });
+    this.#reader = params.bookReader;
+    this.nav = new Navigation({ reader: this.#reader, storage: params.storage });
+    this.tts = new TTSControl({
+      player: params.player,
+      ttsSource: params.tts,
+      reader: this.#reader,
+      nav: this.nav,
+    });
   }
 
   async openBook(filename: string) {
-    this.currentBook = await this.reader.open(filename);
-    this.reader.render();
+    const book = await this.#reader.open(filename);
+    this.#reader.render();
 
-    if (this.#lastPageRef) {
-      this.reader.moveTo(this.#lastPageRef);
-    }
+    this.nav.book = book;
+    this.nav.moveToLastReadPage();
 
-    return this.currentBook;
-  }
-
-  async moveTo(ref: PageRef) {
-    if (!this.currentBook) {
-      throw new Error('Must open book first');
-    }
-
-    if (ref === "next") { this.#lastPageRef = await this.reader.nextPage(); }
-    else if (ref === "prev") { this.#lastPageRef = await this.reader.prevPage(); }
-    else {
-      this.reader.moveTo(ref);
-      this.#lastPageRef = ref;
-    }
-  }
-
-  set #lastPageRef(ref: PageRef) {
-    this.#storage.set(this.#getPageRefKey(), ref);
-  }
-
-  get #lastPageRef(): PageRef {
-    return this.#storage.get(this.#getPageRefKey());
-  }
-
-  #getPageRefKey() {
-    return (`"${this.currentBook.title}":lastPageRef`);
+    return book;
   }
 }
 

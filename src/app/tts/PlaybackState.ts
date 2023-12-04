@@ -1,5 +1,5 @@
 import { Sentence } from "app/Book";
-import PlaybackQueue from "app/PlaybackQueue";
+import PlaybackQueue from "./PlaybackQueue";
 
 export type StateOption =
   'STOPPED' |
@@ -79,7 +79,7 @@ const stateMap: {[K in StateOption]: StateTransitionSpec[]} = {
   ]
 };
 
-export default class TTSPlaybackState {
+export default class PlaybackState {
   #currentState: StateOption;
   #q: PlaybackQueue;
 

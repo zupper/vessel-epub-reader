@@ -78,15 +78,15 @@ export default class SimpleReadingArea extends HTMLElement {
 
   connectedCallback() {
     this.#openButton.addEventListener("click", () => this.openBook());
-    this.#nextButton.addEventListener("click", () => this.#app.moveTo("next"));
-    this.#prevButton.addEventListener("click", () => this.#app.moveTo("prev"));
+    this.#nextButton.addEventListener("click", () => this.#app.nav.nextPage());
+    this.#prevButton.addEventListener("click", () => this.#app.nav.prevPage());
     this.#contentsButton.addEventListener("click", () => this.toggleContents());
-    this.#playButton.addEventListener("click", () => this.#app.ttsControl.startReading());
-    this.#pauseButton.addEventListener("click", () => this.#app.ttsControl.pauseReading());
-    this.#resumeButton.addEventListener("click", () => this.#app.ttsControl.resumeReading());
-    this.#stopButton.addEventListener("click", () => this.#app.ttsControl.stopReading());
-    this.#audioNextButton.addEventListener("click", () => this.#app.ttsControl.nextSentence());
-    this.#audioPrevButton.addEventListener("click", () => this.#app.ttsControl.previousSentence());
+    this.#playButton.addEventListener("click", () => this.#app.tts.startReading());
+    this.#pauseButton.addEventListener("click", () => this.#app.tts.pauseReading());
+    this.#resumeButton.addEventListener("click", () => this.#app.tts.resumeReading());
+    this.#stopButton.addEventListener("click", () => this.#app.tts.stopReading());
+    this.#audioNextButton.addEventListener("click", () => this.#app.tts.nextSentence());
+    this.#audioPrevButton.addEventListener("click", () => this.#app.tts.previousSentence());
   }
 
   async openBook() {
@@ -116,7 +116,7 @@ export default class SimpleReadingArea extends HTMLElement {
   }
 
   #onToCItemClick(i: ToCItem) {
-    this.#app.moveTo(i.link);
+    this.#app.nav.moveTo(i.link);
   }
 }
 

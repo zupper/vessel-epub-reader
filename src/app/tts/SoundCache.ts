@@ -1,23 +1,23 @@
 import { Sentence } from "app/Book";
-import { TTSSource } from "app/TTSSource";
 import { Sound } from "app/AudioPlayer";
+import { TTSSource } from "./TTSSource";
 
 const INITIAL_BUFFER_SIZE = 5;
 const ONGOING_PRE_BUFFER_COUNT = 2;
 
-export type SoundSourceConstructorParams = {
+export type SoundCacheConstructorParams = {
   ttsSource: TTSSource;
   sentences: Sentence[];
 };
 
-export default class SoundSource {
+export default class SoundCache {
   #tts: TTSSource;
   #sentences: Sentence[];
   #sentencesMap: Map<string, Sentence>;
   #buffer: Map<string, Sound>;
   #bufferedOffset: number;
 
-  constructor(params: SoundSourceConstructorParams) {
+  constructor(params: SoundCacheConstructorParams) {
     this.#tts = params.ttsSource;
     this.#sentencesMap = new Map(params.sentences.map(s => [s.id, s]));
     this.#sentences = params.sentences;
