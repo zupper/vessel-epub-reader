@@ -7,39 +7,28 @@ export type NodeWithSentences = {
   sentences: Sentence[];
 }
 
-export default class SentenceExtractor {
+type MetaSentence = {
+  text: string;
+  sentence: Sentence;
+  offset: { start: number; length: number }
+}
 
+export default class SentenceExtractor {
   extractSentencesInRange(r: Range): NodeWithSentences[] {
     const nodes = this.#walkRange(r);
     let result: NodeWithSentences[] = [];
 
     for (let node of nodes) {
-      let textContent = node.textContent;
+      let metaSentences: MetaSentence[] =
+        nlp(node.textContent)
+          .json({ text: true, offset: true })
+          .map((o: { text: string }) => ({ sentence: this.#toSentence(o.text), ...o }));
 
-      let sentences =
-        nlp(textContent)
-          .json()
-          .map((o: { text: string }): string => o.text)
-          .map((t: string) => this.#toSentence(t));
+      if (metaSentences.length > 0) {
+        if (node === r.startContainer) metaSentences = this.#trimStartNodeContent(r.startOffset, metaSentences);
+        if (node === r.endContainer) metaSentences = this.#truncateEndNodeContent(r.endOffset, metaSentences);
 
-      if (sentences.length > 0) {
-        if (node === r.startContainer) {
-          const { idx: leftBoundary, inclusionType } = this.#findSentenceIncludingIndex(textContent, sentences, r.startOffset);
-          sentences = sentences.slice(leftBoundary);
-
-          if (inclusionType === 'internal') {
-            sentences[0].partiallyOffPage = true;
-          }
-        }
-
-        if (node === r.endContainer) {
-          const { idx: rightBoundary, inclusionType } = this.#findSentenceIncludingIndex(textContent, sentences, r.endOffset);
-          sentences = sentences.slice(0, rightBoundary + 1);
-
-          if (inclusionType === 'internal') {
-            sentences[sentences.length - 1].partiallyOffPage = true;
-          }
-        }
+        const sentences = metaSentences.map(({ sentence }) => sentence);
 
         result.push({ node, sentences })
       }
@@ -48,14 +37,22 @@ export default class SentenceExtractor {
     return result;
   }
 
-  #findSentenceIncludingIndex(p: string, ss: Sentence[], idx: number) {
-    for (let i = 0; i < ss.length; i++) {
-      const startIdx = p.indexOf(ss[i].text);
-      const endIdx = startIdx + ss[i].text.length;
-      if (startIdx === idx || endIdx === idx) return ({ idx: i, inclusionType: 'border' });
-      if (startIdx !== -1 && startIdx < idx && endIdx > idx) return ({ idx: i, inclusionType: 'internal' });
-    }
-    return null;
+  #trimStartNodeContent(startOffset: number, ss: MetaSentence[]) {
+    const trimmed = ss.filter((o) => o.offset.start + o.offset.length >= startOffset);
+
+    const first = trimmed[0];
+    if (first.offset.start < startOffset) first.sentence.partiallyOffPage = true;
+
+    return trimmed;
+  }
+
+  #truncateEndNodeContent(endOffset: number, ss: MetaSentence[]) {
+    const trimmed = ss.filter((o) => o.offset.start < endOffset);
+
+    const last = trimmed[trimmed.length - 1];
+    if (last.offset.start + last.offset.length > endOffset) last.sentence.partiallyOffPage = true;
+
+    return trimmed;
   }
 
   #toSentence(t: string) {
