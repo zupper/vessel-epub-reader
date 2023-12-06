@@ -1,7 +1,9 @@
+import { v3 as murmurhashV3 } from "murmurhash";
 import { Book as EpubjsBook, Rendition, NavItem } from "epubjs";
 import { Book, PageRef, ToCItem } from "app/Book";
 import { BookReader } from "app/BookReader";
 import ReaderAssistant from "./ReaderAssistant";
+import HashGenerator from "./HashGenerator";
 
 export default class EpubjsBookReader implements BookReader {
   #book: Book;
@@ -10,30 +12,38 @@ export default class EpubjsBookReader implements BookReader {
   #rendition: Rendition;
   #assistant: ReaderAssistant;
   #isRendered: boolean;
+  #hasher: HashGenerator;
 
   constructor() {
     this.#epubjsBook = new EpubjsBook();
     this.#assistant = new ReaderAssistant(this.#epubjsBook)
     this.#isRendered = false;
+    this.#hasher = new HashGenerator();
   }
 
   set view(v: Element) {
     this.#view = v;
   }
 
-  open(filename: string): Promise<Book> {
-    this.#epubjsBook.open(filename);
-    return Promise.all([
+  async open(data: ArrayBuffer): Promise<Book> {
+    this.#epubjsBook.open(data);
+
+    const [opened, nav] = await Promise.all([
       this.#epubjsBook.opened,
       this.#epubjsBook.loaded.navigation,
     ])
-    .then(([opened, nav]) => {
-      this.#book = {
-        title: opened.packaging.metadata.title,
-        toc: nav.toc.map(this.#toTocItem),
-      };
-      return this.#book;
-    });
+
+    const title = opened.packaging.metadata.title;
+    this.#book = {
+      cover: {
+        id: this.#hasher.generate(title),
+        title,
+      },
+      toc: nav.toc.map(this.#toTocItem),
+      data,
+    };
+
+    return this.#book;
   }
 
   #toTocItem = (navItem: NavItem):ToCItem => ({

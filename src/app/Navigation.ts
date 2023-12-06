@@ -53,6 +53,6 @@ export default class Navigation {
   }
 
   #getPageRefKey() {
-    return (`"${this.book.title}":lastPageRef`);
+    return (`"${this.book.cover.title}":lastPageRef`);
   }
 }

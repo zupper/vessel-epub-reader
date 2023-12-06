@@ -25,7 +25,6 @@ reading-area {
   style="position: relative; height: 100%">
   <div id="view"></div>
   <div id="menu">
-    <button id="open">Open</button>
     <button id="prev">Prev</button>
     <button id="next">Next</button>
     <button id="toc-button">Contents</button>
@@ -44,7 +43,6 @@ export default class SimpleReadingArea extends HTMLElement {
   #app: App;
   #book: Book;
   #wrapper: HTMLElement;
-  #openButton: HTMLButtonElement;
   #nextButton: HTMLButtonElement;
   #prevButton: HTMLButtonElement;
   #contentsButton: HTMLButtonElement;
@@ -64,7 +62,6 @@ export default class SimpleReadingArea extends HTMLElement {
 
     this.view = this.shadowRoot.querySelector("#view");
     this.#wrapper = this.shadowRoot.querySelector("#wrapper");
-    this.#openButton = this.shadowRoot.querySelector("#open");
     this.#nextButton = this.shadowRoot.querySelector("#next");
     this.#prevButton = this.shadowRoot.querySelector("#prev");
     this.#contentsButton = this.shadowRoot.querySelector("#toc-button");
@@ -77,7 +74,6 @@ export default class SimpleReadingArea extends HTMLElement {
   }
 
   connectedCallback() {
-    this.#openButton.addEventListener("click", () => this.openBook());
     this.#nextButton.addEventListener("click", () => this.#app.nav.nextPage());
     this.#prevButton.addEventListener("click", () => this.#app.nav.prevPage());
     this.#contentsButton.addEventListener("click", () => this.toggleContents());
@@ -89,10 +85,6 @@ export default class SimpleReadingArea extends HTMLElement {
     this.#audioPrevButton.addEventListener("click", () => this.#app.tts.previousSentence());
   }
 
-  async openBook() {
-    this.#book = await this.#app.openBook("https://s3.amazonaws.com/moby-dick/moby-dick.epub");
-  }
-
   toggleContents() {
     if (!this.#book) {
       throw new Error('Must provide Book first');
@@ -100,7 +92,7 @@ export default class SimpleReadingArea extends HTMLElement {
 
     if (!this.#tableOfContents) {
       this.#tableOfContents = new TableOfContents(
-        this.#book.title,
+        this.#book.cover.title,
         this.#book.toc,
         this.#onToCItemClick.bind(this)
       );

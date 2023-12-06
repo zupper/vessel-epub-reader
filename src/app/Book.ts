@@ -1,6 +1,12 @@
-export type Book = {
+export type BookCover = {
+  id: string;
   title: string;
+}
+
+export type Book = {
+  cover: BookCover;
   toc: ToCItem[];
+  data: ArrayBuffer;
 }
 
 export type PageRef = string;

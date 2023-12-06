@@ -1,6 +1,6 @@
-import { v3 as murmurhashV3 } from "murmurhash";
 import nlp from "compromise/one";
 import { Sentence } from 'app/Book';
+import HashGenerator from "./HashGenerator";
 
 export type NodeWithSentences = {
   node: Node;
@@ -14,6 +14,12 @@ type MetaSentence = {
 }
 
 export default class SentenceExtractor {
+  #hasher: HashGenerator;
+
+  constructor() {
+    this.#hasher = new HashGenerator();
+  }
+
   extractSentencesInRange(r: Range): NodeWithSentences[] {
     const nodes = this.#walkRange(r);
     let result: NodeWithSentences[] = [];
@@ -57,14 +63,10 @@ export default class SentenceExtractor {
 
   #toSentence(t: string) {
     return ({
-      id: this.#getHash(t),
+      id: this.#hasher.generate(t),
       text: t,
       partiallyOffPage: false,
     });
-  }
-
-  #getHash(s: string) {
-    return murmurhashV3(s).toString();
   }
 
   #walkRange(range: Range) {

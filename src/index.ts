@@ -4,6 +4,10 @@ import EpubjsBookReader from "./infra/epub/EpubjsBookReader";
 import SimpleReadingArea from './infra/view/SimpleReadingArea';
 import HowlerPlayer from 'infra/HowlerPlayer';
 import Mimic3TTSSource from 'infra/Mimic3TTSSource';
+import LocalStringStorage from 'infra/LocalStringStorage';
+import DefaultBookSourceReader from 'infra/DefaultBookSourceReader';
+import LibraryView from 'infra/view/LibraryView';
+import OPFSBookRepository from 'infra/OPFSBookRepository';
 
 window.addEventListener(
   "load",
@@ -11,13 +15,16 @@ window.addEventListener(
     const reader = new EpubjsBookReader();
     const app = new App({
       bookReader: reader,
-      storage: {
-        set: (key: string, value: string) => localStorage.setItem(key, value),
-        get: (key: string) => localStorage.getItem(key)
+      io: {
+        stringStorage: new LocalStringStorage(),
+        bookSourceReader: new DefaultBookSourceReader(),
       },
       player: new HowlerPlayer(),
       tts: new Mimic3TTSSource(config.mimicApiUrl),
+      bookRepository: new OPFSBookRepository(),
     });
+
+    const libraryView = new LibraryView(app);
 
     const readingArea = new SimpleReadingArea(app);
     reader.view = readingArea.view;

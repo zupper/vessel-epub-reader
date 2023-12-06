@@ -1,7 +1,7 @@
 import { Book, PageRef, Sentence } from './Book';
 
 export interface BookReader {
-  open(filename: string): Promise<Book>;
+  open(bookOrURL: ArrayBuffer): Promise<Book>;
   render(): void;
   nextPage: () => Promise<PageRef>;
   prevPage: () => Promise<PageRef>;
