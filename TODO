@@ -1,7 +1,8 @@
 Application layer
 
-- add book
-- list books
+- refactor book repo
+- add book cover image
+- create some UI
 - remove book
 - bookmark
 - list bookmarks
@@ -12,7 +13,6 @@ Application layer
 - delete snippet
 - share snippet
 - BUG: exact repeated sentences in the same paragraph are highlighted wrong
-- BUG: page start is sometimes off - when chapter 1, page 3 starts with 'lilies' playback starts with 'is the one charm wanting'
 - BUG: highlighting sometimes doesn't work, perhaps when there are em dashes
 --
 
@@ -33,3 +33,5 @@ DONE
   - handle end of page and moving to next page
   - implement state machine for tts control
   - move back between pages
+- add book
+- list books
