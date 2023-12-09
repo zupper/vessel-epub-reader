@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import App from 'app/App';
 import { BookCover } from 'app/Book';
@@ -12,9 +13,10 @@ export type LibraryViewParams = {
 
 export const LibraryView = (params: LibraryViewParams) => {
   const [covers, setCovers]= useState([] as BookCover[]);
+  const navigate = useNavigate();
 
   const refreshBooks = useCallback(() => params.app.listBooks().then(bcs => setCovers(bcs)), []);
-  const bookSelected = useCallback((id: string) => console.log('book selected', id), []);
+  const bookSelected = useCallback((id: string) => navigate('/read', { state: { bookId: id }}), []);
 
   useEffect(() => { refreshBooks() }, []);
 

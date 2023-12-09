@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route  } from 'react-router-dom';
 import App from 'app/App';
 
 import { LibraryView } from './LibraryView';
-import { Reader } from './Reader';
+import { ReaderView } from './ReaderView';
 import { Settings } from './Settings';
 
 export type EntrypointParams = {
@@ -17,7 +17,7 @@ export const Entrypoint = (params: EntrypointParams) => {
     <Router>
       <Routes>
         <Route path="/" element={<LibraryView app={params.app} />} />
-        <Route path="/read" element={<Reader />} />
+        <Route path="/read" element={<ReaderView app={params.app} />} />
         <Route path="/settings" element={<Settings />} />
       </Routes>
     </Router>
