@@ -15,17 +15,23 @@ export default class EpubjsBookReader implements BookReader {
   #hasher: HashGenerator;
 
   constructor() {
-    this.#epubjsBook = new EpubjsBook();
-    this.#assistant = new ReaderAssistant(this.#epubjsBook)
     this.#isRendered = false;
     this.#hasher = new HashGenerator();
   }
 
   set view(v: Element) {
-    this.#view = v;
+    if (v === null) {
+      this.#rendition.clear();
+      this.#epubjsBook.destroy();
+      this.#view = null;
+      this.#isRendered = false;
+    }
+    else this.#view = v;
   }
 
   async open(data: ArrayBuffer): Promise<Book> {
+    this.#epubjsBook = new EpubjsBook();
+    this.#assistant = new ReaderAssistant(this.#epubjsBook)
     this.#epubjsBook.open(data);
 
     const [opened, nav] = await Promise.all([

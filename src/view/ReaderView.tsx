@@ -13,10 +13,13 @@ export const ReaderView = (params: ReaderViewProps) => {
   const renderAreaRef = useRef(null);
 
   useEffect(() => {
+    const reader = (params.app.reader as EpubjsBookReader);
     if (renderAreaRef.current) {
-      (params.app.reader as EpubjsBookReader).view = renderAreaRef.current;
+      reader.view = renderAreaRef.current;
       params.app.openBook(location.state.bookId);
     }
+
+    return () => { reader.view = null };
   });
 
   return (
