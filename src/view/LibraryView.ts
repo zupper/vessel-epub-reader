@@ -30,7 +30,6 @@ export default class LibraryView {
   }
 
   #displayList(bcs: BookCover[]) {
-    console.log(bcs);
     const ul = document.createElement('ul');
     const lis = bcs.map(bc => {
       const li = document.createElement('li');

@@ -35,8 +35,8 @@ module.exports = {
   plugins: [
     new CopyPlugin({
       patterns: [
-        { from: path.resolve(__dirname, "index.html") },
-        { from: path.resolve(__dirname, "src/infra/view/style"), to: "style" },
+        { from: path.resolve(__dirname, "src/index.html") },
+        { from: path.resolve(__dirname, "src/view/style"), to: "style" },
       ],
     }),
   ],

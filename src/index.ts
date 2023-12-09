@@ -1,13 +1,19 @@
+import { createRoot } from 'react-dom/client';
+import React from 'react';
+
 import config from './config';
 import App from './app/App';
 import EpubjsBookReader from "./infra/epub/EpubjsBookReader";
-import SimpleReadingArea from './infra/view/SimpleReadingArea';
 import HowlerPlayer from 'infra/HowlerPlayer';
 import Mimic3TTSSource from 'infra/Mimic3TTSSource';
 import LocalStringStorage from 'infra/LocalStringStorage';
 import DefaultBookSourceReader from 'infra/DefaultBookSourceReader';
-import LibraryView from 'infra/view/LibraryView';
 import OPFSBookRepository from 'infra/OPFSBookRepository';
+
+import { Entrypoint } from './view/Entrypoint';
+
+// import SimpleReadingArea from './infra/view/SimpleReadingArea';
+// import LibraryView from 'infra/view/LibraryView';
 
 window.addEventListener(
   "load",
@@ -24,10 +30,13 @@ window.addEventListener(
       bookRepository: new OPFSBookRepository(),
     });
 
-    const libraryView = new LibraryView(app);
+    // const libraryView = new LibraryView(app);
 
-    const readingArea = new SimpleReadingArea(app);
-    reader.view = readingArea.view;
+    // const readingArea = new SimpleReadingArea(app);
+    // reader.view = readingArea.view;
 
-    document.querySelector('body').appendChild(readingArea);
+    // §document.querySelector('body').appendChild(readingArea);
+    
+    const root = createRoot(document.querySelector('#app-container'));
+    root.render(React.createElement(Entrypoint, { app }));
   });
