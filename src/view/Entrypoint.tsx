@@ -12,7 +12,6 @@ export type EntrypointParams = {
 }
 
 export const Entrypoint = (params: EntrypointParams) => {
-  console.log(params.app);
   return (
     <Router>
       <Routes>

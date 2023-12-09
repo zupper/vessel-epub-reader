@@ -23,28 +23,28 @@ export type AppConsructorParams = {
 export default class App {
   tts: TTSControl;
   nav: Navigation;
-  #reader: BookReader;
+  reader: BookReader;
   #io: AppIO;
   #repo: BookRepository;
 
   constructor(params: AppConsructorParams) {
-    this.#reader = params.bookReader;
+    this.reader = params.bookReader;
     this.#io = params.io;
     this.#repo = params.bookRepository;
 
-    this.nav = new Navigation({ reader: this.#reader, storage: params.io.stringStorage });
+    this.nav = new Navigation({ reader: this.reader, storage: params.io.stringStorage });
     this.tts = new TTSControl({
       player: params.player,
       ttsSource: params.tts,
-      reader: this.#reader,
+      reader: this.reader,
       nav: this.nav,
     });
   }
 
   async openBook(id: string) {
     const book = await this.#repo.get(id);
-    await this.#reader.open(book.data);
-    this.#reader.render();
+    await this.reader.open(book.data);
+    this.reader.render();
 
     this.nav.book = book;
     this.nav.moveToLastReadPage();
@@ -65,7 +65,7 @@ export default class App {
 
   async #loadBookFile(handle: File) {
     const data = await this.#io.bookSourceReader.readFile(handle);
-    const book = await this.#reader.open(data);
+    const book = await this.reader.open(data);
     await this.#repo.add(book);
 
     return book;

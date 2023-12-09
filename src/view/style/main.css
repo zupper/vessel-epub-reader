@@ -15,7 +15,7 @@ body {
   position: relative;
 }
 
-reading-area {
+#app-container {
   display: inline-block;
   background-color: white;
   height: 100vh;
