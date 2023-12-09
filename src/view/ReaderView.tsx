@@ -4,6 +4,8 @@ import { useLocation } from 'react-router-dom';
 import App from 'app/App';
 import EpubjsBookReader from 'infra/epub/EpubjsBookReader';
 
+import { ReaderControls } from './ReaderControls';
+
 export type ReaderViewProps = {
   app: App;
 };
@@ -20,7 +22,7 @@ export const ReaderView = (params: ReaderViewProps) => {
     }
 
     return () => { reader.view = null };
-  });
+  }, []);
 
   return (
     <div
@@ -30,9 +32,7 @@ export const ReaderView = (params: ReaderViewProps) => {
         id="render-area"
         ref={renderAreaRef}
         style={{ height: '100%', width: '100%' }}></div>
-      <div
-        id="menu"
-        style={{ position: 'absolute', bottom: '0px' }}></div>
+      <ReaderControls app={params.app} />
     </div>
   );
 };
