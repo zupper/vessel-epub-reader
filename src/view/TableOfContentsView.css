@@ -1,0 +1,53 @@
+#table-of-contents {
+  position: absolute;
+  top: 0;;
+  width: 100%;
+  height: 100vh;
+}
+
+#blackout {
+  position: absolute;
+  z-index: 1010;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, .65);
+  display: none;
+}
+
+#blackout.is-blacked-out {
+  display: block;
+}
+
+#popup-view {
+  height: 80vh;
+  overflow: scroll;
+  width: 650px;
+  background-color: #fff;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 45px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 100ms ease-in-out;
+  z-index: 1011;
+  border-radius: 5px;
+}
+
+#popup-view.is--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#popup-view__close {
+  padding: 0.5em;
+  position: absolute;
+  font-size: 2rem;
+  right: 0px;
+  top: 0px;
+  cursor: pointer;
+  color: lightgray;
+}

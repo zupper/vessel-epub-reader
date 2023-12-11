@@ -5,7 +5,32 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
       <script type="module" src="bundle.js"></script>
-      <link rel="stylesheet" href="style/main.css">
+      <style>
+        * {
+          margin: 0;
+          padding: 0;
+        }
+
+        html {
+          box-sizing: border-box;
+        }
+
+        *, *:before, *:after {
+          box-sizing: inherit;
+        }
+
+        body {
+          background-color: yellow;
+          position: relative;
+        }
+
+        #app-container {
+          display: inline-block;
+          background-color: white;
+          height: 100vh;
+          width: 100%;
+        }
+      </style>
     </head>
     <body>
       <div id="app-container"></div>

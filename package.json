@@ -17,11 +17,14 @@
     "@types/howler": "^2.2.11",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
+    "@types/react-transition-group": "^4.4.10",
     "chai": "^4.3.10",
     "copy-webpack-plugin": "^11.0.0",
+    "css-loader": "^6.8.1",
     "esm": "^3.2.25",
     "jsdom": "^22.1.0",
     "mocha": "^10.2.0",
+    "style-loader": "^3.3.3",
     "ts-loader": "^9.5.0",
     "typescript": "^5.2.2",
     "webpack-cli": "^5.1.4",
@@ -37,6 +40,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.1",
+    "react-transition-group": "^4.4.5",
     "tiny-popup-menu": "^1.0.9",
     "webpack": "^5.89.0"
   }

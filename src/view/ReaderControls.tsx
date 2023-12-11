@@ -3,8 +3,11 @@ import React, { useState, useRef, KeyboardEvent, useEffect } from 'react';
 import App from 'app/App';
 import {TTSPlaybacControls} from './TTSPlaybackControls';
 
+import './ReaderControls.css';
+
 export type ReaderControlsParams = {
   app: App;
+  onTableOfContents: () => unknown;
 };
 
 export const ReaderControls = (params: ReaderControlsParams) => {
@@ -40,7 +43,7 @@ export const ReaderControls = (params: ReaderControlsParams) => {
       <div id="page-controls" onKeyUp={handleKeyPress} tabIndex={0} role="button" ref={divAutoFocusRef}>
         <button title="Previous Page" onClick={prevPage} id="prev">◀</button>
         <button title="Next Page" onClick={nextPage} id="next">▶</button>
-        <button title="Table of Contents" id="toc-button">📋</button>
+        <button title="Table of Contents" onClick={params.onTableOfContents} id="toc-button">📋</button>
         { !playing
             ?  <button title="Start text-to-speech" onClick={startTTS} id="start-tts-button">🗣</button>
             : ''

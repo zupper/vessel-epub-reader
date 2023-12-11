@@ -12,6 +12,10 @@ module.exports = {
         use: 'ts-loader',
         exclude: /node_modules/,
       },
+      {
+        test: /\.css$/i,
+        use: ["style-loader", "css-loader"],
+      },
     ],
   },
   resolve: {
@@ -36,7 +40,6 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: path.resolve(__dirname, "src/index.html") },
-        { from: path.resolve(__dirname, "src/view/style"), to: "style" },
       ],
     }),
   ],
