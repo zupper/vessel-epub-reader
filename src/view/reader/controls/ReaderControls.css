@@ -3,15 +3,28 @@
   position: absolute;
   bottom: 0;
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;;
-}
-
-#page-controls {
+  justify-content: center;
+  margin-bottom: 5px;;
 }
 
 #reading-controls button {
   width: 50px;
   height: 50px;
   font-size: 30px;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+#page-controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-grow: 1;
+  justify-content: center;
+}
+
+#page-controls #prev,
+#page-controls #next {
+  flex: 1;
+  max-width: 200px;
 }

@@ -29,9 +29,9 @@ export const PageControls = (params: PageControlsParams) => {
   return (
     <div id="page-controls" onKeyUp={handleKeyPress} tabIndex={0} role="button" ref={divAutoFocusRef}>
       <button title="Previous Page" onClick={prevPage} id="prev">◀</button>
-      <button title="Next Page" onClick={nextPage} id="next">▶</button>
       <button title="Table of Contents" onClick={params.onTableOfContents} id="toc-button">📋</button>
       <button title="Start text-to-speech" onClick={params.onStartTTS} id="start-tts-button">🗣</button>
+      <button title="Next Page" onClick={nextPage} id="next">▶</button>
     </div>
   );
 };
