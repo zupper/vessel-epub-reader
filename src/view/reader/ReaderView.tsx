@@ -6,8 +6,8 @@ import App from 'app/App';
 import {ToCItem} from 'app/Book';
 import EpubjsBookReader from 'infra/epub/EpubjsBookReader';
 
-import { ReaderControls } from './ReaderControls';
-import { TableOfContentsView } from './TableOfContentsView';
+import { ReaderControls } from './controls/ReaderControls';
+import { TableOfContentsView } from './toc/TableOfContentsView';
 
 import './ReaderView.css';
 

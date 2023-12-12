@@ -1,8 +1,10 @@
 import React from 'react';
+
 import { ToCItem } from 'app/Book';
 
+import { ToCItemView } from './ToCItemView';
+
 import './TableOfContentsView.css';
-import {ToCItemView} from './ToCItemView';
 
 export type TableOfContentsViewParams = {
   toc: ToCItem[];

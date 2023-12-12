@@ -4,8 +4,8 @@ import { BrowserRouter as Router, Routes, Route  } from 'react-router-dom';
 import App from 'app/App';
 
 import { LibraryView } from './LibraryView';
-import { ReaderView } from './ReaderView';
 import { Settings } from './Settings';
+import { ReaderView } from './reader/ReaderView';
 
 export type EntrypointParams = {
   app: App;
