@@ -22,13 +22,18 @@ export const TableOfContentsView = (params: TableOfContentsViewParams) => {
         id="popup-view"
         className='is--visible'
         data-popup-modal="one">
+        <div id="contents-heading">
+
+        </div>
         <div onClick={params.onClose} id="popup-view__close">✕</div>
         <h1 className="font-weight-bold">
           Contents
         </h1>
-        <ul>
-          {params.toc.map(i => <ToCItemView item={i} onClick={params.onItemClick} />) }
-        </ul>
+        <div id="contents-scroller">
+          <ul>
+            {params.toc.map(i => <ToCItemView item={i} onClick={params.onItemClick} />) }
+          </ul>
+        </div>
       </div>
     </div>
   );
