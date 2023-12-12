@@ -34,6 +34,7 @@ export const ReaderView = (params: ReaderViewProps) => {
 
   const showToC = () => setTocVisible(true);
   const hideToC = () => setTocVisible(false);
+
   const goTo = (i: ToCItem) => {
     hideToC();
     params.app.nav.moveTo(i.link);
