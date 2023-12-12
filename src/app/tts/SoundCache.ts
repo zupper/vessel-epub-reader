@@ -55,7 +55,10 @@ export default class SoundCache {
 
   async #bufferSounds(count: number) {
     const startIdx = this.#bufferedOffset;
-    const endIdx = this.#bufferedOffset + count;
+    const endIdx = Math.min(this.#bufferedOffset + count, this.#sentences.length);;
+
+    if (startIdx === endIdx) return;
+
     const buf = await this.#tts.generate(this.#sentences.slice(startIdx, endIdx));
     buf.forEach(s => this.#buffer.set(s.id, s));
     this.#bufferedOffset = endIdx;
