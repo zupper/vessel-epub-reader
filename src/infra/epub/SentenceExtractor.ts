@@ -20,6 +20,21 @@ export default class SentenceExtractor {
     this.#hasher = new HashGenerator();
   }
 
+  extractSentencesFromString(s: string) {
+    // compromise doesn't handle new lines well, so we'll do some massaging
+    return s.split('\n')
+      .filter(s => s.length > 0)
+      .map(this.#tokenizeString)
+      .flat()
+      .map(s => this.#toSentence(s));;
+  }
+
+  #tokenizeString(s: string): string[] {
+    return nlp(s)
+          .json({ text: true })
+          .map((o: { text: string }) => o.text);
+  }
+
   extractSentencesInRange(r: Range): NodeWithSentences[] {
     const nodes = this.#walkRange(r);
     let result: NodeWithSentences[] = [];

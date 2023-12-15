@@ -29,9 +29,7 @@ export default class ReaderAssistant {
   }
 
   async getDisplayedSentences() {
-    if (!this.#rendition) {
-      this.#resolveRendition();
-    }
+    if (!this.#rendition) this.#resolveRendition();
 
     const range = await this.#epubjsBook.getRange(this.#displayedCfiRange);
     const nodesWithSentences = this.#sentenceExtractor.extractSentencesInRange(range);
@@ -44,6 +42,17 @@ export default class ReaderAssistant {
     }
 
     return nodesWithSentences.map(({ sentences }) => sentences).flat();
+  }
+
+  getSentencesInCurrentChapter() {
+    if (!this.#rendition) this.#resolveRendition();
+
+    const chapter = this.#epubjsBook.section(this.#rendition.location.start.href);
+    const sentences = this.#sentenceExtractor.extractSentencesFromString(chapter?.contents?.textContent);
+    console.log(sentences);
+
+    // remove the first sentence, as that's always the book title
+    return Promise.resolve(sentences.slice(1));
   }
 
   #getRangeForSentenceInNode(s: Sentence, n: Node) {

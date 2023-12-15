@@ -39,10 +39,15 @@ export default class TTSControl {
     if (!this.#reader.isRendered()) throw new Error('Must open book first');
     if (this.#state) return;
 
+    const chapterSentences = await this.#reader.getSentencesInCurrentChapter();
+
     const sentences = await this.#reader.getDisplayedSentences();
+
     this.#state = new PlaybackState();
     this.#state.append(sentences);
-    this.#soundSource = new SoundCache({ ttsSource: this.#ttsSource, sentences });
+
+    // put all chapter sentences in the cache to allow for cross-page pre-buffering
+    this.#soundSource = new SoundCache({ ttsSource: this.#ttsSource, sentences: chapterSentences });
 
     this.#player.addEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback);
     this.#handleNewState(this.#state.changeState('play'));
@@ -127,6 +132,7 @@ export default class TTSControl {
 
   async #nextPage() {
     await this.#nav.nextPage();
+    // TODO: consider tracking the chapter change and adding the next chapter text when we reach it
 
     const sentences = await this.#reader.getDisplayedSentences();
     this.#state.append(sentences);

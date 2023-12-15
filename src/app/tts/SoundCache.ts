@@ -2,7 +2,6 @@ import { Sentence } from "app/Book";
 import { Sound } from "app/AudioPlayer";
 import { TTSSource } from "./TTSSource";
 
-const INITIAL_BUFFER_SIZE = 5;
 const ONGOING_PRE_BUFFER_COUNT = 2;
 
 export type SoundCacheConstructorParams = {
@@ -15,21 +14,17 @@ export default class SoundCache {
   #sentences: Sentence[];
   #sentencesMap: Map<string, Sentence>;
   #buffer: Map<string, Sound>;
-  #bufferedOffset: number;
 
   constructor(params: SoundCacheConstructorParams) {
     this.#tts = params.ttsSource;
     this.#sentencesMap = new Map(params.sentences.map(s => [s.id, s]));
     this.#sentences = params.sentences;
     this.#buffer = new Map();
-    this.#bufferedOffset = 0;
   }
 
   async get(id: string): Promise<Sound> {
     const sentence = this.#sentencesMap.get(id);
     if (!sentence) throw new Error('asking for sentence id that has not been enqueued');
-
-    if (this.#buffer.size === 0) await this.#bufferSounds(INITIAL_BUFFER_SIZE);
 
     let sound = this.#buffer.get(id);
     if (!sound) {
@@ -37,30 +32,66 @@ export default class SoundCache {
       this.#buffer.set(id, sound);
     }
 
-    this.#bufferSounds(ONGOING_PRE_BUFFER_COUNT);
+    this.#bufferSounds(this.#findSoundsForBuffering(id));
 
     return sound;
   }
 
+  #findSoundsForBuffering(id: string) {
+    const centerIndex = this.#sentences.findIndex(s => s.id === id);
+    const forwardResults = this.#forwardSearch(centerIndex, 2);
+    const backwardResults = this.#backwardSearch(centerIndex, 1);
+
+    return [...backwardResults, ...forwardResults].slice(0, ONGOING_PRE_BUFFER_COUNT);
+  }
+
+  #forwardSearch(idx: number, count: number) {
+    const result = [];
+
+    for (let i = 1; idx + i < this.#sentences.length && result.length < count; i++) {
+      if (!this.#buffer.has(this.#sentences[idx + i].id)) result.push(i + idx);
+    }
+
+    return result;
+  }
+
+  #backwardSearch(idx: number, count: number) {
+    const result = [];
+
+    // if the buuffer has the previous two sentences, then skip backwards buffering
+    if (idx >= 2 && this.#buffer.has(this.#sentences[idx - 1].id) && this.#buffer.has(this.#sentences[idx - 2].id)) {
+      return [];
+    }
+
+    for (let i = 1; idx - i >= 0 && result.length < count; i++) {
+      if (!this.#buffer.has(this.#sentences[idx - i].id)) result.push(idx - i);
+    }
+
+    return result;
+  }
+
   append(ss: Sentence[]) {
-    this.#sentences.push(...ss)
-    ss.forEach(s => this.#sentencesMap.set(s.id, s));
+    ss.forEach(s => {
+      if (!this.#sentencesMap.has(s.id)) {
+        this.#sentences.push(s);
+        this.#sentencesMap.set(s.id, s);
+      }
+    })
   }
 
   prepend(ss: Sentence[]) {
-    this.#sentences.unshift(...ss);
-    ss.forEach(s => this.#sentencesMap.set(s.id, s));
-    this.#bufferedOffset += ss.length;
+    ss.forEach(s => {
+      if (!this.#sentencesMap.has(s.id)) {
+        this.#sentences.unshift(s);
+        this.#sentencesMap.set(s.id, s);
+      }
+    });
   }
 
-  async #bufferSounds(count: number) {
-    const startIdx = this.#bufferedOffset;
-    const endIdx = Math.min(this.#bufferedOffset + count, this.#sentences.length);;
+  async #bufferSounds(iis: number[]) {
+    if (iis.length === 0) return;
 
-    if (startIdx === endIdx) return;
-
-    const buf = await this.#tts.generate(this.#sentences.slice(startIdx, endIdx));
+    const buf = await this.#tts.generate(iis.map(idx => this.#sentences[idx]));
     buf.forEach(s => this.#buffer.set(s.id, s));
-    this.#bufferedOffset = endIdx;
   }
 }

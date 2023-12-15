@@ -1,4 +1,3 @@
-import { v3 as murmurhashV3 } from "murmurhash";
 import { Book as EpubjsBook, Rendition, NavItem } from "epubjs";
 import { Book, PageRef, ToCItem } from "app/Book";
 import { BookReader } from "app/BookReader";
@@ -84,8 +83,12 @@ export default class EpubjsBookReader implements BookReader {
     });
   }
 
-  async getDisplayedSentences() {
+  getDisplayedSentences() {
     return this.#assistant.getDisplayedSentences();
+  }
+
+  getSentencesInCurrentChapter() {
+    return this.#assistant.getSentencesInCurrentChapter();
   }
 
   get currentCfi() {
