@@ -5,6 +5,7 @@ import config from './config';
 import App from './app/App';
 import EpubjsBookReader from "./infra/epub/EpubjsBookReader";
 import Mimic3TTSSource from 'infra/tts/mimic/Mimic3TTSSource';
+import WebSpeechTTSSource from 'infra/tts/WebSpeechTTSSource';
 import LocalStringStorage from 'infra/LocalStringStorage';
 import DefaultBookSourceReader from 'infra/DefaultBookSourceReader';
 import OPFSBookRepository from 'infra/OPFSBookRepository';
@@ -24,7 +25,8 @@ window.addEventListener(
         stringStorage: new LocalStringStorage(),
         bookSourceReader: new DefaultBookSourceReader(),
       },
-      tts: new Mimic3TTSSource(config.mimicApiUrl),
+      /// tts: new Mimic3TTSSource(config.mimicApiUrl),
+      tts: new WebSpeechTTSSource(),
       bookRepository: new OPFSBookRepository(),
     });
 
