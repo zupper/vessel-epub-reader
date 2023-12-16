@@ -1,5 +1,4 @@
 import { Sentence } from "app/Book";
-import { TTSSource } from "app/tts/TTSSource";
 
 const zip = <A, B>(arr1: A[], arr2: B[]): [A, B][] => arr1.map((val, i) => [val, arr2[i]]);
 
@@ -10,10 +9,17 @@ const RATE = 0.8;
 const AUDIO_VOLATILITY = 0.667;
 const PHONEME_VOLATILITY = 0.8;
 
-export default class Mimic3TTSSource implements TTSSource {
+export default class SoundSource {
   #ttsEndpoint: string;
+  #authHeaders: {
+    Authorization: string;
+  }
 
   constructor(apiUrl: string) {
+    const base64Credentials = btoa(`username:kurvagrozna`);
+    // this.#authHeaders = { Authorization: `Basic ${base64Credentials}` };
+    this.#authHeaders = null;
+
     this.#ttsEndpoint = `${apiUrl}/tts?voice=${LANG}%2F${VOICE}%23${SPEAKER}&noiseScale=${AUDIO_VOLATILITY}&noiseW=${PHONEME_VOLATILITY}&lengthScale=${RATE}&ssml=false&audioTarget=client&text=`;
   }
 
@@ -33,6 +39,7 @@ export default class Mimic3TTSSource implements TTSSource {
   }
 
   async #fetchSentence(s: string) {
+    // const res = await fetch(this.#ttsEndpoint + s, { headers: this.#authHeaders, credentials: 'include', });
     const res = await fetch(this.#ttsEndpoint + s);
     const contentType = res.headers.get('content-type');
     if (!contentType || contentType !== 'audio/wav') {

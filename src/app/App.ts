@@ -1,5 +1,4 @@
 import { BookReader } from './BookReader';
-import { AudioPlayer  } from './AudioPlayer';
 import { TTSSource } from './tts/TTSSource';
 import TTSControl from './tts/TTSControl';
 import Navigation from './Navigation';
@@ -14,7 +13,6 @@ export type AppIO = {
 
 export type AppConsructorParams = {
   bookReader: BookReader;
-  player: AudioPlayer;
   tts: TTSSource;
   io: AppIO;
   bookRepository: BookRepository;
@@ -34,8 +32,7 @@ export default class App {
 
     this.nav = new Navigation({ reader: this.reader, storage: params.io.stringStorage });
     this.tts = new TTSControl({
-      player: params.player,
-      ttsSource: params.tts,
+      tts: params.tts,
       reader: this.reader,
       nav: this.nav,
     });

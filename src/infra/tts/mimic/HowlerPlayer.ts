@@ -1,8 +1,17 @@
 import { Howl } from 'howler';
-import { AudioPlayer, Sound, SentenceCompleteEvent  } from "app/AudioPlayer";
 
-export default class HowlerPlayer extends EventTarget implements AudioPlayer {
+export type Sound = {
+  id: string;
+  data: ArrayBuffer;
+}
+
+export default class HowlerPlayer {
   #sound: Howl;
+  #sentenceEndCallback: (sentenceId: string) => unknown;
+
+  constructor(onSentenceEnd: (sentenceId: string) => unknown) {
+    this.#sentenceEndCallback = onSentenceEnd;
+  }
 
   load(s: Sound) {
     this.#sound = new Howl({
@@ -10,7 +19,7 @@ export default class HowlerPlayer extends EventTarget implements AudioPlayer {
       format: "wav",
     });
 
-    this.#sound.once("end", () => this.dispatchEvent(new SentenceCompleteEvent(s.id)));
+    this.#sound.once("end", () => this.#sentenceEndCallback(s.id));
   }
 
   play(s?: Sound) {

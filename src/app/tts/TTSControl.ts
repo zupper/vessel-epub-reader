@@ -1,16 +1,14 @@
 import { BookReader } from "app/BookReader";
-import { AudioPlayer } from "app/AudioPlayer";
 import { Sentence } from "app/Book";
 import Navigation from "app/Navigation";
 
-import SoundCache from "./SoundCache";
 import PlaybackState, { StateChangeAction } from "./PlaybackState";
-import { TTSSource } from "./TTSSource";
 import { StateDetails } from "./PlaybackState";
 
+import { TTSSource } from './TTSSource';
+
 export type TTSControlConstructorParams = {
-  ttsSource: TTSSource;
-  player: AudioPlayer;
+  tts: TTSSource;
   reader: BookReader;
   nav: Navigation;
 };
@@ -18,19 +16,16 @@ export type TTSControlConstructorParams = {
 export default class TTSControl {
 
   #reader: BookReader;
-  #player: AudioPlayer;
   #state: PlaybackState;
-  #soundSource: SoundCache;
   #stateTransitionInProgress: boolean;
-  #ttsSource: TTSSource;
+  #tts: TTSSource;
   #nav: Navigation
 
   #sentenceCompleteBoundCallback: EventListener;
 
   constructor(params: TTSControlConstructorParams) {
     this.#reader = params.reader;
-    this.#player = params.player;
-    this.#ttsSource = params.ttsSource;
+    this.#tts = params.tts;
     this.#sentenceCompleteBoundCallback = this.#onSentenceComplete.bind(this);
     this.#nav = params.nav;
   }
@@ -47,9 +42,9 @@ export default class TTSControl {
     this.#state.append(sentences);
 
     // put all chapter sentences in the cache to allow for cross-page pre-buffering
-    this.#soundSource = new SoundCache({ ttsSource: this.#ttsSource, sentences: chapterSentences });
+    this.#tts.load(chapterSentences);
 
-    this.#player.addEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback);
+    this.#tts.addEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback);
     this.#handleNewState(this.#state.changeState('play'));
   }
 
@@ -104,30 +99,28 @@ export default class TTSControl {
 
   async #play(s: Sentence) {
     await this.#loadPaused(s);
-    this.#player.play();
+    this.#tts.play();
   }
 
   async #loadPaused(s: Sentence) {
-    const sound = await this.#soundSource.get(s.id);
-    this.#player.stop();
     this.#reader.removeAllHighlights();
-    this.#reader.highlight(sound.id);
-    this.#player.load(sound);
+    this.#reader.highlight(s.id);
+    await this.#tts.prepare(s);
   }
 
   #stop() {
-    this.#player.removeEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback)
+    this.#tts.removeEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback)
     this.#reader.removeAllHighlights();
-    this.#player.stop();
+    this.#tts.stop();
     this.#state = null;
   }
 
   #pause() {
-    this.#player.pause();
+    this.#tts.pause();
   }
 
   #resume() {
-    this.#player.play();
+    this.#tts.play();
   }
 
   async #nextPage() {
@@ -136,7 +129,7 @@ export default class TTSControl {
 
     const sentences = await this.#reader.getDisplayedSentences();
     this.#state.append(sentences);
-    this.#soundSource.append(sentences);
+    this.#tts.append(sentences);
 
     const action = sentences[0].partiallyOffPage ? 'next' : 'continue';
     this.#handleNewState(this.#state.changeState(action));
@@ -147,7 +140,7 @@ export default class TTSControl {
 
     const sentences = await this.#reader.getDisplayedSentences();
     this.#state.prepend(sentences);
-    this.#soundSource.prepend(sentences);
+    this.#tts.prepend(sentences);
 
     const action = sentences[sentences.length - 1].partiallyOffPage ? 'prev' : 'continue';
     this.#handleNewState(this.#state.changeState(action));

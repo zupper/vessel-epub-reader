@@ -49,7 +49,6 @@ export default class ReaderAssistant {
 
     const chapter = this.#epubjsBook.section(this.#rendition.location.start.href);
     const sentences = this.#sentenceExtractor.extractSentencesFromString(chapter?.contents?.textContent);
-    console.log(sentences);
 
     // remove the first sentence, as that's always the book title
     return Promise.resolve(sentences.slice(1));
