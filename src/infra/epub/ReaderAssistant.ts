@@ -2,6 +2,7 @@ import { Sentence } from 'app/Book';
 import { Book as EpubjsBook, Rendition, Location } from "epubjs";
 import * as CFI from './CFI';
 import SentenceExtractor from "./SentenceExtractor";
+import RangeFromSentence from './RangeFromSentence';
 
 export default class ReaderAssistant {
   #epubjsBook: EpubjsBook;
@@ -32,16 +33,14 @@ export default class ReaderAssistant {
     if (!this.#rendition) this.#resolveRendition();
 
     const range = await this.#epubjsBook.getRange(this.#displayedCfiRange);
-    const nodesWithSentences = this.#sentenceExtractor.extractSentencesInRange(range);
+    const sentences = this.#sentenceExtractor.extractSentencesInRange(range);
 
-    for (let { node, sentences } of nodesWithSentences) {
-      const sentenceRanges = sentences.map(s => this.#getRangeForSentenceInNode(s, node));
-      sentences.forEach((s, idx) => {
-        this.#sentenceRanges[s.id] = sentenceRanges[idx]; 
-      });
-    }
+    const sentenceRanges = sentences.map(s => RangeFromSentence.find(range.commonAncestorContainer, s));
+    sentences.forEach((s, idx) => {
+      this.#sentenceRanges[s.id] = sentenceRanges[idx];
+    });
 
-    return nodesWithSentences.map(({ sentences }) => sentences).flat();
+    return sentences;
   }
 
   getSentencesInCurrentChapter() {
@@ -52,17 +51,6 @@ export default class ReaderAssistant {
 
     // remove the first sentence, as that's always the book title
     return Promise.resolve(sentences.slice(1));
-  }
-
-  #getRangeForSentenceInNode(s: Sentence, n: Node) {
-    let offset = n.textContent.indexOf(s.text);
-    if (offset < 0) return null;
-
-    const range = n.ownerDocument.createRange();
-    range.setStart(n, offset)
-    range.setEnd(n, offset + s.text.length);
-
-    return range;
   }
 
   async addHighlight(sentenceId: string) {

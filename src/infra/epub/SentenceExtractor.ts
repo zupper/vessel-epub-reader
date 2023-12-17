@@ -26,54 +26,57 @@ export default class SentenceExtractor {
       .filter(s => s.length > 0)
       .map(this.#tokenizeString)
       .flat()
-      .map(s => this.#toSentence(s));;
+      .map(s => this.#toSentence(s));
   }
 
   #tokenizeString(s: string): string[] {
     return nlp(s)
-          .json({ text: true })
-          .map((o: { text: string }) => o.text);
+      .json({ text: true })
+      .map((o: { text: string }) => o.text);
   }
 
-  extractSentencesInRange(r: Range): NodeWithSentences[] {
+  extractSentencesInRange(r: Range): Sentence[] {
     const nodes = this.#walkRange(r);
-    let result: NodeWithSentences[] = [];
 
-    for (let node of nodes) {
-      let metaSentences: MetaSentence[] =
-        nlp(node.textContent)
-          .json({ text: true, offset: true })
-          .map((o: { text: string }) => ({ sentence: this.#toSentence(o.text), ...o }));
+    const textNodes = nodes.map(n => n.textContent);
+    if (textNodes.length === 0) return [];
 
-      if (metaSentences.length > 0) {
-        if (node === r.startContainer) metaSentences = this.#trimStartNodeContent(r.startOffset, metaSentences);
-        if (node === r.endContainer) metaSentences = this.#truncateEndNodeContent(r.endOffset, metaSentences);
+    const trimmedFirstTextNode = this.#trimStartNodeText(textNodes[0], r.startOffset);
+    const trimmedLastTextNode = this.#trimEndNodeText(textNodes[textNodes.length - 1], r.endOffset);
 
-        const sentences = metaSentences.map(({ sentence }) => sentence);
+    const firstSentenceOffPage = textNodes[0].length - r.startOffset < trimmedFirstTextNode.length;
+    const lastSentenceOffPage = trimmedLastTextNode.length > r.endOffset;
 
-        result.push({ node, sentences })
-      }
-    }
+    textNodes[0] = trimmedFirstTextNode;
+    textNodes[textNodes.length - 1] = trimmedLastTextNode;
 
-    return result;
+    const sentences = this.extractSentencesFromString(textNodes.join(''));
+    sentences[0].partiallyOffPage = firstSentenceOffPage;
+    sentences[sentences.length - 1].partiallyOffPage = lastSentenceOffPage;
+
+    return sentences;
   }
 
-  #trimStartNodeContent(startOffset: number, ss: MetaSentence[]) {
-    const trimmed = ss.filter((o) => o.offset.start + o.offset.length >= startOffset);
+  #trimStartNodeText(s: string, offset: number) {
+    const trimmed =
+      nlp(s)
+        .json({ text: true, offset: true })
+        .map((o: { text: string }) => ({ sentence: this.#toSentence(o.text), ...o }))
+        .filter((o: MetaSentence) => o.offset.start + o.offset.length >= offset)
+        .map((o: MetaSentence) => o.sentence.text);
 
-    const first = trimmed[0];
-    if (first.offset.start < startOffset) first.sentence.partiallyOffPage = true;
-
-    return trimmed;
+    return trimmed.join(' ');
   }
 
-  #truncateEndNodeContent(endOffset: number, ss: MetaSentence[]) {
-    const trimmed = ss.filter((o) => o.offset.start < endOffset);
+  #trimEndNodeText(s: string, offset: number) {
+    const trimmed =
+      nlp(s)
+        .json({ text: true, offset: true })
+        .map((o: { text: string }) => ({ sentence: this.#toSentence(o.text), ...o }))
+        .filter((o: MetaSentence) => o.offset.start < offset)
+        .map((o: MetaSentence) => o.sentence.text);
 
-    const last = trimmed[trimmed.length - 1];
-    if (last.offset.start + last.offset.length > endOffset) last.sentence.partiallyOffPage = true;
-
-    return trimmed;
+    return trimmed.join(' ');
   }
 
   #toSentence(t: string) {
