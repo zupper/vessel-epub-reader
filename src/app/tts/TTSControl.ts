@@ -124,10 +124,13 @@ export default class TTSControl {
   }
 
   async #nextPage() {
-    await this.#nav.nextPage();
     // TODO: consider tracking the chapter change and adding the next chapter text when we reach it
+    let sentences: Sentence[] = [];
+    while (sentences.length === 0) {
+      await this.#nav.nextPage();
+      sentences = await this.#reader.getDisplayedSentences();
+    }
 
-    const sentences = await this.#reader.getDisplayedSentences();
     this.#state.append(sentences);
     this.#tts.append(sentences);
 
