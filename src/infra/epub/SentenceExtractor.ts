@@ -58,10 +58,14 @@ export default class SentenceExtractor {
   }
 
   #trimStartNodeText(s: string, offset: number) {
+    const processed = s.split('\n').map(si => nlp(si).json({ text: true, offset: true })).flat()
+    // if we have 0 or 1 sentences, then we don't really have anything to do
+    //   on the other hand, processing eats up the new lines, which may lead to discrepancies
+    //   so we better return the original
+    if (processed.length < 2) return s;
+
     const trimmed =
-      nlp(s)
-        .json({ text: true, offset: true })
-        .map((o: { text: string }) => ({ sentence: this.#toSentence(o.text), ...o }))
+      processed.map((o: { text: string }) => ({ sentence: this.#toSentence(o.text), ...o }))
         .filter((o: MetaSentence) => o.offset.start + o.offset.length >= offset)
         .map((o: MetaSentence) => o.sentence.text);
 
@@ -69,10 +73,14 @@ export default class SentenceExtractor {
   }
 
   #trimEndNodeText(s: string, offset: number) {
+    const processed = s.split('\n').map(si => nlp(si).json({ text: true, offset: true })).flat()
+    // if we have 0 or 1 sentences, then we don't really have anything to do
+    //   on the other hand, processing eats up the new lines, which may lead to discrepancies
+    //   so we better return the original
+    if (processed.length < 2) return s;
+
     const trimmed =
-      nlp(s)
-        .json({ text: true, offset: true })
-        .map((o: { text: string }) => ({ sentence: this.#toSentence(o.text), ...o }))
+      processed.map((o: { text: string }) => ({ sentence: this.#toSentence(o.text), ...o }))
         .filter((o: MetaSentence) => o.offset.start < offset)
         .map((o: MetaSentence) => o.sentence.text);
 
