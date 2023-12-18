@@ -1,4 +1,3 @@
-import { Sentence } from 'app/Book';
 import { Book as EpubjsBook, Rendition, Location } from "epubjs";
 import * as CFI from './CFI';
 import SentenceExtractor from "./SentenceExtractor";
@@ -49,8 +48,7 @@ export default class ReaderAssistant {
     const chapter = this.#epubjsBook.section(this.#rendition.location.start.href);
     const sentences = this.#sentenceExtractor.extractSentencesFromString(chapter?.contents?.textContent);
 
-    // remove the first sentence, as that's always the book title
-    return Promise.resolve(sentences.slice(1));
+    return Promise.resolve(sentences);
   }
 
   async addHighlight(sentenceId: string) {
