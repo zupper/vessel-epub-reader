@@ -18,6 +18,10 @@ import { Entrypoint } from './view/Entrypoint';
 window.addEventListener(
   "load",
   async () => {
+
+    const tts = config.tts === 'mimic3'
+                  ? new Mimic3TTSSource(config.mimicApiUrl)
+                  : new WebSpeechTTSSource();
     const reader = new EpubjsBookReader();
     const app = new App({
       bookReader: reader,
@@ -26,7 +30,7 @@ window.addEventListener(
         bookSourceReader: new DefaultBookSourceReader(),
       },
       /// tts: new Mimic3TTSSource(config.mimicApiUrl),
-      tts: new WebSpeechTTSSource(),
+      tts,
       bookRepository: new OPFSBookRepository(),
     });
 
