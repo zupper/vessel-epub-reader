@@ -1,11 +1,16 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
 
 import App from 'app/App';
 import { BookCover } from 'app/Book';
 
 import { BookCoverView } from './BookCoverView';
-import { AddBookView } from './AddBookView';
+
+import { MainAppBar } from './MainAppBar';
+
+import './LibraryView.css';
 
 export type LibraryViewParams = {
   app: App;
@@ -22,17 +27,29 @@ export const LibraryView = (params: LibraryViewParams) => {
 
   return (
     <div id="library-container">
-      <p>Library component</p>
-      <AddBookView app={params.app} onBookAdded={refreshBooks}  />
+      <MainAppBar app={params.app} onBookAdded={refreshBooks} />
       { covers.length === 0 
           ? <p>No books!</p>
-          : ( <div id="books-list">
+          : ( <Grid sx={{ marginTop: 1, marginBottom: 1 }} container justifyContent="center" spacing={3}>
                 { covers.map((bc) => 
-                    <BookCoverView
-                      cover={bc}
-                      key={bc.id}
-                      onOpen={bookSelected} />) }
-              </div> )
+                    <Grid key={bc.id} item>
+                      <Paper
+                        sx={{
+                          width: 250,
+                          height: 300,
+                          backgroundColor: (theme) =>
+                          theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+                        }}
+                      >
+                        <BookCoverView
+                          cover={bc}
+                          key={bc.id}
+                          onOpen={bookSelected} />
+                      </Paper>
+                  </Grid>
+                ) }
+              </Grid>
+          )
       }
     </div>
   );

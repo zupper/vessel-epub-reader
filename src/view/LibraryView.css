@@ -1,0 +1,10 @@
+#add-book-view {
+  padding: 5px;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+#add-book-view > button {
+  padding: 3px;
+}

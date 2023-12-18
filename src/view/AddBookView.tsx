@@ -1,4 +1,5 @@
 import React, { ChangeEvent, useRef } from 'react';
+import Button from '@mui/material/Button';
 
 import App from 'app/App';
 
@@ -24,13 +25,13 @@ export const AddBookView = (params: AddBookViewParams) => {
   };
 
   return (
-    <div id="add-book-view">
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileChange} 
-        style={{ display: "none" }} />
-      <button onClick={showFileSelector}>Add book</button>
-    </div>
+      <Button onClick={showFileSelector} color="inherit">
+        Add Book
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange} 
+          style={{ display: "none" }} />
+      </Button>
   );
 };
