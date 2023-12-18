@@ -21,7 +21,6 @@ export default class Mimic3TTSSource extends EventTarget implements TTSSource {
   }
 
   load(ss: Sentence[]) {
-    console.log('load', ss);
     this.#cache = new SoundCache({
       soundSource: new SoundSource(this.#url),
       sentences: ss
@@ -29,7 +28,6 @@ export default class Mimic3TTSSource extends EventTarget implements TTSSource {
   }
 
   async prepare(s: Sentence) {
-    console.log('prepare', s);
     const sound = await this.#cache.get(s.id);
     this.#player.stop();
     this.#player.load(sound);

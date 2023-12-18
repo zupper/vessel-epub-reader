@@ -12,9 +12,6 @@ import OPFSBookRepository from 'infra/OPFSBookRepository';
 
 import { Entrypoint } from './view/Entrypoint';
 
-// import SimpleReadingArea from './infra/view/SimpleReadingArea';
-// import LibraryView from 'infra/view/LibraryView';
-
 window.addEventListener(
   "load",
   async () => {
