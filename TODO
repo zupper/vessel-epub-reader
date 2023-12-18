@@ -1,8 +1,11 @@
 Application layer
 
-- refactor book repo
+- go to percentage
+- pages UI
+- library UI
 - add book cover image
-- create some UI
+- settings
+- refactor book repo
 - remove book
 - bookmark
 - list bookmarks
@@ -13,7 +16,6 @@ Application layer
 - delete snippet
 - share snippet
 - BUG: exact repeated sentences in the same paragraph are highlighted wrong
-- BUG: highlighting sometimes doesn't work, perhaps when there are em dashes
 --
 
 DONE
