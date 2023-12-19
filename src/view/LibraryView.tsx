@@ -33,19 +33,10 @@ export const LibraryView = (params: LibraryViewParams) => {
           : ( <Grid sx={{ marginTop: 1, marginBottom: 1 }} container justifyContent="center" spacing={3}>
                 { covers.map((bc) => 
                     <Grid key={bc.id} item>
-                      <Paper
-                        sx={{
-                          width: 250,
-                          height: 300,
-                          backgroundColor: (theme) =>
-                          theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
-                        }}
-                      >
-                        <BookCoverView
-                          cover={bc}
-                          key={bc.id}
-                          onOpen={bookSelected} />
-                      </Paper>
+                      <BookCoverView
+                        cover={bc}
+                        key={bc.id}
+                        onOpen={bookSelected} />
                   </Grid>
                 ) }
               </Grid>

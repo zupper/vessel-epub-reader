@@ -1,11 +1,15 @@
 import React from 'react';
 
-import Card from '@mui/material/Card';
-import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
-import { CardActionArea, CardActions, Button } from '@mui/material';
+import { CardActionArea, CardActions, Button, Box, bottomNavigationClasses } from '@mui/material';
+import IconButton, { IconButtonProps } from '@mui/material/IconButton';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+
+import Paper from '@mui/material/Paper';
 
 import { BookCover } from 'app/Book';
+
+import './BookCoverView.css';
 
 export type BookCoverViewParams = {
   cover: BookCover;
@@ -14,21 +18,49 @@ export type BookCoverViewParams = {
 
 export const BookCoverView = (params: BookCoverViewParams) => {
   return (
-    <Card sx={{ maxWidth: 345, height: "100%" }}>
-      <CardActionArea onClick={() => params.onOpen(params.cover.id)}>
-        <CardMedia
-          sx={{ height: 250, padding: 1 }}
-          image="/static/images/cards/contemplative-reptile.jpg"
-          title="green iguana"
+    <Paper
+      className='book-cover-view'
+      onClick={() => params.onOpen(params.cover.id)}
+      elevation={3}
+      sx={{
+        width: 250,
+        height: 300,
+        backgroundColor: (theme) =>
+        theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+        position: 'relative',
+        "&:hover": {
+          boxShadow: 10
+        }
+      }}
+    >
+      <img src="https://www.adazing.com/wp-content/uploads/2023/03/stephen-king-book-covers-the-shining-us-hardcover.jpg" alt="" />
+      <Box
+        display={'flex'}
+        flexDirection={'row'}
+        justifyContent={'space-between'}
+        sx={{
+          width: '100%',
+          minHeight: 50,
+          position: 'absolute',
+          bottom: 0,
+          backgroundColor: 'rgba(255, 255, 255, 0.85);',
+        }}
+      >
+        <Box
+          display={'flex'}
+          flexDirection={'column'}
+          flexGrow={1}
+          padding={'3px'}
+          paddingLeft={'15px'}
         >
-          <Typography gutterBottom variant="h5" component="div">
+          <Typography variant='subtitle2'>
             {params.cover.title}
           </Typography>
-        </CardMedia>
-      </CardActionArea>
-      <CardActions>
-        <Button size="small">DELETE</Button>
-      </CardActions>
-    </Card>
+          <Typography variant='caption'>Author Name</Typography>
+        </Box>
+
+        <IconButton onClick={(e) => { e.stopPropagation(); console.log('kur'); } }><MoreVertIcon /></IconButton>
+      </Box>
+    </Paper>
   )
 };
