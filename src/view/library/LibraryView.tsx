@@ -21,12 +21,17 @@ export const LibraryView = (params: LibraryViewParams) => {
 
   const refreshBooks = useCallback(() => params.app.listBooks().then(bcs => setCovers(bcs)), []);
   const bookSelected = useCallback((id: string) => navigate('/read', { state: { bookId: id }}), []);
+  const goToSettings = useCallback(() => navigate('/settings'), []);
 
   useEffect(() => { refreshBooks() }, []);
 
   return (
     <div id="library-container">
-      <MainAppBar app={params.app} onBookAdded={refreshBooks} />
+      <MainAppBar
+        app={params.app}
+        onBookAdded={refreshBooks}
+        onSettingsClick={goToSettings}
+      />
       { covers.length === 0 
           ? <p>No books!</p>
           : ( <Grid sx={{ marginTop: 1, marginBottom: 1 }} container justifyContent="center" spacing={3}>
