@@ -27,6 +27,13 @@ export default class SoundCache {
       console.error('Asking for sentence that has not been enqueued');
       console.log('Requested sentences', s);
       console.log('Enqueued sentences', this.#sentences);
+
+      const substitute = this.#findSupersetSentence(s);
+      if (substitute) {
+        console.warn('Found a superset sentence, playing that istead.');
+        console.log(substitute);
+        s = substitute;
+      }
     }
 
     let sound = this.#buffer.get(s.id);
@@ -38,6 +45,11 @@ export default class SoundCache {
     this.#bufferSounds(this.#findSoundsForBuffering(s.id));
 
     return sound;
+  }
+
+  #findSupersetSentence(s: Sentence) {
+    const substitute = this.#sentences.find(sx => sx.text.includes(s.text));
+    return (substitute) ? substitute : null;
   }
 
   #findSoundsForBuffering(id: string) {
