@@ -38,27 +38,18 @@ export const BookCoverView = (params: BookCoverViewParams) => {
         display={'flex'}
         flexDirection={'row'}
         justifyContent={'space-between'}
+        alignItems={'center'}
         sx={{
           width: '100%',
-          minHeight: 50,
+          minHeight: 70,
           position: 'absolute',
           bottom: 0,
           backgroundColor: 'rgba(255, 255, 255, 0.85);',
         }}
       >
-        <Box
-          display={'flex'}
-          flexDirection={'column'}
-          flexGrow={1}
-          padding={'3px'}
-          paddingLeft={'15px'}
-        >
-          <Typography variant='subtitle2'>
-            {params.cover.title}
-          </Typography>
-          <Typography variant='caption'>Author Name</Typography>
-        </Box>
-
+        <Typography padding={'5px'} variant='subtitle1'>
+          {params.cover.title}
+        </Typography>
         <IconButton onClick={(e) => { e.stopPropagation(); console.log('kur'); } }><MoreVertIcon /></IconButton>
       </Box>
     </Paper>
