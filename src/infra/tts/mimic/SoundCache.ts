@@ -22,17 +22,20 @@ export default class SoundCache {
     this.#buffer = new Map();
   }
 
-  async get(id: string): Promise<Sound> {
-    const sentence = this.#sentencesMap.get(id);
-    if (!sentence) throw new Error('asking for sentence id that has not been enqueued');
-
-    let sound = this.#buffer.get(id);
-    if (!sound) {
-      sound = (await this.#source.generate([sentence]))[0];
-      this.#buffer.set(id, sound);
+  async get(s: Sentence): Promise<Sound> {
+    if (!this.#sentences.find(sx => sx.id === s.id)) {
+      console.error('Asking for sentence that has not been enqueued');
+      console.log('Requested sentences', s);
+      console.log('Enqueued sentences', this.#sentences);
     }
 
-    this.#bufferSounds(this.#findSoundsForBuffering(id));
+    let sound = this.#buffer.get(s.id);
+    if (!sound) {
+      sound = (await this.#source.generate([s]))[0];
+      this.#buffer.set(s.id, sound);
+    }
+
+    this.#bufferSounds(this.#findSoundsForBuffering(s.id));
 
     return sound;
   }

@@ -28,7 +28,7 @@ export default class Mimic3TTSSource extends EventTarget implements TTSSource {
   }
 
   async prepare(s: Sentence) {
-    const sound = await this.#cache.get(s.id);
+    const sound = await this.#cache.get(s);
     this.#player.stop();
     this.#player.load(sound);
   }
