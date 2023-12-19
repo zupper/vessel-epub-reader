@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
 
 import App from 'app/App';
 import { BookCover } from 'app/Book';

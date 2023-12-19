@@ -1,8 +1,8 @@
 import React from 'react';
 
 import Typography from '@mui/material/Typography';
-import { CardActionArea, CardActions, Button, Box, bottomNavigationClasses } from '@mui/material';
-import IconButton, { IconButtonProps } from '@mui/material/IconButton';
+import Box from '@mui/material/Box';
+import IconButton  from '@mui/material/IconButton';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 import Paper from '@mui/material/Paper';
