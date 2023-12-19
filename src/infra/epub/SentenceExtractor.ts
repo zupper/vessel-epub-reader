@@ -69,7 +69,8 @@ export default class SentenceExtractor {
         .filter((o: MetaSentence) => o.offset.start + o.offset.length >= offset)
         .map((o: MetaSentence) => o.sentence.text);
 
-    return trimmed.join(' ');
+    const cutoffPoint = s.indexOf(trimmed[0]);
+    return s.slice(cutoffPoint);
   }
 
   #trimEndNodeText(s: string, offset: number) {
@@ -84,7 +85,10 @@ export default class SentenceExtractor {
         .filter((o: MetaSentence) => o.offset.start < offset)
         .map((o: MetaSentence) => o.sentence.text);
 
-    return trimmed.join(' ');
+    const lastTrimmed = trimmed[trimmed.length - 1];
+    const cutoffPoint = s.indexOf(lastTrimmed) + lastTrimmed.length;
+
+    return s.slice(0, cutoffPoint);
   }
 
   #toSentence(t: string) {
