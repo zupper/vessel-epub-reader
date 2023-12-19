@@ -3,36 +3,29 @@ import BookRepository from "app/BookRepository";
 
 export default class OPFSBookRepository implements BookRepository {
   async add(b: Book) {
-    const opfsRoot = await navigator.storage.getDirectory();
-    const dataFile = await opfsRoot.getFileHandle(b.cover.id, { create: true });
-
-    // the below ignores are caused by https://github.com/microsoft/TypeScript/issues/47568
-    // should be removed when the above is fixed
-    // @ts-ignore
-    const dataWritable = await dataFile.createWritable();
-    await dataWritable.write(b.data);
-    await dataWritable.close();
-
-    const metaFile = await opfsRoot.getFileHandle(`${b.cover.id}.meta`, { create: true });
-
-    // @ts-ignore
-    const metaWritable = await metaFile.createWritable();
-    const encoder = new TextEncoder();
-    const metaData = encoder.encode(JSON.stringify({ cover: b.cover, toc: b.toc }));
-    await metaWritable.write(metaData);
-    await metaWritable.close();
-
-    const coverFile = await opfsRoot.getFileHandle(`${b.cover.id}.cover`, { create: true });
-    // @ts-ignore
-    const coverWritable = await coverFile.createWritable();
-    const coverData = await this.fetchArrayBuffer(b.cover.coverImageUrl);
-    await coverWritable.write(coverData);
-    await coverWritable.close();
+    await Promise.all([
+      this.#writeFile(b.cover.id, b.data),
+      this.#writeFile(`${b.cover.id}.meta`, (new TextEncoder()).encode(JSON.stringify({ cover: b.cover, toc: b.toc }))),
+      this.#writeFile(`${b.cover.id}.cover`, await this.fetchArrayBuffer(b.cover.coverImageUrl)),
+    ]);
   }
 
-  async fetchArrayBuffer(burl: string) {
-    const data = await fetch(burl);
-    return data.arrayBuffer();
+  async get(id: string): Promise<Book> {
+    const [dataFile, metaFile] = await Promise.all([
+      this.#getFile(id),
+      this.#getFile(`${id}.meta`),
+    ]);
+
+    const meta = JSON.parse(await metaFile.text());
+    const [data, coverImageUrl] = await Promise.all([
+      dataFile.arrayBuffer(),
+      this.#getCoverImageUrl(id),
+    ])
+    return {
+      cover: { ...meta.cover, coverImageUrl },
+      toc: meta.toc,
+      data,
+    };
   }
 
   async list(): Promise<BookCover[]> {
@@ -49,10 +42,26 @@ export default class OPFSBookRepository implements BookRepository {
     const texts = await Promise.all(files.map(f => f.text()));
 
     const covers = texts.map(t => JSON.parse(t)).map(({ cover }) => cover);
-    return Promise.all(covers.map(async c => ({...c, coverImageUrl: await this.getCoverImageUrl(c.id) })));
+    return Promise.all(covers.map(async c => ({...c, coverImageUrl: await this.#getCoverImageUrl(c.id) })));
   }
 
-  async getCoverImageUrl(id: string) {
+  async #writeFile(name: string, data: ArrayBuffer) {
+    const opfsRoot = await navigator.storage.getDirectory();
+    const file = await opfsRoot.getFileHandle(name, { create: true });
+    // the below ignores are caused by https://github.com/microsoft/TypeScript/issues/47568
+    // should be removed when the above is fixed
+    // @ts-ignore
+    const fileWritable = await file.createWritable();
+    await fileWritable.write(data);
+    await fileWritable.close();
+  }
+
+  async fetchArrayBuffer(burl: string) {
+    const data = await fetch(burl);
+    return data.arrayBuffer();
+  }
+
+  async #getCoverImageUrl(id: string) {
     try {
       const opfsRoot = await navigator.storage.getDirectory();
       const coverHandle = await opfsRoot.getFileHandle(`${id}.cover`);
@@ -66,28 +75,9 @@ export default class OPFSBookRepository implements BookRepository {
     }
   }
 
-  async get(id: string): Promise<Book> {
+  async #getFile(name: string) {
     const opfsRoot = await navigator.storage.getDirectory();
-    const [dataHandle, metaHandle, coverHandle] = await Promise.all([
-      opfsRoot.getFileHandle(id),
-      opfsRoot.getFileHandle(`${id}.meta`),
-      opfsRoot.getFileHandle(`${id}.cover`),
-    ]);
-
-    const [dataFile, metaFile, coverFile] = await Promise.all([
-      dataHandle.getFile(),
-      metaHandle.getFile(),
-      coverHandle.getFile(),
-    ]);
-
-    const meta = JSON.parse(await metaFile.text());
-    const data = await dataFile.arrayBuffer();
-    const imageData = await coverFile.arrayBuffer();
-    const coverImageUrl = URL.createObjectURL(new Blob([imageData]));
-    return {
-      cover: { ...meta.cover, coverImageUrl },
-      toc: meta.toc,
-      data,
-    };
+    const handle = await opfsRoot.getFileHandle(name);
+    return handle.getFile();
   }
 }
