@@ -24,7 +24,7 @@ export const BookCoverView = (params: BookCoverViewParams) => {
       elevation={3}
       sx={{
         width: 250,
-        height: 300,
+        height: 400,
         backgroundColor: (theme) =>
         theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
         position: 'relative',
@@ -33,7 +33,7 @@ export const BookCoverView = (params: BookCoverViewParams) => {
         }
       }}
     >
-      <img src="https://www.adazing.com/wp-content/uploads/2023/03/stephen-king-book-covers-the-shining-us-hardcover.jpg" alt="" />
+      <img src={params.cover.coverImageUrl} alt="" />
       <Box
         display={'flex'}
         flexDirection={'row'}

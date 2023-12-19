@@ -1,6 +1,7 @@
 export type BookCover = {
   id: string;
   title: string;
+  coverImageUrl: string;
 }
 
 export type Book = {

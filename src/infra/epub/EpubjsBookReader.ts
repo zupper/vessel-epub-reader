@@ -43,6 +43,7 @@ export default class EpubjsBookReader implements BookReader {
       cover: {
         id: this.#hasher.generate(title),
         title,
+        coverImageUrl: await this.#epubjsBook.coverUrl(),
       },
       toc: nav.toc.map(this.#toTocItem),
       data,
