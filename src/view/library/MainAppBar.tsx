@@ -16,7 +16,6 @@ export type MainAppBarParams = {
 }
 
 export const MainAppBar = (params: MainAppBarParams) => {
-
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">

@@ -1,0 +1,7 @@
+#settings-view {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  background-color: #eee;
+  height: 100%;
+}
