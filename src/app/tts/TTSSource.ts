@@ -10,6 +10,7 @@ export class SentenceCompleteEvent extends Event {
 }
 
 export interface TTSSource extends EventTarget {
+  id: () => string;
   prepare: (s: Sentence) => Promise<void>;
   load: (ss: Sentence[]) => void;
   append: (ss: Sentence[]) => void;

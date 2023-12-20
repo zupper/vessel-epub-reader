@@ -6,28 +6,31 @@ import PlaybackState, { StateChangeAction } from "./PlaybackState";
 import { StateDetails } from "./PlaybackState";
 
 import { TTSSource } from './TTSSource';
+import { TTSSourceProvider } from './TTSSourceProvider';
 
 export type TTSControlConstructorParams = {
-  tts: TTSSource;
+  ttsSourceProvider: TTSSourceProvider;
   reader: BookReader;
   nav: Navigation;
 };
 
 export default class TTSControl {
-
   #reader: BookReader;
   #state: PlaybackState;
   #stateTransitionInProgress: boolean;
-  #tts: TTSSource;
+  #ttsProvider: TTSSourceProvider;
   #nav: Navigation
 
+  #tts: TTSSource;
   #sentenceCompleteBoundCallback: EventListener;
 
   constructor(params: TTSControlConstructorParams) {
     this.#reader = params.reader;
-    this.#tts = params.tts;
-    this.#sentenceCompleteBoundCallback = this.#onSentenceComplete.bind(this);
+    this.#ttsProvider = params.ttsSourceProvider;
     this.#nav = params.nav;
+
+    this.#tts = this.#ttsProvider.getActiveSource();
+    this.#sentenceCompleteBoundCallback = this.#onSentenceComplete.bind(this);
   }
 
   async startReading() {
@@ -58,6 +61,20 @@ export default class TTSControl {
   resumeReading() { this.#handleInput('resume'); }
   nextSentence() { this.#handleInput('next'); }
   previousSentence() { this.#handleInput('prev'); }
+
+  getAvailableSources() {
+    return this.#ttsProvider.getSources();
+  }
+
+  getCurrentSource() {
+    return this.#tts;
+  }
+
+  changeSource(id: string) {
+    if (!this.getAvailableSources().includes(id)) throw new Error('Invalid TTS Source requested.');
+    this.#ttsProvider.activateSource(id);
+    this.#tts = this.#ttsProvider.getActiveSource();
+  }
 
   #onSentenceComplete() {
     this.#handleNewState(this.#state.changeState('next'));

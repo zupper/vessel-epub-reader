@@ -22,7 +22,7 @@ export const Entrypoint = (params: EntrypointParams) => {
       <Routes>
         <Route path="/" element={<LibraryView app={params.app} />} />
         <Route path="/read" element={<ReaderView app={params.app} />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/settings" element={<Settings app={params.app} />} />
       </Routes>
     </Router>
   );

@@ -11,6 +11,7 @@ export default class WebSpeechTTSSource extends EventTarget implements TTSSource
     this.#synth = window.speechSynthesis;
   }
 
+  id() { return 'webtts'; }
   load(_: Sentence[]) {}
   append(_: Sentence[]) {}
   prepend(_: Sentence[]) {}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
@@ -6,22 +6,33 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Box from '@mui/material/Box';
 
+import App from 'app/App';
+
 import { SettingsAppBar } from './SettingsAppBar';
 
 import './Settings.css';
 import {Typography} from '@mui/material';
 
-export const Settings = () => {
+export type SettingsParams = {
+  app: App;
+}
+
+export const Settings = (params: SettingsParams) => {
   const navigate = useNavigate();
   const goBack = () => navigate(-1);
 
-  const [alignment, setAlignment] = React.useState<string | null>('left');
+  const [ttsSource, setTTSSource] = useState('webtts');
+
+  useEffect(() => {
+    setTTSSource(params.app.tts.getCurrentSource().id());
+  }, []);
 
   const handleChange = (
     _: React.MouseEvent<HTMLElement>,
-    newAlignment: string | null,
+    newSource: string | null,
   ) => {
-    setAlignment(newAlignment);
+    params.app.tts.changeSource(newSource);
+    setTTSSource(newSource);
   };
 
   return (
@@ -66,13 +77,13 @@ export const Settings = () => {
             </Typography>
             <ToggleButtonGroup
               color="primary"
-              value={alignment}
+              value={ttsSource}
               exclusive
               onChange={handleChange}
               aria-label="TTS Engine"
             >
-              <ToggleButton value="mimic3">Mimic 3</ToggleButton>
               <ToggleButton value="webtts">Web TTS</ToggleButton>
+              <ToggleButton value="mimic3">Mimic 3</ToggleButton>
               <ToggleButton disabled value="subscription">Subscription</ToggleButton>
             </ToggleButtonGroup>
           </Box>

@@ -16,6 +16,10 @@ export default class Mimic3TTSSource extends EventTarget implements TTSSource {
     this.#player = new HowlerPlayer(this.#onSentenceEnd.bind(this));
   }
 
+  id() {
+    return 'mimic3';
+  }
+
   #onSentenceEnd(sentenceId: string) {
     this.dispatchEvent(new SentenceCompleteEvent(sentenceId));
   }
