@@ -71,5 +71,9 @@ export default class App {
   #loadBookURL(handle: URL) {
     // download the book data
   }
+
+  deleteBook(id: string) {
+    return this.#repo.delete(id);
+  }
 }
 

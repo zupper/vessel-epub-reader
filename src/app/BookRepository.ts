@@ -4,4 +4,5 @@ export default interface BookRepository {
   add: (b: Book) => Promise<void>;
   list: () => Promise<BookCover[]>;
   get: (id: string) => Promise<Book>;
+  delete: (id: string) => Promise<void>;
 }

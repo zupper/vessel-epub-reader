@@ -3,7 +3,6 @@ Application layer
 - go to percentage
 - pages UI
 - settings
-- remove book
 - bookmark
 - list bookmarks
 - remove bookmark
@@ -37,3 +36,4 @@ DONE
 - refactor book repo
 - library UI
 - add book cover image
+- remove book

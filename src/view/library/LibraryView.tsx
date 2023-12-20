@@ -20,8 +20,12 @@ export const LibraryView = (params: LibraryViewParams) => {
   const navigate = useNavigate();
 
   const refreshBooks = useCallback(() => params.app.listBooks().then(bcs => setCovers(bcs)), []);
-  const bookSelected = useCallback((id: string) => navigate('/read', { state: { bookId: id }}), []);
   const goToSettings = useCallback(() => navigate('/settings'), []);
+  const bookSelected = useCallback((id: string) => navigate('/read', { state: { bookId: id }}), []);
+  const deleteBook = useCallback(async (id: string) => {
+    await params.app.deleteBook(id);
+    refreshBooks();
+  }, []);
 
   useEffect(() => { refreshBooks() }, []);
 
@@ -40,7 +44,9 @@ export const LibraryView = (params: LibraryViewParams) => {
                       <BookCoverView
                         cover={bc}
                         key={bc.id}
-                        onOpen={bookSelected} />
+                        onOpen={bookSelected}
+                        onDelete={deleteBook}
+                      />
                   </Grid>
                 ) }
               </Grid>

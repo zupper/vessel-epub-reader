@@ -45,6 +45,16 @@ export default class OPFSBookRepository implements BookRepository {
     return Promise.all(covers.map(async c => ({...c, coverImageUrl: await this.#getCoverImageUrl(c.id) })));
   }
 
+  async delete(id: string) {
+    const opfsRoot = await navigator.storage.getDirectory();
+    // the below ignores are caused by https://github.com/microsoft/TypeScript/issues/47568
+    // should be removed when the above is fixed
+    // @ts-ignore
+    for await (let [name] of opfsRoot) {
+      if (name.includes(id)) await opfsRoot.removeEntry(name)
+    }
+  }
+
   async #writeFile(name: string, data: ArrayBuffer) {
     const opfsRoot = await navigator.storage.getDirectory();
     const file = await opfsRoot.getFileHandle(name, { create: true });
