@@ -1,5 +1,5 @@
 import { BookReader } from './BookReader';
-import { TTSSourceProvider } from './tts/TTSSourceProvider';
+import { TTSSourceProvider } from './tts/TTSSource';
 import TTSControl from './tts/TTSControl';
 import Navigation from './Navigation';
 import StringStorage from './StringStorage';

@@ -19,3 +19,26 @@ export interface TTSSource extends EventTarget {
   stop: () => void;
   pause: () => void;
 }
+
+export type TTSSourceConfig = {
+  [key: string]: {
+    value: string;
+    type: string;
+    options?: string[];
+  }
+};
+
+export interface TTSSourceProvider {
+  getSources(): string[];
+  getConfig(id: string): TTSSourceConfig;
+  setConfig(id: string, config: TTSSourceConfig): void;
+  activateSource(id: string): void;
+  getActiveSource(): TTSSource;
+}
+
+export interface TTSSourceFactory {
+  id(): string;
+  make(config: TTSSourceConfig): TTSSource;
+  validate(config: TTSSourceConfig): boolean;
+  defaultConfig(): TTSSourceConfig;
+}

@@ -1,31 +1,32 @@
-import { TTSSource } from "app/tts/TTSSource";
-import { TTSSourceConfig, TTSSourceProvider } from "app/tts/TTSSourceProvider";
+import { TTSSource, TTSSourceConfig, TTSSourceProvider, TTSSourceFactory  } from "app/tts/TTSSource";
 import LocalStringStorage from "infra/LocalStringStorage";
-import Mimic3TTSSource from "./mimic/Mimic3TTSSource";
-import WebSpeechTTSSource from "./WebSpeechTTSSource";
 
 const ACTIVE_SOURCE_KEY = 'DefaultBookSourceReader-activeSource';
+const SOURCE_CONFIG_KEY = 'DefaultBookSourceReader-sourceConfig-';
 
 export default class DefaultTTSSourceProvider implements TTSSourceProvider {
+  #factories: TTSSourceFactory[];
   #activeSource: string;
-  #mimicApiUrl: string;
 
   #stringStorage: LocalStringStorage;
 
-  constructor() {
-    this.#mimicApiUrl = 'http://192.168.1.10:59125/api'
-
+  constructor(factories: TTSSourceFactory[]) {
+    this.#factories = factories;
     this.#stringStorage = new LocalStringStorage();
-    this.#activeSource = this.#stringStorage.get(ACTIVE_SOURCE_KEY) ?? 'webtts';
+    this.#activeSource = this.#stringStorage.get(ACTIVE_SOURCE_KEY) ?? this.#factories[0].id();
   }
 
   getSources(): string[] {
-    return ['mimic3', 'webtts'];
+    return this.#factories.map(f => f.id());
   }
 
   getActiveSource(): TTSSource {
-    return this.#activeSource === 'mimic3' ? new Mimic3TTSSource(this.#mimicApiUrl) :
-           this.#activeSource === 'webtts' ? new WebSpeechTTSSource()               : null;
+    const factory = this.#factories.find(f => f.id() === this.#activeSource);
+    if (factory) {
+      return factory.make(this.getConfig(factory.id()));
+    }
+
+    return null;
   }
 
   activateSource(id: string): void {
@@ -36,10 +37,12 @@ export default class DefaultTTSSourceProvider implements TTSSourceProvider {
   }
 
   getConfig(id: string): TTSSourceConfig {
-    throw new Error('not implemented');
+    const config: TTSSourceConfig = JSON.parse(this.#stringStorage.get(`${SOURCE_CONFIG_KEY}${id}`));
+    return config ?? this.#factories.find(f => f.id() === id)?.defaultConfig();
   }
 
   setConfig(id: string, config: TTSSourceConfig): void {
-    throw new Error('not implemented');
+    if (!this.#factories.find(f => f.id() === id)?.validate(config)) throw new Error('invalid config');
+    this.#stringStorage.set(`${SOURCE_CONFIG_KEY}${id}`, JSON.stringify(config));
   }
 }

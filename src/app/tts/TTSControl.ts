@@ -5,8 +5,7 @@ import Navigation from "app/Navigation";
 import PlaybackState, { StateChangeAction } from "./PlaybackState";
 import { StateDetails } from "./PlaybackState";
 
-import { TTSSource } from './TTSSource';
-import { TTSSourceProvider } from './TTSSourceProvider';
+import { TTSSource, TTSSourceProvider } from './TTSSource';
 
 export type TTSControlConstructorParams = {
   ttsSourceProvider: TTSSourceProvider;
