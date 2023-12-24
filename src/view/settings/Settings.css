@@ -5,3 +5,7 @@
   background-color: #eee;
   height: 100%;
 }
+
+#settings-main-content {
+  max-width: 600px;
+}

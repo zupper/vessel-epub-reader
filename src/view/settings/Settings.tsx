@@ -12,6 +12,7 @@ import { SettingsAppBar } from './SettingsAppBar';
 
 import './Settings.css';
 import {Typography} from '@mui/material';
+import { OpenTTSSettingsView } from './OpenTTSSettingsView';
 
 export type SettingsParams = {
   app: App;
@@ -22,26 +23,44 @@ export const Settings = (params: SettingsParams) => {
   const goBack = () => navigate(-1);
 
   const [ttsSource, setTTSSource] = useState('webtts');
+  const [config, setConfig] = useState(null);
 
   useEffect(() => {
     setTTSSource(params.app.tts.getCurrentSource().id());
+    params.app.tts.getCurrentSourceConfig().then(setConfig);
   }, []);
 
-  const handleChange = (
+  const handleChangeSource = async (
     _: React.MouseEvent<HTMLElement>,
     newSource: string | null,
   ) => {
-    params.app.tts.changeSource(newSource);
+    await params.app.tts.changeSource(newSource);
     setTTSSource(newSource);
+    setConfig(null);
+    setConfig(await params.app.tts.getCurrentSourceConfig());
+  };
+
+  const updateConfig = (key: string, value: string) => {
+    const newValue = { ...config[key], value };
+    const newConfig = {...config, [key]: newValue };
+    try {
+      params.app.tts.updateCurrentSourceConfig(newConfig);
+      setConfig(newConfig);
+      return true;
+    }
+    catch(e) {
+      console.log(e);
+      return false;
+    }
   };
 
   return (
     <div id="settings-view">
       <SettingsAppBar onBack={goBack} />
       <Container
+        id='settings-main-content'
         sx={{
           minWidth: 'xs',
-          maxWidth: 'sm',
           padding: 0,
           height: '100%',
           flexGrow: 1,
@@ -79,7 +98,7 @@ export const Settings = (params: SettingsParams) => {
               color="primary"
               value={ttsSource}
               exclusive
-              onChange={handleChange}
+              onChange={handleChangeSource}
               aria-label="TTS Engine"
             >
               <ToggleButton value="webtts">Web TTS</ToggleButton>
@@ -87,6 +106,10 @@ export const Settings = (params: SettingsParams) => {
               <ToggleButton disabled value="subscription">Subscription</ToggleButton>
             </ToggleButtonGroup>
           </Box>
+          { ttsSource === 'webtts'
+            ? <div>web tts config</div>
+            : <OpenTTSSettingsView config={config} onChange={updateConfig} />
+          }
         </Paper>
       </Container>
     </div>

@@ -5,7 +5,7 @@ import Navigation from "app/Navigation";
 import PlaybackState, { StateChangeAction } from "./PlaybackState";
 import { StateDetails } from "./PlaybackState";
 
-import { TTSSource, TTSSourceProvider } from './TTSSource';
+import { TTSSource, TTSSourceConfig, TTSSourceProvider } from './TTSSource';
 
 export type TTSControlConstructorParams = {
   ttsSourceProvider: TTSSourceProvider;
@@ -28,7 +28,7 @@ export default class TTSControl {
     this.#ttsProvider = params.ttsSourceProvider;
     this.#nav = params.nav;
 
-    this.#tts = this.#ttsProvider.getActiveSource();
+    this.#ttsProvider.getActiveSource().then(s => this.#tts = s);
     this.#sentenceCompleteBoundCallback = this.#onSentenceComplete.bind(this);
   }
 
@@ -69,10 +69,18 @@ export default class TTSControl {
     return this.#tts;
   }
 
-  changeSource(id: string) {
+  getCurrentSourceConfig() {
+    return this.#ttsProvider.getConfig(this.#tts.id());
+  }
+
+  updateCurrentSourceConfig(config: TTSSourceConfig) {
+    this.#ttsProvider.setConfig(this.#tts.id(), config);
+  }
+
+  async changeSource(id: string) {
     if (!this.getAvailableSources().includes(id)) throw new Error('Invalid TTS Source requested.');
     this.#ttsProvider.activateSource(id);
-    this.#tts = this.#ttsProvider.getActiveSource();
+    this.#tts = await this.#ttsProvider.getActiveSource();
   }
 
   #onSentenceComplete() {

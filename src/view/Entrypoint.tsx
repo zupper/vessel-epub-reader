@@ -9,7 +9,7 @@ import '@fontsource/roboto/700.css';
 import App from 'app/App';
 
 import { LibraryView } from './library/LibraryView';
-import { Settings } from './Settings';
+import { Settings } from './settings/Settings';
 import { ReaderView } from './reader/ReaderView';
 
 export type EntrypointParams = {

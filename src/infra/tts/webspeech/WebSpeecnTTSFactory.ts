@@ -4,8 +4,8 @@ import WebSpeechTTSSource from "./WebSpeechTTSSource";
 export default class WebSpeechTTSFactory implements TTSSourceFactory {
   id() { return 'webtts'; }
 
-  defaultConfig(): TTSSourceConfig {
-   return {};
+  defaultConfig() {
+   return Promise.resolve({});
   }
 
   validate(_: TTSSourceConfig): boolean {

@@ -30,15 +30,15 @@ export type TTSSourceConfig = {
 
 export interface TTSSourceProvider {
   getSources(): string[];
-  getConfig(id: string): TTSSourceConfig;
+  getConfig(id: string): Promise<TTSSourceConfig>;
   setConfig(id: string, config: TTSSourceConfig): void;
   activateSource(id: string): void;
-  getActiveSource(): TTSSource;
+  getActiveSource(): Promise<TTSSource>;
 }
 
 export interface TTSSourceFactory {
   id(): string;
   make(config: TTSSourceConfig): TTSSource;
   validate(config: TTSSourceConfig): boolean;
-  defaultConfig(): TTSSourceConfig;
+  defaultConfig(): Promise<TTSSourceConfig>;
 }
