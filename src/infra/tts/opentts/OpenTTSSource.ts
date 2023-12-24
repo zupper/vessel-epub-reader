@@ -4,7 +4,7 @@ import SoundSource from "./SoundSource";
 import SoundCache from "./SoundCache";
 import HowlerPlayer from "./HowlerPlayer";
 
-export default class Mimic3TTSSource extends EventTarget implements TTSSource {
+export default class OpenTTSSource extends EventTarget implements TTSSource {
   #url: string;
   #cache: SoundCache;
   #player: HowlerPlayer;
@@ -17,7 +17,7 @@ export default class Mimic3TTSSource extends EventTarget implements TTSSource {
   }
 
   id() {
-    return 'mimic3';
+    return 'opentts';
   }
 
   #onSentenceEnd(sentenceId: string) {

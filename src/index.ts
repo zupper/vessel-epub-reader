@@ -8,7 +8,7 @@ import LocalStringStorage from 'infra/LocalStringStorage';
 import DefaultBookSourceReader from 'infra/DefaultBookSourceReader';
 import OPFSBookRepository from 'infra/OPFSBookRepository';
 import WebSpeechTTSFactory from 'infra/tts/webspeech/WebSpeecnTTSFactory';
-import Mimic3TTSFactory from 'infra/tts/mimic/Mimic3TTSFactory';
+import OpenTTSFactory from 'infra/tts/opentts/OpenTTSFactory';
 
 import { Entrypoint } from './view/Entrypoint';
 
@@ -25,7 +25,7 @@ window.addEventListener(
       },
       tts: new DefaultTTSSourceProvider([
         new WebSpeechTTSFactory(),
-        new Mimic3TTSFactory(),
+        new OpenTTSFactory(),
       ]),
       bookRepository: new OPFSBookRepository(),
     });

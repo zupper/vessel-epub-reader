@@ -71,6 +71,7 @@ export const Settings = (params: SettingsParams) => {
           square={true}
           sx={{
             width: '100%',
+            minHeight: '200px',
             margin: 0,
             marginTop: { xs: 0, sm: 2 },
             height: { xs: '100%', sm: 'fit-content' },
@@ -101,8 +102,8 @@ export const Settings = (params: SettingsParams) => {
               onChange={handleChangeSource}
               aria-label="TTS Engine"
             >
-              <ToggleButton value="webtts">Web TTS</ToggleButton>
-              <ToggleButton value="mimic3">Mimic 3</ToggleButton>
+              <ToggleButton value="webtts">Web Speech TTS</ToggleButton>
+              <ToggleButton value="opentts">Open TTS Server</ToggleButton>
               <ToggleButton disabled value="subscription">Subscription</ToggleButton>
             </ToggleButtonGroup>
           </Box>

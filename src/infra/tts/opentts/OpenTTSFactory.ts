@@ -1,9 +1,9 @@
 import { TTSSourceFactory, TTSSourceConfig } from "app/tts/TTSSource";
-import Mimic3TTSSource from "./Mimic3TTSSource";
+import OpenTTSSource from "./OpenTTSSource";
 
-export default class Mimic3TTSFactory implements TTSSourceFactory {
+export default class OpenTTSFactory implements TTSSourceFactory {
   id() {
-    return 'mimic3';
+    return 'opentts';
   }
 
   defaultConfig() {
@@ -28,6 +28,6 @@ export default class Mimic3TTSFactory implements TTSSourceFactory {
   make(config: TTSSourceConfig) {
     if (!this.validate(config)) throw new Error('invalid config');
 
-    return new Mimic3TTSSource(config.apiUrl.value);
+    return new OpenTTSSource(config.apiUrl.value);
   }
 }
