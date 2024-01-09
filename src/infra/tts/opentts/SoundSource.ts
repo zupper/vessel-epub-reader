@@ -9,18 +9,31 @@ const RATE = 0.8;
 const AUDIO_VOLATILITY = 0.667;
 const PHONEME_VOLATILITY = 0.8;
 
+export type SoundSourceParams = {
+  apiUrl: string;
+  username?: string;
+  password?: string;
+}
+
 export default class SoundSource {
   #ttsEndpoint: string;
-  #authHeaders: {
-    Authorization: string;
+  #hasAuth: boolean;
+  #headers: {
+    Authorization?: string;
   }
 
-  constructor(apiUrl: string) {
-    const base64Credentials = btoa(`username:kurvagrozna`);
-    // this.#authHeaders = { Authorization: `Basic ${base64Credentials}` };
-    this.#authHeaders = null;
+  constructor(params: SoundSourceParams) {
+    this.#hasAuth = !!(params.username && params.password)
 
-    this.#ttsEndpoint = `${apiUrl}/tts?voice=${LANG}%2F${VOICE}%23${SPEAKER}&noiseScale=${AUDIO_VOLATILITY}&noiseW=${PHONEME_VOLATILITY}&lengthScale=${RATE}&ssml=false&audioTarget=client&text=`;
+    if (this.#hasAuth) {
+      const base64Credentials = btoa(`${params.username}:${params.password}`);
+      this.#headers = { Authorization: `Basic ${base64Credentials}` };
+    }
+    else {
+      this.#headers = {};
+    }
+
+    this.#ttsEndpoint = `${params.apiUrl}/tts?voice=${LANG}%2F${VOICE}%23${SPEAKER}&noiseScale=${AUDIO_VOLATILITY}&noiseW=${PHONEME_VOLATILITY}&lengthScale=${RATE}&ssml=false&audioTarget=client&text=`;
   }
 
   async generate(ss: Sentence[]) {
@@ -39,8 +52,7 @@ export default class SoundSource {
   }
 
   async #fetchSentence(s: string) {
-    // const res = await fetch(this.#ttsEndpoint + s, { headers: this.#authHeaders, credentials: 'include', });
-    const res = await fetch(this.#ttsEndpoint + s);
+    const res = await fetch(this.#ttsEndpoint + s, { headers: this.#headers });
     const contentType = res.headers.get('content-type');
     if (!contentType || contentType !== 'audio/wav') {
       throw new Error('incorrect content type encountered during generation');

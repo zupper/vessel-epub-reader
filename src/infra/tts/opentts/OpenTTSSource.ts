@@ -1,18 +1,18 @@
 import { Sentence } from "app/Book";
 import { TTSSource, SentenceCompleteEvent } from "app/tts/TTSSource";
-import SoundSource from "./SoundSource";
+import SoundSource, { SoundSourceParams } from "./SoundSource";
 import SoundCache from "./SoundCache";
 import HowlerPlayer from "./HowlerPlayer";
 
 export default class OpenTTSSource extends EventTarget implements TTSSource {
-  #url: string;
   #cache: SoundCache;
   #player: HowlerPlayer;
+  #sourceParams: SoundSourceParams;
 
-  constructor(apiUrl: string) {
+  constructor(apiUrl: string, username?: string, password?: string) {
     super();
 
-    this.#url = apiUrl;
+    this.#sourceParams = { apiUrl, username, password };
     this.#player = new HowlerPlayer(this.#onSentenceEnd.bind(this));
   }
 
@@ -26,7 +26,7 @@ export default class OpenTTSSource extends EventTarget implements TTSSource {
 
   load(ss: Sentence[]) {
     this.#cache = new SoundCache({
-      soundSource: new SoundSource(this.#url),
+      soundSource: new SoundSource(this.#sourceParams),
       sentences: ss
     });
   }

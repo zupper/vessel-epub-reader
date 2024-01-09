@@ -40,9 +40,13 @@ export const Settings = (params: SettingsParams) => {
     setConfig(await params.app.tts.getCurrentSourceConfig());
   };
 
-  const updateConfig = (key: string, value: string) => {
-    const newValue = { ...config[key], value };
-    const newConfig = {...config, [key]: newValue };
+  const updateConfig = (pairs: { key: string, value: string }[]) => {
+    let newConfig = config;
+    for (const { key, value } of pairs) {
+      const newValue = { ...newConfig[key], value };
+      newConfig = {...newConfig, [key]: newValue };
+    }
+
     try {
       params.app.tts.updateCurrentSourceConfig(newConfig);
       setConfig(newConfig);
@@ -109,7 +113,15 @@ export const Settings = (params: SettingsParams) => {
           </Box>
           { ttsSource === 'webtts'
             ? <div>web tts config</div>
-            : <OpenTTSSettingsView config={config} onChange={updateConfig} />
+            : <OpenTTSSettingsView
+                url={config?.apiUrl?.value}
+                auth={{
+                  type: config?.authType?.value ?? 'None',
+                  username: config?.username?.value,
+                  password: config?.password?.value,
+                }}
+                onChange={updateConfig}
+              />
           }
         </Paper>
       </Container>
