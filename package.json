@@ -9,7 +9,8 @@
   "scripts": {
     "start": "cd src && python3 -m http.server",
     "build": "webpack",
-    "dev": "webpack serve --open"
+    "dev": "webpack serve --open",
+    "deploy": "./deploy.sh"
   },
   "author": "",
   "license": "ISC",
