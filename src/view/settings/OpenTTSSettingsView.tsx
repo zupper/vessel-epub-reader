@@ -24,8 +24,8 @@ export const OpenTTSSettingsView = (params: OpenTTSSettingsView) => {
   const [authVisible, setAuthVisible] = useState(params?.auth?.type === 'Basic');
 
   const [urlError, setUrlError] = useState(false);
-  const [usernameError, setUsernameError] = useState(!!username);
-  const [passwordError, setPasswordError] = useState(!!password);
+  const [usernameError, setUsernameError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
 
   useEffect(() => {
     setAuthType(params.auth?.type);
