@@ -4,13 +4,23 @@ export type BookCover = {
   coverImageUrl: string;
 }
 
+export type ToC = {
+  items: ToCItem[];
+  current?: ToCItem;
+}
+
 export type Book = {
   cover: BookCover;
-  toc: ToCItem[];
+  toc: ToC;
   data: ArrayBuffer;
 }
 
 export type PageRef = string;
+
+export type BookLocation = {
+  ref: PageRef;
+  currentChapter?: ToCItem;
+}
 
 export type ToCItem = {
   label: string;

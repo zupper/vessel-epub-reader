@@ -44,7 +44,8 @@ export default class App {
     this.reader.render();
 
     this.nav.book = book;
-    this.nav.moveToLastReadPage();
+    const currentLocation = await this.nav.moveToLastReadPage();
+    book.toc.current = currentLocation?.currentChapter;
 
     return book;
   }

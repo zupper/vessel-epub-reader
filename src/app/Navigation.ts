@@ -17,18 +17,18 @@ export default class Navigation {
     this.#storage = params.storage;
   }
 
-  moveToLastReadPage() {
+  async moveToLastReadPage() {
     if (this.#lastPageRef) {
-      this.#reader.moveTo(this.#lastPageRef);
+      return this.#reader.moveTo(this.#lastPageRef);
     }
   }
 
   async nextPage() {
-    await this.moveTo('next');
+    return this.moveTo('next');
   }
 
   async prevPage() {
-    await this.moveTo('prev');
+    return this.moveTo('prev');
   }
 
   async moveTo(ref: PageRef) {
@@ -36,12 +36,13 @@ export default class Navigation {
       throw new Error('Must open book first');
     }
 
-    if (ref === "next") { this.#lastPageRef = await this.#reader.nextPage(); }
-    else if (ref === "prev") { this.#lastPageRef = await this.#reader.prevPage(); }
-    else {
-      this.#reader.moveTo(ref);
-      this.#lastPageRef = ref;
-    }
+    const loc = ref === "next" ? await this.#reader.nextPage() :
+                ref === "prev" ? await this.#reader.prevPage() :
+                                 await this.#reader.moveTo(ref);
+
+    this.#lastPageRef = loc.ref;
+
+    return loc;
   }
 
   set #lastPageRef(ref: PageRef) {

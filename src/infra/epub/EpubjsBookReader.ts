@@ -1,8 +1,9 @@
 import { Book as EpubjsBook, Rendition, NavItem } from "epubjs";
-import { Book, PageRef, ToCItem } from "app/Book";
+import { Book, BookLocation, PageRef, ToCItem } from "app/Book";
 import { BookReader } from "app/BookReader";
 import ReaderAssistant from "./ReaderAssistant";
 import HashGenerator from "./HashGenerator";
+import EpubjsToC from "./EpubjsToC";
 
 export default class EpubjsBookReader implements BookReader {
   #book: Book;
@@ -12,10 +13,14 @@ export default class EpubjsBookReader implements BookReader {
   #assistant: ReaderAssistant;
   #isRendered: boolean;
   #hasher: HashGenerator;
+  #epubjsToC: EpubjsToC;
+
+  #locationChangedListeners: ((loc: BookLocation) => unknown)[];
 
   constructor() {
     this.#isRendered = false;
     this.#hasher = new HashGenerator();
+    this.#locationChangedListeners = [];
   }
 
   set view(v: Element) {
@@ -36,16 +41,18 @@ export default class EpubjsBookReader implements BookReader {
     const [opened, nav] = await Promise.all([
       this.#epubjsBook.opened,
       this.#epubjsBook.loaded.navigation,
-    ])
+    ]);
 
     const title = opened.packaging.metadata.title;
+    this.#epubjsToC = new EpubjsToC(nav.toc);
+
     this.#book = {
       cover: {
         id: this.#hasher.generate(title),
         title,
         coverImageUrl: await this.#epubjsBook.coverUrl(),
       },
-      toc: nav.toc.map(this.#toTocItem),
+      toc: this.#epubjsToC.getToC(),
       data,
     };
 
@@ -66,21 +73,31 @@ export default class EpubjsBookReader implements BookReader {
     this.#rendition = this.#epubjsBook.renderTo(this.#view, { width: "100%", height: "90%" });
     this.#rendition.display();
     this.#isRendered = true;
-  }
 
-  nextPage(): Promise<PageRef> {
-    this.#assistant.removeAllHightlights();
-    return new Promise((res) => {
-      this.#rendition.next();
-      this.#rendition.on("relocated", () => res(this.currentCfi))
+    this.#rendition.on("relocated", () => {
+      const loc = {
+        ref: this.currentCfi,
+        currentChapter: this.currentChapter,
+      };
+
+      this.#locationChangedListeners.forEach(l => l(loc));
+      this.#locationChangedListeners = [];
     });
   }
 
-  prevPage(): Promise<PageRef> {
+  nextPage(): Promise<BookLocation> {
+    this.#assistant.removeAllHightlights();
+    return new Promise((res) => {
+      this.#rendition.next();
+      this.#locationChangedListeners.push(res);
+    });
+  }
+
+  prevPage(): Promise<BookLocation> {
     this.#assistant.removeAllHightlights();
     return new Promise((res) => {
       this.#rendition.prev();
-      this.#rendition.on("relocated", () => res(this.currentCfi))
+      this.#locationChangedListeners.push(res);
     });
   }
 
@@ -96,8 +113,15 @@ export default class EpubjsBookReader implements BookReader {
     return this.#rendition.location.start.cfi;
   }
 
-  moveTo(ref: PageRef) {
-    this.#rendition.display(ref);
+  get currentChapter() {
+    return this.#epubjsToC.getToCItem(this.#rendition.location.start.href);
+  }
+
+  moveTo(ref: PageRef): Promise<BookLocation> {
+    return new Promise((res) => {
+      this.#rendition.display(ref);
+      this.#locationChangedListeners.push(res);
+    });
   }
 
   highlight(sentenceId: string) {

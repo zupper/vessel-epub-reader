@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { CSSTransition } from 'react-transition-group';
 
 import App from 'app/App';
-import {ToCItem} from 'app/Book';
+import {BookLocation, ToCItem} from 'app/Book';
 import EpubjsBookReader from 'infra/epub/EpubjsBookReader';
 
 import { ReaderControls } from './controls/ReaderControls';
@@ -16,17 +16,19 @@ export type ReaderViewProps = {
 };
 
 export const ReaderView = (params: ReaderViewProps) => {
-  const [book, setBook] = useState(null);
   const [tocVisible, setTocVisible] = useState(false);
+  const [toc, setToC] = useState(null);
 
   const location = useLocation();
   const renderAreaRef = useRef(null);
+
+  const updateToC = (loc: BookLocation) => setToC({ ...toc, current: loc.currentChapter });
 
   useEffect(() => {
     const reader = (params.app.reader as EpubjsBookReader);
     if (renderAreaRef.current) {
       reader.view = renderAreaRef.current;
-      params.app.openBook(location.state.bookId).then(setBook);
+      params.app.openBook(location.state.bookId).then(({ toc }) => setToC(toc));
     }
 
     return () => { reader.view = null };
@@ -37,8 +39,12 @@ export const ReaderView = (params: ReaderViewProps) => {
 
   const goTo = (i: ToCItem) => {
     hideToC();
-    params.app.nav.moveTo(i.link);
+    params.app.nav.moveTo(i.link)
+      .then(updateToC);
   };
+
+  const nextPage = () => params.app.nav.nextPage().then(updateToC);
+  const prevPage = () => params.app.nav.prevPage().then(updateToC);
 
   return (
     <div
@@ -48,13 +54,20 @@ export const ReaderView = (params: ReaderViewProps) => {
         id="render-area"
         ref={renderAreaRef}
         style={{ height: '100%', width: '100%' }}></div>
-      <ReaderControls app={params.app} onTableOfContents={showToC}  />
+      <ReaderControls
+        app={params.app}
+        onNextPage={nextPage}
+        onPrevPage={prevPage}
+        onTableOfContents={showToC} />
       <CSSTransition
         in={tocVisible}
         timeout={300}
         classNames="toc-fade"
         unmountOnExit>
-        <TableOfContentsView toc={book?.toc} onClose={hideToC} onItemClick={goTo} />
+        <TableOfContentsView
+          toc={toc}
+          onClose={hideToC}
+          onItemClick={goTo} />
        </CSSTransition>
     </div>
   );

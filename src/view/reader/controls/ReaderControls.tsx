@@ -9,6 +9,8 @@ import './ReaderControls.css';
 
 export type ReaderControlsParams = {
   app: App;
+  onPrevPage: () => unknown;
+  onNextPage: () => unknown;
   onTableOfContents: () => unknown;
 };
 
@@ -29,7 +31,12 @@ export const ReaderControls = (params: ReaderControlsParams) => {
     <div id="reading-controls">
       { playing
           ? <TTSPlaybacControls app={params.app} onStop={stopTTS} />
-          : <PageControls app={params.app} onStartTTS={startTTS} onTableOfContents={params.onTableOfContents} /> }
+          : <PageControls
+              onNextPage={params.onNextPage}
+              onPrevPage={params.onPrevPage}
+              onStartTTS={startTTS}
+              onTableOfContents={params.onTableOfContents} />
+      }
     </div>
   )
 };

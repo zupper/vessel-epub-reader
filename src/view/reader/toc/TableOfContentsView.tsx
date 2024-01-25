@@ -1,19 +1,42 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
-import { ToCItem } from 'app/Book';
+import { ToCItem, ToC } from 'app/Book';
 
 import { ToCItemView } from './ToCItemView';
 
 import './TableOfContentsView.css';
 
 export type TableOfContentsViewParams = {
-  toc: ToCItem[];
+  toc: ToC;
   onClose: () => unknown;
   onItemClick: (i: ToCItem) => unknown;
 };
 
 export const TableOfContentsView = (params: TableOfContentsViewParams) => {
   if (!params.toc) return null;
+
+  const scrollRef = useRef(null);
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'center'
+      });
+    }
+  }, [scrollRef.current]);
+
+
+  const formatSubitems = (is: ToCItem[]) =>
+    is?.map(i =>
+      <ToCItemView
+        key={i.link}
+        item={i}
+        scrollToRef={scrollRef}
+        active={i.link === params.toc.current?.link}
+        formatSubitems={formatSubitems}
+        onClick={params.onItemClick} />
+    );
 
   return (
     <div id="table-of-contents">
@@ -31,7 +54,7 @@ export const TableOfContentsView = (params: TableOfContentsViewParams) => {
         </h1>
         <div id="contents-scroller">
           <ul>
-            {params.toc.map(i => <ToCItemView item={i} onClick={params.onItemClick} />) }
+            { formatSubitems(params.toc.items) }
           </ul>
         </div>
       </div>
