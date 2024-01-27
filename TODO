@@ -1,6 +1,5 @@
 Application layer
 
-- OpenTTS auth settings
 - pages UI - percentage left in book and chapter
 - go to percentage
 - bookmark
@@ -37,3 +36,5 @@ DONE
 - library UI
 - add book cover image
 - remove book
+- OpenTTS auth settings
+- chapter name display
