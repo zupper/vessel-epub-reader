@@ -6,6 +6,7 @@
   margin-right: 5px;
 }
 
+#tts-controls,
 #page-controls {
   display: flex;
   flex-direction: row;
