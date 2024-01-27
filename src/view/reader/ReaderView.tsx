@@ -8,6 +8,7 @@ import EpubjsBookReader from 'infra/epub/EpubjsBookReader';
 
 import { ReaderControls } from './controls/ReaderControls';
 import { TableOfContentsView } from './toc/TableOfContentsView';
+import { ChapterInfo } from './ChapterInfo';
 
 import './ReaderView.css';
 
@@ -54,11 +55,14 @@ export const ReaderView = (params: ReaderViewProps) => {
         id="render-area"
         ref={renderAreaRef}
         style={{ height: '100%', width: '100%' }}></div>
-      <ReaderControls
-        app={params.app}
-        onNextPage={nextPage}
-        onPrevPage={prevPage}
-        onTableOfContents={showToC} />
+      <div id="controls-area">
+        <ReaderControls
+          app={params.app}
+          onNextPage={nextPage}
+          onPrevPage={prevPage}
+          onTableOfContents={showToC} />
+        <ChapterInfo chapter={toc?.current} />
+      </div>
       <CSSTransition
         in={tocVisible}
         timeout={300}

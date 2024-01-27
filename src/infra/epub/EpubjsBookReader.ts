@@ -70,7 +70,7 @@ export default class EpubjsBookReader implements BookReader {
       throw new Error('Must provide view first');
     }
 
-    this.#rendition = this.#epubjsBook.renderTo(this.#view, { width: "100%", height: "90%" });
+    this.#rendition = this.#epubjsBook.renderTo(this.#view, { width: "100%", height: "89%" });
     this.#rendition.display();
     this.#isRendered = true;
 
