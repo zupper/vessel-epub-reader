@@ -21,10 +21,14 @@
   align-items: center;
   flex-grow: 1;
   justify-content: center;
+  outline: none;
 }
 
 #page-controls #prev,
 #page-controls #next {
+  background: none;
+  border: 0;
+  cursor: pointer;
   flex: 1;
   max-width: 200px;
 }
