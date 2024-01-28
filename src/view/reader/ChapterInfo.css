@@ -15,3 +15,9 @@
   flex-grow: 1;
   margin-right: 1em;
 }
+
+#chapter-info-progress {
+  font-variant: normal;
+  cursor: pointer;
+  font-weight: normal;
+}

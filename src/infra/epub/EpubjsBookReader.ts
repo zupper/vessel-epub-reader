@@ -95,7 +95,7 @@ export default class EpubjsBookReader implements BookReader {
     const bookPercentageAtStart = this.#epubjsToC.percentageAtToCItemStart(i);
     const bookPercentageAtEnd = this.#epubjsToC.percentageAtToCItemEnd(i);
     const totalPages = this.#rendition.location.start.displayed.total;
-    const currentPage = this.#rendition.location.start.displayed.page;
+    const currentPage = this.#rendition.location.end.displayed.page;
     const chapterPercentageTotal = bookPercentageAtEnd - bookPercentageAtStart;
 
     const bookPercentage = bookPercentageAtStart + (chapterPercentageTotal / totalPages) * currentPage;
