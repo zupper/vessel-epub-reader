@@ -6,20 +6,27 @@ export type BookCover = {
 
 export type ToC = {
   items: ToCItem[];
-  current?: ToCItem;
 }
 
 export type Book = {
   cover: BookCover;
   toc: ToC;
   data: ArrayBuffer;
+  currentLocation?: BookLocation;
 }
 
 export type PageRef = string;
 
+export type ChapterProgress = {
+  bookPercentage: number;
+  totalPages: number;
+  currentPage: number;
+}
+
 export type BookLocation = {
   ref: PageRef;
-  currentChapter?: ToCItem;
+  chapter?: ToCItem;
+  chapterProgress: ChapterProgress;
 }
 
 export type ToCItem = {

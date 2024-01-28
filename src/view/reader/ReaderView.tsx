@@ -19,17 +19,22 @@ export type ReaderViewProps = {
 export const ReaderView = (params: ReaderViewProps) => {
   const [tocVisible, setTocVisible] = useState(false);
   const [toc, setToC] = useState(null);
+  const [currentLocation, setCurrentLocation] = useState(null);
 
   const location = useLocation();
   const renderAreaRef = useRef(null);
 
-  const updateToC = (loc: BookLocation) => setToC({ ...toc, current: loc.currentChapter });
+  const updateToC = (loc: BookLocation) => setCurrentLocation(loc);
 
   useEffect(() => {
     const reader = (params.app.reader as EpubjsBookReader);
     if (renderAreaRef.current) {
       reader.view = renderAreaRef.current;
-      params.app.openBook(location.state.bookId).then(({ toc }) => setToC(toc));
+      params.app.openBook(location.state.bookId)
+        .then(({ toc, currentLocation }) => {
+          setToC(toc);
+          setCurrentLocation(currentLocation);
+        });
     }
 
     return () => { reader.view = null };
@@ -61,7 +66,9 @@ export const ReaderView = (params: ReaderViewProps) => {
           onNextPage={nextPage}
           onPrevPage={prevPage}
           onTableOfContents={showToC} />
-        <ChapterInfo chapter={toc?.current} />
+        <ChapterInfo
+          chapter={currentLocation?.chapter}
+          chapterProgress={currentLocation?.chapterProgress} />
       </div>
       <CSSTransition
         in={tocVisible}
@@ -70,6 +77,7 @@ export const ReaderView = (params: ReaderViewProps) => {
         unmountOnExit>
         <TableOfContentsView
           toc={toc}
+          currentChapter={currentLocation?.chapter}
           onClose={hideToC}
           onItemClick={goTo} />
        </CSSTransition>

@@ -8,6 +8,7 @@ import './TableOfContentsView.css';
 
 export type TableOfContentsViewParams = {
   toc: ToC;
+  currentChapter?: ToCItem;
   onClose: () => unknown;
   onItemClick: (i: ToCItem) => unknown;
 };
@@ -33,7 +34,7 @@ export const TableOfContentsView = (params: TableOfContentsViewParams) => {
         key={i.link}
         item={i}
         scrollToRef={scrollRef}
-        active={i.link === params.toc.current?.link}
+        active={i.link === params.currentChapter?.link}
         formatSubitems={formatSubitems}
         onClick={params.onItemClick} />
     );

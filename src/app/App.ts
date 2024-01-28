@@ -45,7 +45,7 @@ export default class App {
 
     this.nav.book = book;
     const currentLocation = await this.nav.moveToLastReadPage();
-    book.toc.current = currentLocation?.currentChapter;
+    book.currentLocation = currentLocation;
 
     return book;
   }

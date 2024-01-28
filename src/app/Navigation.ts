@@ -1,5 +1,5 @@
 import { BookReader } from "app/BookReader";
-import { Book, PageRef } from "app/Book";
+import { Book, BookLocation, PageRef } from "app/Book";
 import StringStorage from "app/StringStorage";
 
 export type NavigationConstructorParams = {
@@ -31,7 +31,7 @@ export default class Navigation {
     return this.moveTo('prev');
   }
 
-  async moveTo(ref: PageRef) {
+  async moveTo(ref: PageRef): Promise<BookLocation> {
     if (!this.book) {
       throw new Error('Must open book first');
     }

@@ -75,14 +75,40 @@ export default class EpubjsBookReader implements BookReader {
     this.#isRendered = true;
 
     this.#rendition.on("relocated", () => {
-      const loc = {
-        ref: this.currentCfi,
-        currentChapter: this.currentChapter,
-      };
-
+      const loc = this.#getBookLocation();
       this.#locationChangedListeners.forEach(l => l(loc));
       this.#locationChangedListeners = [];
     });
+  }
+
+  #getBookLocation(): BookLocation {
+    const chapter = this.#epubjsToC.getToCItem(this.#rendition.location.start.href);
+    const chapterProgress = chapter ? this.#getChapterProgress(chapter) : null;
+     return {
+      ref: this.currentCfi,
+      chapter,
+      chapterProgress,
+    };
+  }
+
+  #getChapterProgress(i: ToCItem) {
+    const bookPercentageAtStart = this.#epubjsToC.percentageAtToCItemStart(i);
+    const bookPercentageAtEnd = this.#epubjsToC.percentageAtToCItemEnd(i);
+    const totalPages = this.#rendition.location.start.displayed.total;
+    const currentPage = this.#rendition.location.start.displayed.page;
+    const chapterPercentageTotal = bookPercentageAtEnd - bookPercentageAtStart;
+
+    const bookPercentage = bookPercentageAtStart + (chapterPercentageTotal / totalPages) * currentPage;
+
+    return {
+      bookPercentage: this.#decToPercentage(bookPercentage),
+      totalPages,
+      currentPage,
+    };
+  }
+
+  #decToPercentage(d: number) {
+    return Number((d * 100).toFixed(2));
   }
 
   nextPage(): Promise<BookLocation> {
