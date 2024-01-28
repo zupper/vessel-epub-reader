@@ -29,22 +29,22 @@ export const PageControls = (params: PageControlsParams) => {
 
   return (
     <div id="page-controls" onKeyUp={handleKeyPress} tabIndex={0} role="button" ref={divAutoFocusRef}>
-      <button onClick={params.onPrevPage} id="prev">
+      <div onClick={params.onPrevPage} id="prev">
         <IconButton size="large" title="Previous Page" >
           <ArrowBackIcon fontSize='large' />
         </IconButton>
-      </button>
+      </div>
       <IconButton size="large" title="Table of Contents" onClick={params.onTableOfContents} id="toc-button">
         <TocIcon fontSize='large' />
       </IconButton>
       <IconButton size="large" title="Start text-to-speech" onClick={params.onStartTTS} id="start-tts-button">
         <HeadphonesIcon fontSize='large' />
       </IconButton>
-      <button onClick={params.onNextPage} id="next">
+      <div onClick={params.onNextPage} id="next">
         <IconButton size="large" title="Next Page" >
           <ArrowForwardIcon fontSize='large' />
         </IconButton>
-      </button>
+      </div>
     </div>
   );
 };
