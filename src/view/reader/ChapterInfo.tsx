@@ -13,7 +13,7 @@ export const ChapterInfo = (params: ChapterInfoParams) => {
   const toggle = () => setShowPercentage(!showPercentage);
 
   const percentage = params.chapterProgress?.bookPercentage;
-  const percentageString = percentage ? `${Math.round(percentage)}%` : '';
+  const percentageString = percentage ? `${Math.round(percentage)}% in book` : '';
 
   const totalPages = params.chapterProgress?.totalPages ?? 0;
   const currentPage = params.chapterProgress?.currentPage ?? 0;
@@ -21,9 +21,9 @@ export const ChapterInfo = (params: ChapterInfoParams) => {
   const pagesString = chapterPagesLeft ? `${chapterPagesLeft} chapter pages left` : percentageString;
 
   return (
-    <div id="chapter-info">
+    <div id="chapter-info" onClick={toggle}>
       <div id="chapter-info-name">{params.chapter?.label ?? ''}</div>
-      <div id="chapter-info-progress" onClick={toggle}>{showPercentage ? percentageString : pagesString}</div>
+      <div id="chapter-info-progress">{showPercentage ? percentageString : pagesString}</div>
     </div>
   );
 };
