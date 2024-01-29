@@ -27,7 +27,6 @@ export const TableOfContentsView = (params: TableOfContentsViewParams) => {
     }
   }, [scrollRef.current]);
 
-
   const formatSubitems = (is: ToCItem[]) =>
     is?.map(i =>
       <ToCItemView
