@@ -6,6 +6,11 @@
   margin-right: 5px;
 }
 
+#reading-controls .MuiIconButton-root {
+  background-color: #ffffffbf;
+  color: #7575759f;
+}
+
 #tts-controls,
 #page-controls {
   display: flex;
