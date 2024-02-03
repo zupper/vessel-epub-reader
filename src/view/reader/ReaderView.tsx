@@ -54,12 +54,10 @@ export const ReaderView = (params: ReaderViewProps) => {
 
   return (
     <div
-      id="reader-view"
-      style={{ position: 'relative', height: '100%' }}>
+      id="reader-view">
       <div
         id="render-area"
-        ref={renderAreaRef}
-        style={{ height: '100%', width: '100%' }}></div>
+        ref={renderAreaRef}></div>
       <div id="controls-area">
         <ReaderControls
           app={params.app}
