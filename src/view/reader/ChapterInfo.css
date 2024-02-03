@@ -20,5 +20,6 @@
 
 #chapter-info-progress {
   font-variant: normal;
+  flex-shrink: 0;
   font-weight: normal;
 }
