@@ -12,6 +12,8 @@ import { ChapterInfo } from './ChapterInfo';
 
 import './ReaderView.css';
 
+const preventTouchMove = (e: TouchEvent) => e.preventDefault();
+
 export type ReaderViewProps = {
   app: App;
 };
@@ -25,6 +27,7 @@ export const ReaderView = (params: ReaderViewProps) => {
   const renderAreaRef = useRef(null);
 
   const updateToC = (loc: BookLocation) => setCurrentLocation(loc);
+  const controlsAreaRef = useRef(null);
 
   useEffect(() => {
     const reader = (params.app.reader as EpubjsBookReader);
@@ -37,7 +40,17 @@ export const ReaderView = (params: ReaderViewProps) => {
         });
     }
 
-    return () => { reader.view = null };
+    if (controlsAreaRef.current) {
+      controlsAreaRef.current.addEventListener( 'touchmove', preventTouchMove, { passive: false });
+    }
+
+    return () => {
+      reader.view = null;
+
+      if (controlsAreaRef.current) {
+        controlsAreaRef.current.removeEventListener('touchmove', preventTouchMove);
+      }
+    };
   }, []);
 
   const showToC = () => setTocVisible(true);
@@ -58,7 +71,7 @@ export const ReaderView = (params: ReaderViewProps) => {
       <div
         id="render-area"
         ref={renderAreaRef}></div>
-      <div id="controls-area">
+      <div id="controls-area" ref={controlsAreaRef}>
         <ReaderControls
           app={params.app}
           onNextPage={nextPage}
