@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vessel-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: vessel-app
+  template:
+    metadata:
+      labels:
+        app: vessel-app
+    spec:
+      containers:
+      - name: vessel-app
+        image: localhost:32000/vessel-app:latest
+        ports:
+        - containerPort: 80

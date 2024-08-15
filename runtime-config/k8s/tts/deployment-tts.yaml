@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mycroft-tts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mycroft-tts
+  template:
+    metadata:
+      labels:
+        app: mycroft-tts
+    spec:
+      containers:
+      - name: mycroft-tts
+        image: mycroftai/mimic3
+        volumeMounts:
+        - mountPath: /home/mimic3/.local
+          name: tts-storage
+        ports:
+        - containerPort: 59125
+      volumes:
+      - name: tts-storage
+        persistentVolumeClaim:
+          claimName: tts-1gib-pvc
+
