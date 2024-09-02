@@ -38,24 +38,24 @@ const prev = (q: PlaybackQueue) => q.prev();
 
 const stateMap: {[K in StateOption]: StateTransitionSpec[]} = {
   STOPPED: [
-    { action: 'play', condition: hasCurrent,                   nextState: 'PLAYING' },
-    { action: 'play', condition: hasNoCurrent,                 nextState: 'FINISHED_PLAYING' },
+    { action: 'play',     condition: hasCurrent,                     nextState: 'PLAYING' },
+    { action: 'play',     condition: hasNoCurrent,                   nextState: 'FINISHED_PLAYING' },
   ],
   PLAYING: [
-    { action: 'next', condition: hasNextSound,   mutation: next, nextState: 'PLAYING' },
-    { action: 'prev', condition: hasPrevSound,   mutation: prev, nextState: 'PLAYING' },
-    { action: 'next', condition: hasNoNextSound,                 nextState: 'FINISHED_PLAYING' },
-    { action: 'prev', condition: hasNoPrevSound,                 nextState: 'BEGINNING_PLAYING' },
-    { action: 'stop',                                            nextState: 'STOPPED' },
-    { action: 'pause',                                           nextState: 'PAUSED' },
+    { action: 'next',     condition: hasNextSound,   mutation: next, nextState: 'PLAYING' },
+    { action: 'prev',     condition: hasPrevSound,   mutation: prev, nextState: 'PLAYING' },
+    { action: 'next',     condition: hasNoNextSound,                 nextState: 'FINISHED_PLAYING' },
+    { action: 'prev',     condition: hasNoPrevSound,                 nextState: 'BEGINNING_PLAYING' },
+    { action: 'stop',                                                nextState: 'STOPPED' },
+    { action: 'pause',                                               nextState: 'PAUSED' },
   ],
   PAUSED: [
-    { action: 'next', condition: hasNextSound,   mutation: next, nextState: 'PAUSED' },
-    { action: 'prev', condition: hasPrevSound,   mutation: prev, nextState: 'PAUSED' },
-    { action: 'next', condition: hasNoNextSound,                 nextState: 'FINISHED_PAUSED' },
-    { action: 'prev', condition: hasNoPrevSound,                 nextState: 'BEGINNING_PAUSED' },
-    { action: 'stop',                                            nextState: 'STOPPED' },
-    { action: 'resume',                                          nextState: 'PLAYING' },
+    { action: 'next',     condition: hasNextSound,   mutation: next, nextState: 'PAUSED' },
+    { action: 'prev',     condition: hasPrevSound,   mutation: prev, nextState: 'PAUSED' },
+    { action: 'next',     condition: hasNoNextSound,                 nextState: 'FINISHED_PAUSED' },
+    { action: 'prev',     condition: hasNoPrevSound,                 nextState: 'BEGINNING_PAUSED' },
+    { action: 'stop',                                                nextState: 'STOPPED' },
+    { action: 'resume',                                              nextState: 'PLAYING' },
   ],
   FINISHED_PLAYING: [
     { action: 'next',     condition: hasNextSound,   mutation: next, nextState: 'PLAYING' },
@@ -73,9 +73,9 @@ const stateMap: {[K in StateOption]: StateTransitionSpec[]} = {
     { action: 'prev',     condition: hasPrevSound,   mutation: prev, nextState: 'PLAYING' },
   ],
   BEGINNING_PAUSED: [
-    { action: 'stop',                                            nextState: 'STOPPED' },
+    { action: 'stop',                                                nextState: 'STOPPED' },
     { action: 'continue', condition: hasCurrent,                     nextState: 'PAUSED' },
-    { action: 'prev', condition: hasPrevSound,   mutation: prev, nextState: 'PAUSED' },
+    { action: 'prev',     condition: hasPrevSound,   mutation: prev, nextState: 'PAUSED' },
   ]
 };
 
