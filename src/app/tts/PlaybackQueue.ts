@@ -35,5 +35,12 @@ export default class PlaybackQueue {
   jumpToLast() {
     this.#current = this.#q.length - 1;
   }
+
+  debug() {
+    console.log('--- Queue DEBUG ---');
+    console.log('Current index:', this.#current);
+    console.log('Queued sentences:');
+    console.log(this.#q);
+  }
 }
 

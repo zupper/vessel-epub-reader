@@ -120,4 +120,10 @@ export default class PlaybackState {
       prev,
     });
   }
+
+  debug() {
+    console.log('--- State DEBUG ---');
+    console.log('Current state:', this.#currentState);
+    this.#q.debug();
+  }
 }
