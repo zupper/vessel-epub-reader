@@ -22,3 +22,4 @@ $KUBECTL apply -f ./runtime-config/k8s/app/deployment-app.yaml
 
 envsubst '${APP_DOMAIN} ${TTS_DOMAIN}' < ./runtime-config/k8s/ingress.yaml | $KUBECTL apply -f -
 
+$KUBECTL rollout restart deployment vessel-app
