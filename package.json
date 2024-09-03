@@ -37,7 +37,7 @@
     "@fontsource/roboto": "^5.0.8",
     "@mui/icons-material": "^5.15.0",
     "@mui/material": "^5.15.0",
-    "compromise": "^14.10.1",
+    "compromise": "^14.14.0",
     "epubjs": "^0.3.93",
     "howler": "^2.2.4",
     "jszip": "^3.10.1",
