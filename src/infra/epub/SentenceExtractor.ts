@@ -105,12 +105,12 @@ export default class SentenceExtractor {
     const walker = doc.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
     const result = [];
 
-    while (walker.nextNode()) {
+    do {
       const node = walker.currentNode;
       if (this.#isNodeWithinRange(node, range) && this.#isTextNode(node)) {
         result.push(node);
       }
-    }
+    } while (walker.nextNode());
 
     return result;
   }
