@@ -57,7 +57,7 @@ export default class EpubjsToC {
   }
 
   #toTocItem = (navItem: NavItem): ToCItem => ({
-    link: navItem.href,
+    link: navItem.href?.split('#')[0],
     label: navItem.label.trim(),
     subitems: navItem.subitems.map(this.#toTocItem),
   });
