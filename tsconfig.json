@@ -12,6 +12,7 @@
     "paths": {
       "app": ["app/*"],
       "infra": ["infra/*"]
-    }
+    },
+    "sourceMap": true
   }
 }

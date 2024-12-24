@@ -29,7 +29,7 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js'
   },
-  // watch: true,
+  devtool: 'source-map',
   devServer: {
     port: 3000,
     historyApiFallback: true,
