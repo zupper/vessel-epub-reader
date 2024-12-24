@@ -51,8 +51,11 @@ export default class SentenceExtractor {
     textNodes[textNodes.length - 1] = trimmedLastTextNode;
 
     const sentences = this.extractSentencesFromString(textNodes.join(''));
-    sentences[0].partiallyOffPage = firstSentenceOffPage;
-    sentences[sentences.length - 1].partiallyOffPage = lastSentenceOffPage;
+
+    if (sentences.length > 0) {
+      sentences[0].partiallyOffPage = firstSentenceOffPage;
+      sentences[sentences.length - 1].partiallyOffPage = lastSentenceOffPage;
+    }
 
     return sentences;
   }
