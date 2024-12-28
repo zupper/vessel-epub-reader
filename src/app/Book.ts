@@ -30,6 +30,7 @@ export type BookLocation = {
 }
 
 export type ToCItem = {
+  id: string;
   label: string;
   link: PageRef;
   subitems: ToCItem[];

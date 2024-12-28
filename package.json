@@ -39,7 +39,7 @@
     "@mui/material": "^5.15.0",
     "compromise": "^14.14.0",
     "epubjs": "^0.3.93",
-    "fp-ts": "^2.16.9",
+    "fuse.js": "^7.0.0",
     "howler": "^2.2.4",
     "jszip": "^3.10.1",
     "mocha-chrome": "^2.2.0",
