@@ -5,6 +5,12 @@ import ReaderAssistant from "./ReaderAssistant";
 import HashGenerator from "./HashGenerator";
 import * as TOC from "./EpubjsToC";
 
+export enum NavigationAction {
+  PREV,
+  NEXT,
+  JUMP,
+}
+
 export default class EpubjsBookReader implements BookReader {
   #book: Book;
   #view: Element;
@@ -16,6 +22,8 @@ export default class EpubjsBookReader implements BookReader {
   #epubjsToC: TOC.EpubjsToC;
 
   #locationChangedListeners: ((loc: BookLocation) => unknown)[];
+  #lastNavigationAction: NavigationAction;
+  #currentChapter: ToCItem;
 
   constructor() {
     this.#isRendered = false;
@@ -76,11 +84,17 @@ export default class EpubjsBookReader implements BookReader {
   }
 
   #getBookLocation(): BookLocation {
-    const chapter = this.#epubjsToC.getToCItem(this.#rendition.location.start.href);
-    const chapterProgress = chapter ? this.#getChapterProgress(chapter) : null;
-     return {
+    this.#currentChapter =
+      this.#epubjsToC.determineChapter(
+        this.#currentChapter,
+        this.#lastNavigationAction,
+        this.#rendition.location.start.href
+      );
+    const chapterProgress = this.#currentChapter ? this.#getChapterProgress(this.#currentChapter) : null;
+
+    return {
       ref: this.currentCfi,
-      chapter,
+      chapter: this.#currentChapter,
       chapterProgress,
     };
   }
@@ -106,6 +120,7 @@ export default class EpubjsBookReader implements BookReader {
   }
 
   nextPage(): Promise<BookLocation> {
+    this.#lastNavigationAction = NavigationAction.NEXT;
     this.#assistant.removeAllHightlights();
     return new Promise((res) => {
       this.#rendition.next();
@@ -114,6 +129,7 @@ export default class EpubjsBookReader implements BookReader {
   }
 
   prevPage(): Promise<BookLocation> {
+    this.#lastNavigationAction = NavigationAction.PREV;
     this.#assistant.removeAllHightlights();
     return new Promise((res) => {
       this.#rendition.prev();
@@ -134,10 +150,11 @@ export default class EpubjsBookReader implements BookReader {
   }
 
   get currentChapter() {
-    return this.#epubjsToC.getToCItem(this.#rendition.location.start.href);
+    return this.#currentChapter;
   }
 
   moveTo(ref: PageRef): Promise<BookLocation> {
+    this.#lastNavigationAction = NavigationAction.JUMP;
     return new Promise((res) => {
       this.#rendition.display(ref);
       this.#locationChangedListeners.push(res);
