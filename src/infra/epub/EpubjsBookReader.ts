@@ -3,7 +3,7 @@ import { Book, BookLocation, PageRef, ToCItem } from "app/Book";
 import { BookReader } from "app/BookReader";
 import ReaderAssistant from "./ReaderAssistant";
 import HashGenerator from "./HashGenerator";
-import EpubjsToC from "./EpubjsToC";
+import * as TOC from "./EpubjsToC";
 
 export default class EpubjsBookReader implements BookReader {
   #book: Book;
@@ -13,7 +13,7 @@ export default class EpubjsBookReader implements BookReader {
   #assistant: ReaderAssistant;
   #isRendered: boolean;
   #hasher: HashGenerator;
-  #epubjsToC: EpubjsToC;
+  #epubjsToC: TOC.EpubjsToC;
 
   #locationChangedListeners: ((loc: BookLocation) => unknown)[];
 
@@ -44,7 +44,7 @@ export default class EpubjsBookReader implements BookReader {
     ]);
 
     const title = opened.packaging.metadata.title;
-    this.#epubjsToC = new EpubjsToC(nav.toc);
+    this.#epubjsToC = TOC.of(nav.toc);
 
     this.#book = {
       cover: {

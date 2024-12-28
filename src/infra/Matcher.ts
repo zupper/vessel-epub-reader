@@ -11,7 +11,7 @@ export type Unmatched<T> = {
 
 export type Matcher<T, P> = Matched<T, P> | Unmatched<T>;
 
-export const of = <T, P>(needle: T): Matcher<T, P> => ({
+export const of = <T, P = never>(needle: T): Matcher<T, P> => ({
   _tag: "unmatched",
   needle
 });

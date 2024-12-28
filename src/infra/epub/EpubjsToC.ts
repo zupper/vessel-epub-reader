@@ -1,58 +1,65 @@
-import * as F from "fp-ts/function";
+import { pipe } from "fp-ts/function";
 import { NavItem } from "epubjs";
 import { ToC, ToCItem } from "app/Book";
 import * as M from "infra/Matcher";
 
-export default class EpubjsToC {
-  #ns: NavItem[];
-  #toc: ToC;
-  #hrefToItemMapping: Map<string, ToCItem>;
-  #idToItemMapping: [string, ToCItem][];
-  #itemsFlat: ToCItem[];
+const toTocItem = (navItem: NavItem): ToCItem => ({
+  link: navItem.href?.split('#')[0],
+  label: navItem.label.trim(),
+  subitems: navItem.subitems.map(toTocItem),
+});
 
-  constructor(ns: NavItem[]) {
-    this.#ns = ns;
-  }
+const flattenItems = <T extends { subitems?: T[] }>(is: T[]) => {
+  const result: T[] = [];
+  is.forEach(i => {
+    result.push(i)
+    if (i.subitems?.length > 0) result.push(...flattenItems(i.subitems));
+  });
 
-  getToC(): ToC {
-    if (!this.#toc)
-      this.#makeToC();
+  return result;
+};
 
-    return this.#toc;
-  }
+export type EpubjsToC = {
+  getToC: () => ToC;
+  getToCItem: (url: string) => ToCItem | undefined;
+  percentageAtToCItemEnd: (i: ToCItem) => number;
+  percentageAtToCItemStart: (i: ToCItem) => number;
+};
 
-  getToCItem(url: string) {
-    return F.pipe(
-      M.of<string, ToCItem>(url),
-      M.bind(this.#matchUrlByLink.bind(this)),
-      M.bind(this.#matchUrlToPartialLink.bind(this)),
-      M.bind(this.#matchUrlToId.bind(this)),
-      M.bind(this.#fuzzyMatchIdToUrl.bind(this)),
-      M.fold
-    );
-  }
+export const of = (ns: NavItem[]): EpubjsToC => {
+  const toc = { items: ns.map(toTocItem) };
 
-  #matchUrlByLink(url: string) {
-    return this.#hrefToItemMapping.get(url);
-  }
+  const itemsFlat = flattenItems(toc.items);
+  const hrefToItemMapping = new Map(itemsFlat.map(f => [f.link, f]));
+
+  const nsFlat = flattenItems(ns);
+  const idToItemMapping: [string, ToCItem][] = nsFlat.map(n => [n.id, toTocItem(n)]);
+
+  const getToC = () => toc;
+
+  const getToCItem = (url: string) => pipe(
+    M.of(url),
+    M.bind(matchUrlToLink),
+    M.bind(matchUrlToPartialLink),
+    M.bind(matchUrlToId),
+    M.bind(fuzzyMatchIdToUrl),
+    M.fold
+  );
+
+  const matchUrlToLink = (url: string) => hrefToItemMapping.get(url);
+  const matchUrlToPartialLink = (url: string) => itemsFlat.find(i => url.includes(i.link));
 
   // attempt to match the url to an id, hope for a partial match
-  #matchUrlToId(url: string) {
-    return this.#idToItemMapping.find(([id]) => url.includes(id))?.[1];
-  }
+  const matchUrlToId = (url: string) => idToItemMapping.find(([id]) => url.includes(id))?.[1];
 
-  #matchUrlToPartialLink(url: string){
-    return this.#itemsFlat.find(i => url.includes(i.link));
-  }
-
-  #fuzzyMatchIdToUrl(url: string) {
+  const fuzzyMatchIdToUrl = (url: string) => {
     const numbersInUrl = url.match(/\d+/g);
 
     if (numbersInUrl) {
       // typicaly the first number is a chapter reference, so we try to match it against the id
       const chapterRef = numbersInUrl[0];
 
-      const entry = this.#idToItemMapping.find(([id]) => {
+      const entry = idToItemMapping.find(([id]) => {
         const numbersInId = id.match(/\d+/g);
         if (!numbersInId) return false;
 
@@ -66,47 +73,27 @@ export default class EpubjsToC {
     }
 
     return undefined;
-  }
+  };
 
-  percentageAtToCItemEnd(i: ToCItem) {
-    const itemIdx = this.#itemsFlat.findIndex(ii => ii.link === i.link);
+  const percentageAtToCItemEnd = (i: ToCItem) => {
+    const itemIdx = itemsFlat.findIndex(ii => ii.link === i.link);
     if (itemIdx === -1) return 0;
 
-    return (itemIdx + 1) / this.#itemsFlat.length;
-  }
+    return (itemIdx + 1) / itemsFlat.length;
+  };
 
-  percentageAtToCItemStart(i: ToCItem) {
-    const itemIdx = this.#itemsFlat.findIndex(ii => ii.link === i.link);
+  const percentageAtToCItemStart = (i: ToCItem) => {
+    const itemIdx = itemsFlat.findIndex(ii => ii.link === i.link);
     if (itemIdx === -1) return 0;
 
-    return itemIdx / this.#itemsFlat.length;
-  }
+    return itemIdx / itemsFlat.length;
+  };
 
-  #makeToC() {
-    this.#toc = {
-      items: this.#ns.map(this.#toTocItem),
-    };
+  return {
+    getToC,
+    getToCItem,
+    percentageAtToCItemEnd,
+    percentageAtToCItemStart,
+  };
+};
 
-    this.#itemsFlat = this.#flattenItems(this.#toc.items);
-    this.#hrefToItemMapping = new Map(this.#itemsFlat.map(f => [f.link, f]));
-
-    const nsFlat = this.#flattenItems(this.#ns);
-    this.#idToItemMapping = nsFlat.map(n => [n.id, this.#toTocItem(n)]);
-  }
-
-  #flattenItems<T extends { subitems?: T[] }>(is: T[]) {
-    const result: T[] = [];
-    is.forEach(i => {
-      result.push(i)
-      if (i.subitems?.length > 0) result.push(...this.#flattenItems(i.subitems));
-    });
-
-    return result;
-  }
-
-  #toTocItem = (navItem: NavItem): ToCItem => ({
-    link: navItem.href?.split('#')[0],
-    label: navItem.label.trim(),
-    subitems: navItem.subitems.map(this.#toTocItem),
-  });
-}
