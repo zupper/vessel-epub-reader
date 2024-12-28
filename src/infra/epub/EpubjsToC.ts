@@ -1,6 +1,7 @@
-
+import * as F from "fp-ts/function";
 import { NavItem } from "epubjs";
 import { ToC, ToCItem } from "app/Book";
+import * as M from "infra/Matcher";
 
 export default class EpubjsToC {
   #ns: NavItem[];
@@ -21,18 +22,27 @@ export default class EpubjsToC {
   }
 
   getToCItem(url: string) {
-    const i = this.#hrefToItemMapping.get(url);
-    if (i) return i;
+    return F.pipe(
+      M.of<string, ToCItem>(url),
+      M.bind(this.#matchUrlByLink.bind(this)),
+      M.bind(this.#matchUrlToPartialLink.bind(this)),
+      M.bind(this.#matchUrlToId.bind(this)),
+      M.bind(this.#fuzzyMatchIdToUrl.bind(this)),
+      M.fold
+    );
+  }
 
-    return this.#matchUrlToId(url);
+  #matchUrlByLink(url: string) {
+    return this.#hrefToItemMapping.get(url);
   }
 
   // attempt to match the url to an id, hope for a partial match
   #matchUrlToId(url: string) {
-    const entry = this.#idToItemMapping.find(([id]) => url.includes(id))?.[1];
-    if (entry) return entry;
+    return this.#idToItemMapping.find(([id]) => url.includes(id))?.[1];
+  }
 
-    return this.#fuzzyMatchIdToUrl(url);
+  #matchUrlToPartialLink(url: string){
+    return this.#itemsFlat.find(i => url.includes(i.link));
   }
 
   #fuzzyMatchIdToUrl(url: string) {
