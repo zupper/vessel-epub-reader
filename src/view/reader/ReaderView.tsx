@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { CSSTransition } from 'react-transition-group';
 
 import App from 'app/App';
-import {BookLocation, ToCItem} from 'app/Book';
+import { ToCItem } from 'app/Book';
 import EpubjsBookReader from 'infra/epub/EpubjsBookReader';
 
 import { ReaderControls } from './controls/ReaderControls';
@@ -11,6 +11,7 @@ import { TableOfContentsView } from './toc/TableOfContentsView';
 import { ChapterInfo } from './ChapterInfo';
 
 import './ReaderView.css';
+import { useBookLocationContext } from '../BookLocationContext';
 
 const preventTouchMove = (e: TouchEvent) => e.preventDefault();
 
@@ -21,12 +22,11 @@ export type ReaderViewProps = {
 export const ReaderView = (params: ReaderViewProps) => {
   const [tocVisible, setTocVisible] = useState(false);
   const [toc, setToC] = useState(null);
-  const [currentLocation, setCurrentLocation] = useState(null);
+  const currentLocation = useBookLocationContext();
 
   const location = useLocation();
   const renderAreaRef = useRef(null);
 
-  const updateToC = (loc: BookLocation) => setCurrentLocation(loc);
   const controlsAreaRef = useRef(null);
 
   useEffect(() => {
@@ -34,10 +34,7 @@ export const ReaderView = (params: ReaderViewProps) => {
     if (renderAreaRef.current) {
       reader.view = renderAreaRef.current;
       params.app.openBook(location.state.bookId)
-        .then(({ toc, currentLocation }) => {
-          setToC(toc);
-          setCurrentLocation(currentLocation);
-        });
+        .then(({ toc }) => setToC(toc));
     }
 
     if (controlsAreaRef.current) {
@@ -58,12 +55,11 @@ export const ReaderView = (params: ReaderViewProps) => {
 
   const goTo = (i: ToCItem) => {
     hideToC();
-    params.app.nav.moveTo(i.link)
-      .then(updateToC);
+    params.app.nav.moveTo(i.link);
   };
 
-  const nextPage = () => params.app.nav.nextPage().then(updateToC);
-  const prevPage = () => params.app.nav.prevPage().then(updateToC);
+  const nextPage = () => params.app.nav.nextPage();
+  const prevPage = () => params.app.nav.prevPage();
 
   return (
     <div

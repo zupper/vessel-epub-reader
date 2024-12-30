@@ -29,6 +29,10 @@ export type BookLocation = {
   chapterProgress: ChapterProgress;
 }
 
+export const isBookLocation = (b: unknown): b is BookLocation =>
+  typeof b === "object" &&
+  Object.keys(b).every(k => ["ref", "chapter", "chapterProgress"].includes(k));
+
 export type ToCItem = {
   id: string;
   label: string;

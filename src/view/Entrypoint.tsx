@@ -8,6 +8,7 @@ import '@fontsource/roboto/700.css';
 
 import App from 'app/App';
 
+import { BookLocationProvider } from './BookLocationContext';
 import { LibraryView } from './library/LibraryView';
 import { Settings } from './settings/Settings';
 import { ReaderView } from './reader/ReaderView';
@@ -21,7 +22,11 @@ export const Entrypoint = (params: EntrypointParams) => {
     <Router>
       <Routes>
         <Route path="/" element={<LibraryView app={params.app} />} />
-        <Route path="/read" element={<ReaderView app={params.app} />} />
+          <Route path="/read" element={
+            <BookLocationProvider app={params.app}>
+              <ReaderView app={params.app} />
+            </BookLocationProvider>
+          } />
         <Route path="/settings" element={<Settings app={params.app} />} />
       </Routes>
     </Router>

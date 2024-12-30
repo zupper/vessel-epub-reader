@@ -2,24 +2,36 @@ import { BookReader } from "app/BookReader";
 import { Book, BookLocation, PageRef } from "app/Book";
 import StringStorage from "app/StringStorage";
 
+export const BOOK_LOCATION_CHANGED_EVENT = "booklocationchanged";
+
+export class BookLocationChangedEvent extends Event {
+  location: BookLocation;
+
+  constructor(loc: BookLocation) {
+    super(BOOK_LOCATION_CHANGED_EVENT, { bubbles: true, cancelable: false });
+    this.location = loc;
+  }
+}
+
 export type NavigationConstructorParams = {
   reader: BookReader;
   storage: StringStorage;
 };
 
-export default class Navigation {
+export default class Navigation extends EventTarget {
   book: Book;
   #reader: BookReader;
   #storage: StringStorage;
 
   constructor(params: NavigationConstructorParams) {
+    super();
     this.#reader = params.reader;
     this.#storage = params.storage;
   }
 
   async moveToLastReadPage() {
     if (this.#lastPageRef) {
-      return this.#reader.moveTo(this.#lastPageRef);
+      return this.moveTo(this.#lastPageRef);
     }
   }
 
@@ -41,6 +53,7 @@ export default class Navigation {
                                  await this.#reader.moveTo(ref);
 
     this.#lastPageRef = loc.ref;
+    this.dispatchEvent(new BookLocationChangedEvent(loc));
 
     return loc;
   }
