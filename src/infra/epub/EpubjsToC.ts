@@ -1,14 +1,28 @@
 import Fuse from "fuse.js";
-import { NavItem } from "epubjs";
+import Navigation, { NavItem } from "epubjs/types/navigation";
 import { ToC, ToCItem } from "app/Book";
 import { NavigationAction } from "./EpubjsBookReader";
+import { PackagingManifestObject } from "epubjs/types/packaging";
 
-const toTocItem = (navItem: NavItem): ToCItem => ({
-  id: navItem.id,
-  link: navItem.href?.split('#')[0],
-  label: navItem.label.trim(),
-  subitems: navItem.subitems.map(toTocItem),
-});
+const toTocItem = (manifest: PackagingManifestObject) => (navItem: NavItem): ToCItem => {
+  // the TOC hrefs are not always reliable - if we can
+  // get a href from the manifest, that would be preferable
+  // however, the item id doesn't always match - as far as I've 
+  // seen, sometimes it needs to have it's .xhtml extension stripped
+  const itemId = navItem.id;
+  const itemIdStripped = itemId?.split('.')[0];
+  const href =
+    manifest[itemId]?.href ??
+    manifest[itemIdStripped]?.href ??
+    navItem.href;
+
+  return {
+    id: navItem.id,
+    link: href?.split('#')[0],
+    label: navItem.label.trim(),
+    subitems: navItem.subitems.map(toTocItem(manifest)),
+  };
+};
 
 const flattenItems = <T extends { subitems?: T[] }>(is: T[]) => {
   const result: T[] = [];
@@ -33,8 +47,8 @@ export type EpubjsToC = {
   percentageAtToCItemStart: (i: ToCItem) => number;
 };
 
-export const of = (ns: NavItem[]): EpubjsToC => {
-  const toc = { items: ns.map(toTocItem) };
+export const of = (nav: Navigation, manifest: PackagingManifestObject): EpubjsToC => {
+  const toc = { items: nav.toc.map(toTocItem(manifest)) };
   const itemsFlat = flattenItems(toc.items);
   const fuse = new Fuse(itemsFlat, { keys: [ 'id', 'link', 'label' ], includeScore: true });
 

@@ -52,7 +52,7 @@ export default class EpubjsBookReader implements BookReader {
     ]);
 
     const title = opened.packaging.metadata.title;
-    this.#epubjsToC = TOC.of(nav.toc);
+    this.#epubjsToC = TOC.of(nav, opened.packaging.manifest);
 
     this.#book = {
       cover: {
