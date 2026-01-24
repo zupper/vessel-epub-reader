@@ -25,6 +25,7 @@
     "esm": "^3.2.25",
     "jsdom": "^22.1.0",
     "mocha": "^10.2.0",
+    "playwright": "^1.58.0",
     "style-loader": "^3.3.3",
     "ts-loader": "^9.5.0",
     "typescript": "^5.2.2",

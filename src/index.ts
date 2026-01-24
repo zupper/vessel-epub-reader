@@ -1,35 +1,34 @@
-import { createRoot } from 'react-dom/client';
-import React from 'react';
+import { createRoot } from "react-dom/client";
+import React from "react";
 
-import App from './app/App';
+import App from "./app/App";
 import EpubjsBookReader from "./infra/epub/EpubjsBookReader";
-import DefaultTTSSourceProvider from 'infra/tts/DefaultTTSSourceProvider';
-import LocalStringStorage from 'infra/LocalStringStorage';
-import DefaultBookSourceReader from 'infra/DefaultBookSourceReader';
-import OPFSBookRepository from 'infra/OPFSBookRepository';
-import WebSpeechTTSFactory from 'infra/tts/webspeech/WebSpeecnTTSFactory';
-import OpenTTSFactory from 'infra/tts/opentts/OpenTTSFactory';
+import DefaultTTSSourceProvider from "infra/tts/DefaultTTSSourceProvider";
+import LocalStringStorage from "infra/LocalStringStorage";
+import DefaultBookSourceReader from "infra/DefaultBookSourceReader";
+import OPFSBookRepository from "infra/OPFSBookRepository";
+import WebSpeechTTSFactory from "infra/tts/webspeech/WebSpeecnTTSFactory";
+import OpenTTSFactory from "infra/tts/opentts/OpenTTSFactory";
+import SupertonicTTSFactory from "infra/tts/supertonic/SupertonicTTSFactory";
 
-import { Entrypoint } from './view/Entrypoint';
+import { Entrypoint } from "./view/Entrypoint";
 
-window.addEventListener(
-  "load",
-  async () => {
-
-    const reader = new EpubjsBookReader();
-    const app = new App({
-      bookReader: reader,
-      io: {
-        stringStorage: new LocalStringStorage(),
-        bookSourceReader: new DefaultBookSourceReader(),
-      },
-      tts: new DefaultTTSSourceProvider([
-        new WebSpeechTTSFactory(),
-        new OpenTTSFactory(),
-      ]),
-      bookRepository: new OPFSBookRepository(),
-    });
-
-    const root = createRoot(document.querySelector('#app-container'));
-    root.render(React.createElement(Entrypoint, { app }));
+window.addEventListener("load", async () => {
+  const reader = new EpubjsBookReader();
+  const app = new App({
+    bookReader: reader,
+    io: {
+      stringStorage: new LocalStringStorage(),
+      bookSourceReader: new DefaultBookSourceReader(),
+    },
+    tts: new DefaultTTSSourceProvider([
+      new WebSpeechTTSFactory(),
+      new OpenTTSFactory(),
+      new SupertonicTTSFactory(),
+    ]),
+    bookRepository: new OPFSBookRepository(),
   });
+
+  const root = createRoot(document.querySelector("#app-container"));
+  root.render(React.createElement(Entrypoint, { app }));
+});

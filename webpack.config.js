@@ -1,15 +1,15 @@
-const path =  require('path');
+const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
 
-// This is main configuration object that tells Webpackw what to do. 
+// This is main configuration object that tells Webpackw what to do.
 module.exports = {
   //path to entry paint
-  entry: './src/index.ts',
+  entry: "./src/index.ts",
   module: {
     rules: [
       {
         test: /\.tsx?$/,
-        use: 'ts-loader',
+        use: "ts-loader",
         exclude: /node_modules/,
       },
       {
@@ -20,29 +20,36 @@ module.exports = {
   },
   resolve: {
     alias: {
-      app: path.resolve(__dirname, 'src/app/'),
-      infra: path.resolve(__dirname, 'src/infra/'),
+      app: path.resolve(__dirname, "src/app/"),
+      infra: path.resolve(__dirname, "src/infra/"),
     },
-    extensions: ['.tsx', '.ts', '.js'],
+    extensions: [".tsx", ".ts", ".js"],
   },
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js'
+    path: path.resolve(__dirname, "dist"),
+    filename: "bundle.js",
   },
-  devtool: 'source-map',
+  devtool: "source-map",
   devServer: {
     port: 3000,
     historyApiFallback: true,
     static: {
-      directory: path.join(__dirname, 'dist'),
+      directory: path.join(__dirname, "dist"),
     },
   },
   plugins: [
     new CopyPlugin({
       patterns: [
         { from: path.resolve(__dirname, "src/index.html") },
+        {
+          from: path.resolve(
+            __dirname,
+            "node_modules/@xenova/transformers/dist/ort-wasm-simd-threaded.wasm",
+          ),
+          to: path.resolve(__dirname, "dist"),
+        },
       ],
     }),
   ],
-  mode: 'development'
-}
+  mode: "development",
+};
