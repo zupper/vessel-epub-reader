@@ -12,5 +12,6 @@ export interface BookReader {
   unhighlight: (sentenceId: string) => void;
   removeAllHighlights: () => void;
   isRendered: () => boolean;
+  setTheme: (isDark: boolean) => void;
 }
 

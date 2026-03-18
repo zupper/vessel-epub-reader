@@ -1,5 +1,6 @@
 #chapter-info {
-  background-color: #ffffffbf;
+  background-color: var(--reader-bg-overlay);
+  color: var(--reader-text);
   padding-left: 1em;
   padding-right: 1em;
   font-size: 0.7em;

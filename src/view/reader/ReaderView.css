@@ -1,6 +1,25 @@
+:root {
+  --reader-bg: #ffffff;
+  --reader-bg-overlay: #ffffffbf;
+  --reader-text: #333333;
+  --reader-text-secondary: #7575759f;
+  --reader-toc-bg: #ffffff;
+  --reader-toc-text: black;
+}
+
 #reader-view {
   position: relative;
   height: 100vh;
+  background-color: var(--reader-bg);
+}
+
+#dark-mode-toggle {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1000;
+  background-color: var(--reader-bg-overlay) !important;
+  color: var(--reader-text-secondary) !important;
 }
 
 #render-area {

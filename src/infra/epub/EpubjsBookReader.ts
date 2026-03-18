@@ -67,12 +67,26 @@ export default class EpubjsBookReader implements BookReader {
     return this.#book;
   }
 
+  #isDark = false;
+  #themeDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
   render() {
     if (!this.#view) {
       throw new Error('Must provide view first');
     }
 
     this.#rendition = this.#epubjsBook.renderTo(this.#view, { width: "100%", height: "100%" });
+
+    this.#rendition.themes.default({
+      "body.dark": { "background-color": "#1a1a1a !important", "color": "#e8e8e8 !important" },
+      "body.dark a, body.dark a:link": { "color": "#7eb8f7 !important" },
+      "body.dark a:visited": { "color": "#b39ddb !important" },
+    });
+
+    this.#rendition.on("rendered", () => {
+      this.#applyDarkClass(this.#isDark);
+    });
+
     this.#rendition.display();
     this.#isRendered = true;
 
@@ -81,6 +95,32 @@ export default class EpubjsBookReader implements BookReader {
       this.#locationChangedListeners.forEach(l => l(loc));
       this.#locationChangedListeners = [];
     });
+  }
+
+  #applyDarkClass(isDark: boolean) {
+    const contents = this.#rendition.getContents() as unknown as Array<{ addClass: (c: string) => void; removeClass: (c: string) => void }>;
+    contents.forEach(c => {
+      if (isDark) {
+        c.addClass("dark");
+      } else {
+        c.removeClass("dark");
+      }
+    });
+  }
+
+  setTheme(isDark: boolean) {
+    if (!this.#rendition) return;
+    console.log('[setTheme] called with isDark=', isDark, 'prev #isDark=', this.#isDark);
+    this.#isDark = isDark;
+    if (this.#themeDebounceTimer !== null) {
+      console.log('[setTheme] clearing previous debounce timer');
+      clearTimeout(this.#themeDebounceTimer);
+    }
+    this.#themeDebounceTimer = setTimeout(() => {
+      console.log('[setTheme] debounce fired, applying #isDark=', this.#isDark);
+      this.#themeDebounceTimer = null;
+      this.#applyDarkClass(this.#isDark);
+    }, 50);
   }
 
   #getBookLocation(): BookLocation {
