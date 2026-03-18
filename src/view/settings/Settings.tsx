@@ -14,6 +14,7 @@ import "./Settings.css";
 import { Typography } from "@mui/material";
 import { OpenTTSSettingsView } from "./OpenTTSSettingsView";
 import { SupertonicTTSSettingsView } from "./SupertonicTTSSettingsView";
+import { GenericONNXSettingsView } from "./GenericONNXSettingsView";
 
 export type SettingsParams = {
   app: App;
@@ -109,6 +110,7 @@ export const Settings = (params: SettingsParams) => {
               <ToggleButton value="webtts">Web Speech TTS</ToggleButton>
               <ToggleButton value="opentts">Open TTS Server</ToggleButton>
               <ToggleButton value="supertonic">Supertonic</ToggleButton>
+              <ToggleButton value="onnx">Generic ONNX</ToggleButton>
               <ToggleButton disabled value="subscription">
                 Subscription
               </ToggleButton>
@@ -129,6 +131,13 @@ export const Settings = (params: SettingsParams) => {
           {ttsSource === "supertonic" && (
             <SupertonicTTSSettingsView
               voice={config?.voice?.value}
+              speed={config?.speed?.value}
+              onChange={updateConfig}
+            />
+          )}
+          {ttsSource === "onnx" && (
+            <GenericONNXSettingsView
+              modelUrl={config?.modelUrl?.value}
               speed={config?.speed?.value}
               onChange={updateConfig}
             />

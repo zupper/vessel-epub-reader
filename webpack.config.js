@@ -44,7 +44,14 @@ module.exports = {
         {
           from: path.resolve(
             __dirname,
-            "node_modules/@xenova/transformers/dist/ort-wasm-simd-threaded.wasm",
+            "node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm",
+          ),
+          to: path.resolve(__dirname, "dist"),
+        },
+        {
+          from: path.resolve(
+            __dirname,
+            "node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.jsep.wasm",
           ),
           to: path.resolve(__dirname, "dist"),
         },

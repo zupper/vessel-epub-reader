@@ -10,6 +10,7 @@ import OPFSBookRepository from "infra/OPFSBookRepository";
 import WebSpeechTTSFactory from "infra/tts/webspeech/WebSpeecnTTSFactory";
 import OpenTTSFactory from "infra/tts/opentts/OpenTTSFactory";
 import SupertonicTTSFactory from "infra/tts/supertonic/SupertonicTTSFactory";
+import GenericONNXFactory from "infra/tts/onnx/GenericONNXFactory";
 
 import { Entrypoint } from "./view/Entrypoint";
 
@@ -25,6 +26,7 @@ window.addEventListener("load", async () => {
       new WebSpeechTTSFactory(),
       new OpenTTSFactory(),
       new SupertonicTTSFactory(),
+      new GenericONNXFactory(),
     ]),
     bookRepository: new OPFSBookRepository(),
   });

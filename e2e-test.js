@@ -36,20 +36,20 @@ const { chromium } = require('playwright');
   await page.waitForTimeout(500);
   console.log('✓ Selected Supertonic TTS provider');
   
-  // Remove overlay again after navigation
+  // Remove overlay again
   await page.evaluate(() => {
     const overlay = document.getElementById('webpack-dev-server-client-overlay');
     if (overlay) overlay.remove();
   });
   
   // Click Download Model
-  console.log('\nStarting model download (this may take 30-60 seconds)...');
+  console.log('\nStarting model download (this may take 30-120 seconds)...');
   const downloadBtn = await page.$('button:has-text("Download Model")');
   await downloadBtn.click();
   
   // Wait for download to complete (check for button text change)
   try {
-    await page.waitForSelector('button:has-text("Model Downloaded")', { timeout: 120000 });
+    await page.waitForSelector('button:has-text("Model Downloaded")', { timeout: 180000 });
     console.log('✓ Model download completed');
   } catch (e) {
     console.log('✗ Model download timed out or failed');
@@ -84,8 +84,8 @@ const { chromium } = require('playwright');
     
     const voiceSelect = await page.$('#voice-select');
     if (voiceSelect) {
-      await voiceSelect.click();
-      await page.waitForTimeout(300);
+      await voiceSelect.click({ force: true });
+      await page.waitForTimeout(500);
       
       // Select F2
       const f2Option = await page.$('li[data-value="F2"]');
@@ -94,6 +94,9 @@ const { chromium } = require('playwright');
         console.log('✓ Selected voice F2');
       } else {
         console.log('✗ Could not find F2 option');
+        // List available options
+        const options = await page.$$eval('li[role="option"]', els => els.map(e => e.textContent));
+        console.log('Available options:', options);
       }
     }
   } catch (e) {

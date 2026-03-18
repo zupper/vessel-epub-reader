@@ -1,65 +1,56 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   CircularProgress,
   Box,
-  Select,
   Slider,
   Button,
-  MenuItem,
-  FormControl,
-  InputLabel,
+  TextField,
   Typography,
 } from "@mui/material";
-import VoiceManager from "infra/tts/supertonic/VoiceManager";
 
-type SupertonicTTSSettingsViewProps = {
-  voice?: string;
+type GenericONNXSettingsViewProps = {
+  modelUrl?: string;
   speed?: string;
   onChange: (pairs: { key: string; value: string }[]) => boolean;
 };
 
-export const SupertonicTTSSettingsView = ({
-  voice = "F1",
+export const GenericONNXSettingsView = ({
+  modelUrl = "",
   speed = "1.0",
   onChange,
-}: SupertonicTTSSettingsViewProps) => {
-  const [voices, setVoices] = useState<string[]>([]);
+}: GenericONNXSettingsViewProps) => {
   const [downloading, setDownloading] = useState(false);
   const [modelReady, setModelReady] = useState(false);
-  const [localVoice, setLocalVoice] = useState(voice);
+  const [localModelUrl, setLocalModelUrl] = useState(modelUrl);
   const [localSpeed, setLocalSpeed] = useState(parseFloat(speed));
-
-  useEffect(() => {
-    const voiceManager = new VoiceManager();
-    voiceManager.getVoiceList().then(setVoices);
-  }, []);
-
-  // Sync props to local state when they change
-  useEffect(() => {
-    setLocalVoice(voice);
-  }, [voice]);
-
-  useEffect(() => {
-    setLocalSpeed(parseFloat(speed));
-  }, [speed]);
+  const [error, setError] = useState<string | null>(null);
 
   const handleDownload = async () => {
+    if (!localModelUrl.trim()) {
+      setError("Please enter a model URL");
+      return;
+    }
+
     setDownloading(true);
+    setError(null);
     try {
       const { pipeline } = await import("@huggingface/transformers");
-      await pipeline("text-to-speech", "onnx-community/Supertonic-TTS-ONNX");
+      await pipeline("text-to-speech", localModelUrl);
       setModelReady(true);
-    } catch (error) {
-      console.error("Failed to download model:", error);
+    } catch (err) {
+      console.error("Failed to download model:", err);
+      setError("Failed to download model. Check the URL and try again.");
     } finally {
       setDownloading(false);
     }
   };
 
-  const handleVoiceChange = (event: any) => {
-    const newVoice = event.target.value;
-    setLocalVoice(newVoice);
-    onChange([{ key: "voice", value: newVoice }]);
+  const handleModelUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newUrl = event.target.value;
+    setLocalModelUrl(newUrl);
+    setModelReady(false);
+    setError(null);
+    onChange([{ key: "modelUrl", value: newUrl }]);
   };
 
   const handleSpeedChange = (_event: any, newValue: number | number[]) => {
@@ -70,43 +61,45 @@ export const SupertonicTTSSettingsView = ({
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2, p: 2 }}>
+      <TextField
+        label="Model URL"
+        placeholder="username/model-name"
+        value={localModelUrl}
+        onChange={handleModelUrlChange}
+        fullWidth
+        helperText="HuggingFace model path (e.g., onnx-community/piper-en_US-lessac-medium)"
+        error={!!error}
+      />
+
       <Box>
         <Button
           variant="contained"
           onClick={handleDownload}
-          disabled={downloading || modelReady}
+          disabled={downloading || modelReady || !localModelUrl.trim()}
           fullWidth
         >
           {downloading && <CircularProgress size={20} sx={{ mr: 1 }} />}
           {modelReady ? "Model Downloaded" : "Download Model"}
         </Button>
-        {!modelReady && !downloading && (
+        {error && (
+          <Typography
+            variant="caption"
+            color="error"
+            sx={{ mt: 1, display: "block" }}
+          >
+            {error}
+          </Typography>
+        )}
+        {!modelReady && !downloading && !error && (
           <Typography
             variant="caption"
             color="text.secondary"
             sx={{ mt: 1, display: "block" }}
           >
-            Download the Supertonic TTS model (~50-100MB) before using
+            Download the ONNX TTS model before using
           </Typography>
         )}
       </Box>
-
-      <FormControl fullWidth disabled={!modelReady}>
-        <InputLabel id="voice-select-label">Voice</InputLabel>
-        <Select
-          labelId="voice-select-label"
-          id="voice-select"
-          value={localVoice}
-          label="Voice"
-          onChange={handleVoiceChange}
-        >
-          {voices.map((v) => (
-            <MenuItem key={v} value={v}>
-              {v}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
 
       <Box>
         <Typography id="speed-slider" gutterBottom>

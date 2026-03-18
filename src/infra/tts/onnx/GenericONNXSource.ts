@@ -1,42 +1,34 @@
 import { Sentence } from "app/Book";
 import { TTSSource, SentenceCompleteEvent } from "app/tts/TTSSource";
 import HowlerPlayer from "../opentts/HowlerPlayer";
-import AudioConverter from "./AudioConverter";
-import VoiceManager from "./VoiceManager";
+import AudioConverter from "../supertonic/AudioConverter";
 
-export default class SupertonicTTSSource
+export default class GenericONNXSource
   extends EventTarget
   implements TTSSource
 {
   #pipeline: any;
   #pipelineReady: Promise<void>;
   #player: HowlerPlayer;
-  #voiceManager: VoiceManager;
-  #currentVoice: Float32Array | null = null;
+  #modelUrl: string;
   #speed: number;
-  #voiceId: string;
   #sentences: Sentence[] = [];
 
-  constructor(voiceId: string, speed: number = 1.0) {
+  constructor(modelUrl: string, speed: number = 1.0) {
     super();
-    this.#voiceId = voiceId;
+    this.#modelUrl = modelUrl;
     this.#speed = speed;
-    this.#voiceManager = new VoiceManager();
     this.#player = new HowlerPlayer(this.#onSentenceEnd.bind(this));
     this.#pipelineReady = this.#initPipeline();
   }
 
   id(): string {
-    return "supertonic";
+    return "onnx";
   }
 
   async #initPipeline(): Promise<void> {
     const { pipeline } = await import("@huggingface/transformers");
-    this.#pipeline = await pipeline(
-      "text-to-speech",
-      "onnx-community/Supertonic-TTS-ONNX",
-    );
-    this.#currentVoice = await this.#voiceManager.loadVoice(this.#voiceId);
+    this.#pipeline = await pipeline("text-to-speech", this.#modelUrl);
   }
 
   async #ensureReady(): Promise<void> {
@@ -51,7 +43,6 @@ export default class SupertonicTTSSource
     await this.#ensureReady();
 
     const { audio, sampling_rate } = await this.#pipeline(s.text, {
-      speaker_embeddings: this.#currentVoice,
       speed: this.#speed,
     });
 
