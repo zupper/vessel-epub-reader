@@ -23,6 +23,7 @@ export default class TTSControl {
   #nav: Navigation
 
   #tts: TTSSource;
+  #ttsReady: Promise<void>;
   #sentenceCompleteBoundCallback: EventListener;
 
   #pendingActions: StateChangeAction[];
@@ -33,7 +34,7 @@ export default class TTSControl {
     this.#ttsProvider = params.ttsSourceProvider;
     this.#nav = params.nav;
 
-    this.#ttsProvider.getActiveSource().then(s => this.#tts = s);
+    this.#ttsReady = this.#ttsProvider.getActiveSource().then(s => { this.#tts = s; });
     this.#sentenceCompleteBoundCallback = this.#onSentenceComplete.bind(this);
     this.#pendingActions = [];
     this.#debounceTimer = null;
@@ -42,6 +43,7 @@ export default class TTSControl {
   async startReading() {
     if (!this.#reader.isRendered()) throw new Error('Must open book first');
     if (this.#state) return;
+    await this.#ttsReady;
 
     const chapterSentences = await this.#reader.getSentencesInCurrentChapter();
 
