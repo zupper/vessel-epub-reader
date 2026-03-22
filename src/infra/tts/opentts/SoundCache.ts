@@ -3,6 +3,7 @@ import { Sound } from "./HowlerPlayer";
 import SoundSource from "./SoundSource";
 
 const ONGOING_PRE_BUFFER_COUNT = 2;
+const MAX_CACHE_SIZE = 20;
 
 export type SoundCacheConstructorParams = {
   soundSource: SoundSource;
@@ -24,27 +25,38 @@ export default class SoundCache {
 
   async get(s: Sentence): Promise<Sound> {
     if (!this.#sentences.find(sx => sx.id === s.id)) {
-      console.error('Asking for sentence that has not been enqueued');
-      console.log('Requested sentences', s);
-      console.log('Enqueued sentences', this.#sentences);
-
       const substitute = this.#findSupersetSentence(s);
-      if (substitute) {
-        console.warn('Found a superset sentence, playing that istead.');
-        console.log(substitute);
-        s = substitute;
-      }
+      if (substitute) s = substitute;
     }
 
     let sound = this.#buffer.get(s.id);
-    if (!sound) {
+    if (sound) {
+      this.#touchLru(s.id, sound);
+    } else {
       sound = (await this.#source.generate([s]))[0];
-      this.#buffer.set(s.id, sound);
+      this.#putLru(s.id, sound);
     }
 
     this.#bufferSounds(this.#findSoundsForBuffering(s.id));
 
     return sound;
+  }
+
+  #touchLru(id: string, sound: Sound) {
+    this.#buffer.delete(id);
+    this.#buffer.set(id, sound);
+  }
+
+  #putLru(id: string, sound: Sound) {
+    this.#buffer.set(id, sound);
+    this.#evict();
+  }
+
+  #evict() {
+    while (this.#buffer.size > MAX_CACHE_SIZE) {
+      const oldest = this.#buffer.keys().next().value;
+      if (oldest !== undefined) this.#buffer.delete(oldest);
+    }
   }
 
   #findSupersetSentence(s: Sentence) {
@@ -73,7 +85,6 @@ export default class SoundCache {
   #backwardSearch(idx: number, count: number) {
     const result = [];
 
-    // if the buuffer has the previous two sentences, then skip backwards buffering
     if (idx >= 2 && this.#buffer.has(this.#sentences[idx - 1].id) && this.#buffer.has(this.#sentences[idx - 2].id)) {
       return [];
     }
@@ -107,6 +118,6 @@ export default class SoundCache {
     if (iis.length === 0) return;
 
     const buf = await this.#source.generate(iis.map(idx => this.#sentences[idx]));
-    buf.forEach(s => this.#buffer.set(s.id, s));
+    buf.forEach(s => this.#putLru(s.id, s));
   }
 }
