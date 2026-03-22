@@ -7,6 +7,8 @@ import { StateDetails } from "./PlaybackState";
 
 import { TTSSource, TTSSourceConfig, TTSSourceProvider } from './TTSSource';
 
+const DEBOUNCE_MS = 30;
+
 export type TTSControlConstructorParams = {
   ttsSourceProvider: TTSSourceProvider;
   reader: BookReader;
@@ -23,6 +25,9 @@ export default class TTSControl {
   #tts: TTSSource;
   #sentenceCompleteBoundCallback: EventListener;
 
+  #pendingActions: StateChangeAction[];
+  #debounceTimer: ReturnType<typeof setTimeout> | null;
+
   constructor(params: TTSControlConstructorParams) {
     this.#reader = params.reader;
     this.#ttsProvider = params.ttsSourceProvider;
@@ -30,6 +35,8 @@ export default class TTSControl {
 
     this.#ttsProvider.getActiveSource().then(s => this.#tts = s);
     this.#sentenceCompleteBoundCallback = this.#onSentenceComplete.bind(this);
+    this.#pendingActions = [];
+    this.#debounceTimer = null;
   }
 
   async startReading() {
@@ -47,19 +54,89 @@ export default class TTSControl {
     this.#tts.load(chapterSentences);
 
     this.#tts.addEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback);
-    this.#handleNewState(this.#state.changeState('play'));
+    this.#enqueueAction('play');
+    this.#drainQueue();
+  }
+
+  #enqueueAction(action: StateChangeAction) {
+    this.#pendingActions.push(action);
   }
 
   #handleInput(action: StateChangeAction) {
-    if (!this.#state || this.#stateTransitionInProgress) return;
-    this.#handleNewState(this.#state.changeState(action));
+    if (!this.#state) return;
+    this.#enqueueAction(action);
+
+    if (!this.#stateTransitionInProgress) {
+      this.#drainQueue();
+    }
+  }
+
+  async #drainQueue() {
+    while (this.#pendingActions.length > 0) {
+      if (!this.#state) break;
+
+      const collapsed = this.#collapseNavigationActions(this.#pendingActions);
+      this.#pendingActions = [];
+
+      for (const action of collapsed) {
+        if (!this.#state) break;
+        const st = this.#state.changeState(action);
+        await this.#handleNewState(st);
+      }
+    }
+  }
+
+  // [next, next, next, prev] → net +2 → [next, next]
+  #collapseNavigationActions(actions: StateChangeAction[]): StateChangeAction[] {
+    const result: StateChangeAction[] = [];
+    let navDelta = 0;
+
+    const flushNav = () => {
+      if (navDelta > 0) {
+        for (let i = 0; i < navDelta; i++) result.push('next');
+      } else if (navDelta < 0) {
+        for (let i = 0; i < -navDelta; i++) result.push('prev');
+      }
+      navDelta = 0;
+    };
+
+    for (const action of actions) {
+      if (action === 'next') {
+        navDelta++;
+      } else if (action === 'prev') {
+        navDelta--;
+      } else {
+        flushNav();
+        result.push(action);
+      }
+    }
+
+    flushNav();
+    return result;
   }
 
   stopReading() { this.#handleInput('stop'); }
   pauseReading() { this.#handleInput('pause'); }
   resumeReading() { this.#handleInput('resume'); }
-  nextSentence() { this.#handleInput('next'); }
-  previousSentence() { this.#handleInput('prev'); }
+
+  nextSentence() { this.#debouncedNav('next'); }
+  previousSentence() { this.#debouncedNav('prev'); }
+
+  #debouncedNav(action: 'next' | 'prev') {
+    if (!this.#state) return;
+    this.#enqueueAction(action);
+
+    if (this.#debounceTimer !== null) {
+      clearTimeout(this.#debounceTimer);
+    }
+
+    this.#debounceTimer = setTimeout(() => {
+      this.#debounceTimer = null;
+      if (!this.#stateTransitionInProgress) {
+        this.#drainQueue();
+      }
+    }, DEBOUNCE_MS);
+  }
 
   getAvailableSources() {
     return this.#ttsProvider.getSources();
@@ -84,41 +161,43 @@ export default class TTSControl {
   }
 
   #onSentenceComplete() {
-    this.#handleNewState(this.#state.changeState('next'));
+    this.#handleInput('next');
   }
 
   async #handleNewState(st: StateDetails) {
     this.#stateTransitionInProgress = true;
-    switch(st.state) {
-      case 'PLAYING': {
-        if (st.prev?.state === 'PAUSED' && st.prev?.sentence === st.sentence)
-          this.#resume()
-        else
-          await this.#play(st.sentence);
-        break;
+    try {
+      switch(st.state) {
+        case 'PLAYING': {
+          if (st.prev?.state === 'PAUSED' && st.prev?.sentence === st.sentence)
+            this.#resume()
+          else
+            await this.#play(st.sentence);
+          break;
+        }
+        case 'PAUSED': {
+          if (st.prev?.state === 'PLAYING') this.#pause();
+          else await this.#loadPaused(st.sentence);
+          break;
+        }
+        case 'STOPPED': {
+          this.#stop();
+          break;
+        }
+        case 'BEGINNING_PAUSED':
+        case 'BEGINNING_PLAYING': {
+          await this.#prevPage();
+          break;
+        }
+        case 'FINISHED_PAUSED':
+        case 'FINISHED_PLAYING': {
+          await this.#nextPage();
+          break;
+        }
       }
-      case 'PAUSED': {
-        if (st.prev?.state === 'PLAYING') this.#pause();
-        else this.#loadPaused(st.sentence);
-        break;
-      }
-      case 'STOPPED': {
-        this.#stop();
-        break;
-      }
-      case 'BEGINNING_PAUSED':
-      case 'BEGINNING_PLAYING': {
-        await this.#prevPage();
-        break;
-      }
-      case 'FINISHED_PAUSED':
-      case 'FINISHED_PLAYING': {
-        await this.#nextPage();
-        break;
-      }
+    } finally {
+      this.#stateTransitionInProgress = false;
     }
-
-    this.#stateTransitionInProgress = false;
   }
 
   async #play(s: Sentence) {
@@ -137,6 +216,11 @@ export default class TTSControl {
     this.#reader.removeAllHighlights();
     this.#tts.stop();
     this.#state = null;
+    this.#pendingActions = [];
+    if (this.#debounceTimer !== null) {
+      clearTimeout(this.#debounceTimer);
+      this.#debounceTimer = null;
+    }
   }
 
   #pause() {
@@ -159,7 +243,8 @@ export default class TTSControl {
     this.#tts.append(sentences);
 
     const action = sentences[0].partiallyOffPage ? 'next' : 'continue';
-    this.#handleNewState(this.#state.changeState(action));
+    const st = this.#state.changeState(action);
+    await this.#handleNewState(st);
   }
 
   async #prevPage() {
@@ -170,6 +255,7 @@ export default class TTSControl {
     this.#tts.prepend(sentences);
 
     const action = sentences[sentences.length - 1].partiallyOffPage ? 'prev' : 'continue';
-    this.#handleNewState(this.#state.changeState(action));
+    const st = this.#state.changeState(action);
+    await this.#handleNewState(st);
   }
 }
