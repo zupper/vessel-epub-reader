@@ -18,7 +18,7 @@ export default class WebSpeechTTSSource extends EventTarget implements TTSSource
 
   prepare(s: Sentence) {
     this.stop();
-    this.#utterance = new SpeechSynthesisUtterance(s.text.toLowerCase());
+    this.#utterance = new SpeechSynthesisUtterance(s.text);
     this.#utterance.onend = () => this.dispatchEvent(new SentenceCompleteEvent(s.id));
     return Promise.resolve();
   }
