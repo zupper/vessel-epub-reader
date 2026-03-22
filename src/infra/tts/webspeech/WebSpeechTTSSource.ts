@@ -4,12 +4,14 @@ import { TTSSource, SentenceCompleteEvent } from "app/tts/TTSSource";
 export default class WebSpeechTTSSource extends EventTarget implements TTSSource {
   #synth: SpeechSynthesis;
   #utterance: SpeechSynthesisUtterance;
+  #currentSentence: Sentence | null;
   #sentenceCompleted: boolean;
 
   constructor() {
     super();
     if (!window.speechSynthesis) throw new Error('Web Speech APIs not available');
     this.#synth = window.speechSynthesis;
+    this.#currentSentence = null;
     this.#sentenceCompleted = false;
   }
 
@@ -21,6 +23,7 @@ export default class WebSpeechTTSSource extends EventTarget implements TTSSource
   async prepare(s: Sentence) {
     const wasSpeaking = this.#synth.speaking || this.#synth.pending;
     this.stop();
+    this.#currentSentence = s;
     this.#sentenceCompleted = false;
     this.#utterance = new SpeechSynthesisUtterance(s.text);
     this.#utterance.onend = () => {
@@ -35,6 +38,9 @@ export default class WebSpeechTTSSource extends EventTarget implements TTSSource
 
   async play(s?: Sentence) {
     if (s) await this.prepare(s);
+    if (!this.#utterance?.onend && this.#currentSentence) {
+      await this.prepare(this.#currentSentence);
+    }
     await this.#speakWithRetry();
   }
 
@@ -59,12 +65,16 @@ export default class WebSpeechTTSSource extends EventTarget implements TTSSource
   }
 
   pause() {
-    this.#synth.pause();
+    // synth.pause() is a no-op on many platforms (e.g. Android).
+    // Cancel speech for immediate silence; resume will re-speak the sentence.
+    if (this.#utterance) this.#utterance.onend = null;
+    this.#synth.cancel();
   }
 
   stop() {
     if (this.#utterance) this.#utterance.onend = null;
     this.#synth.cancel();
     this.#utterance = null;
+    this.#currentSentence = null;
   }
 }
