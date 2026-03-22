@@ -7,15 +7,20 @@ export type Sound = {
 
 export default class HowlerPlayer {
   #sound: Howl;
+  #blobUrl: string | null;
   #sentenceEndCallback: (sentenceId: string) => unknown;
 
   constructor(onSentenceEnd: (sentenceId: string) => unknown) {
     this.#sentenceEndCallback = onSentenceEnd;
+    this.#blobUrl = null;
   }
 
   load(s: Sound) {
+    this.#revokeBlobUrl();
+    this.#blobUrl = this.#bufToUrl(s.data);
+
     this.#sound = new Howl({
-      src: [this.#bufToUrl(s.data)],
+      src: [this.#blobUrl],
       format: "wav",
     });
 
@@ -39,6 +44,14 @@ export default class HowlerPlayer {
       this.#sound.off('end');
       this.#sound.stop();
       this.#sound = null;
+    }
+    this.#revokeBlobUrl();
+  }
+
+  #revokeBlobUrl() {
+    if (this.#blobUrl) {
+      URL.revokeObjectURL(this.#blobUrl);
+      this.#blobUrl = null;
     }
   }
 
