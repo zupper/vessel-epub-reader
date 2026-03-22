@@ -25,6 +25,15 @@ export default class App {
   #io: AppIO;
   #repo: BookRepository;
 
+  #darkModeKey = 'reader-dark-mode';
+
+  get isDarkMode() { return this.#io.stringStorage.get(this.#darkModeKey) === 'true'; }
+
+  setDarkMode(isDark: boolean) {
+    this.#io.stringStorage.set(this.#darkModeKey, String(isDark));
+    this.reader.setTheme(isDark);
+  }
+
   constructor(params: AppConsructorParams) {
     this.reader = params.bookReader;
     this.#io = params.io;

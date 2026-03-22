@@ -1,3 +1,4 @@
+/* Initial defaults — must match LIGHT_THEME in app/ReaderTheme.ts */
 :root {
   --reader-bg: #ffffff;
   --reader-bg-overlay: #ffffffbf;

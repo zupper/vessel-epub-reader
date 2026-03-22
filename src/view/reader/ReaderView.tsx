@@ -7,6 +7,7 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 
 import App from 'app/App';
 import { ToCItem } from 'app/Book';
+import { getThemeVars } from 'app/ReaderTheme';
 import EpubjsBookReader from 'infra/epub/EpubjsBookReader';
 
 import { ReaderControls } from './controls/ReaderControls';
@@ -16,28 +17,8 @@ import { ChapterInfo } from './ChapterInfo';
 import './ReaderView.css';
 import { useBookLocationContext } from '../BookLocationContext';
 
-const DARK_MODE_KEY = 'reader-dark-mode';
-
-const DARK_VARS: Record<string, string> = {
-  '--reader-bg': '#1a1a1a',
-  '--reader-bg-overlay': '#2a2a2abf',
-  '--reader-text': '#e8e8e8',
-  '--reader-text-secondary': '#a0a0a09f',
-  '--reader-toc-bg': '#2a2a2a',
-  '--reader-toc-text': '#e8e8e8',
-};
-
-const LIGHT_VARS: Record<string, string> = {
-  '--reader-bg': '#ffffff',
-  '--reader-bg-overlay': '#ffffffbf',
-  '--reader-text': '#333333',
-  '--reader-text-secondary': '#7575759f',
-  '--reader-toc-bg': '#ffffff',
-  '--reader-toc-text': 'black',
-};
-
 function applyCssVars(isDark: boolean) {
-  const vars = isDark ? DARK_VARS : LIGHT_VARS;
+  const vars = getThemeVars(isDark);
   const root = document.documentElement;
   Object.entries(vars).forEach(([key, value]) => root.style.setProperty(key, value));
 }
@@ -51,7 +32,7 @@ export type ReaderViewProps = {
 export const ReaderView = (params: ReaderViewProps) => {
   const [tocVisible, setTocVisible] = useState(false);
   const [toc, setToC] = useState(null);
-  const [isDark, setIsDark] = useState(() => localStorage.getItem(DARK_MODE_KEY) === 'true');
+  const [isDark, setIsDark] = useState(() => params.app.isDarkMode);
   const bookReadyRef = useRef(false);
   const currentLocation = useBookLocationContext();
 
@@ -96,7 +77,7 @@ export const ReaderView = (params: ReaderViewProps) => {
   const toggleDarkMode = useCallback(() => {
     setIsDark(prev => {
       const next = !prev;
-      localStorage.setItem(DARK_MODE_KEY, String(next));
+      params.app.setDarkMode(next);
       return next;
     });
   }, []);

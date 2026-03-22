@@ -1,6 +1,7 @@
 import { Book as EpubjsBook, Rendition } from "epubjs";
 import { Book, BookLocation, PageRef, ToCItem } from "app/Book";
 import { BookReader } from "app/BookReader";
+import { DARK_THEME } from "app/ReaderTheme";
 import ReaderAssistant from "./ReaderAssistant";
 import HashGenerator from "./HashGenerator";
 import * as TOC from "./EpubjsToC";
@@ -78,7 +79,7 @@ export default class EpubjsBookReader implements BookReader {
     this.#rendition = this.#epubjsBook.renderTo(this.#view, { width: "100%", height: "100%" });
 
     this.#rendition.themes.default({
-      "body.dark": { "background-color": "#1a1a1a !important", "color": "#e8e8e8 !important" },
+      "body.dark": { "background-color": `${DARK_THEME['--reader-bg']} !important`, "color": `${DARK_THEME['--reader-text']} !important` },
       "body.dark a, body.dark a:link": { "color": "#7eb8f7 !important" },
       "body.dark a:visited": { "color": "#b39ddb !important" },
     });
@@ -110,14 +111,11 @@ export default class EpubjsBookReader implements BookReader {
 
   setTheme(isDark: boolean) {
     if (!this.#rendition) return;
-    console.log('[setTheme] called with isDark=', isDark, 'prev #isDark=', this.#isDark);
     this.#isDark = isDark;
     if (this.#themeDebounceTimer !== null) {
-      console.log('[setTheme] clearing previous debounce timer');
       clearTimeout(this.#themeDebounceTimer);
     }
     this.#themeDebounceTimer = setTimeout(() => {
-      console.log('[setTheme] debounce fired, applying #isDark=', this.#isDark);
       this.#themeDebounceTimer = null;
       this.#applyDarkClass(this.#isDark);
     }, 50);
