@@ -18,7 +18,8 @@ export const ReaderControls = (params: ReaderControlsParams) => {
   const [playing, setPlaying] = useState(false);
 
   const startTTS = async () => {
-    await params.app.tts.startReading()
+    params.app.tts.onError(() => setPlaying(false));
+    await params.app.tts.startReading();
     setPlaying(true);
   };
 

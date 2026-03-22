@@ -2,12 +2,12 @@ import { BookReader } from "app/BookReader";
 import { Sentence } from "app/Book";
 import Navigation from "app/Navigation";
 
-import PlaybackState, { StateChangeAction } from "./PlaybackState";
+import PlaybackState, { StateChangeAction, StateOption } from "./PlaybackState";
 import { StateDetails } from "./PlaybackState";
 
 import { TTSSource, TTSSourceConfig, TTSSourceProvider } from './TTSSource';
 
-const DEBOUNCE_MS = 30;
+const DEBOUNCE_MS = 100;
 
 export type TTSControlConstructorParams = {
   ttsSourceProvider: TTSSourceProvider;
@@ -28,6 +28,7 @@ export default class TTSControl {
 
   #pendingActions: StateChangeAction[];
   #debounceTimer: ReturnType<typeof setTimeout> | null;
+  #onErrorCallback: (() => void) | null;
 
   constructor(params: TTSControlConstructorParams) {
     this.#reader = params.reader;
@@ -38,7 +39,10 @@ export default class TTSControl {
     this.#sentenceCompleteBoundCallback = this.#onSentenceComplete.bind(this);
     this.#pendingActions = [];
     this.#debounceTimer = null;
+    this.#onErrorCallback = null;
   }
+
+  onError(cb: () => void) { this.#onErrorCallback = cb; }
 
   async startReading() {
     if (!this.#reader.isRendered()) throw new Error('Must open book first');
@@ -74,18 +78,55 @@ export default class TTSControl {
   }
 
   async #drainQueue() {
-    while (this.#pendingActions.length > 0) {
-      if (!this.#state) break;
-
-      const collapsed = this.#collapseNavigationActions(this.#pendingActions);
-      this.#pendingActions = [];
-
-      for (const action of collapsed) {
+    try {
+      while (this.#pendingActions.length > 0) {
         if (!this.#state) break;
-        const st = this.#state.changeState(action);
-        await this.#handleNewState(st);
+
+        const collapsed = this.#collapseNavigationActions(this.#pendingActions);
+        this.#pendingActions = [];
+
+        let i = 0;
+        while (i < collapsed.length) {
+          if (!this.#state) break;
+          const action = collapsed[i];
+
+          if (action === 'next' || action === 'prev') {
+            let st = await this.#advanceNav(collapsed, i);
+            i = st.nextIndex;
+            await this.#handleNewState(st.result);
+          } else {
+            const st = this.#state.changeState(action);
+            await this.#handleNewState(st);
+            i++;
+          }
+        }
       }
+    } catch {
+      this.#forceStop();
     }
+  }
+
+  // Batch consecutive nav actions: advance state for all, execute side effects only for the last.
+  // Page boundaries are handled inline (I/O only, no playback) so we don't trigger
+  // rapid cancel→speak cycles that wedge WebSpeech.
+  async #advanceNav(actions: StateChangeAction[], startIndex: number) {
+    let st = this.#state.changeState(actions[startIndex]);
+    let i = startIndex + 1;
+
+    while (i < actions.length && (actions[i] === 'next' || actions[i] === 'prev')) {
+      if (this.#isPageBoundary(st.state)) {
+        st = await this.#turnPage(st.state);
+      }
+      st = this.#state.changeState(actions[i]);
+      i++;
+    }
+
+    return { result: st, nextIndex: i };
+  }
+
+  #isPageBoundary(state: StateOption): boolean {
+    return state === 'FINISHED_PLAYING' || state === 'FINISHED_PAUSED'
+      || state === 'BEGINNING_PLAYING' || state === 'BEGINNING_PAUSED';
   }
 
   // [next, next, next, prev] → net +2 → [next, next]
@@ -172,7 +213,7 @@ export default class TTSControl {
       switch(st.state) {
         case 'PLAYING': {
           if (st.prev?.state === 'PAUSED' && st.prev?.sentence === st.sentence)
-            this.#resume()
+            await this.#resume();
           else
             await this.#play(st.sentence);
           break;
@@ -188,12 +229,14 @@ export default class TTSControl {
         }
         case 'BEGINNING_PAUSED':
         case 'BEGINNING_PLAYING': {
-          await this.#prevPage();
+          const prevSt = await this.#turnToPrevPage();
+          await this.#handleNewState(prevSt);
           break;
         }
         case 'FINISHED_PAUSED':
         case 'FINISHED_PLAYING': {
-          await this.#nextPage();
+          const nextSt = await this.#turnToNextPage();
+          await this.#handleNewState(nextSt);
           break;
         }
       }
@@ -207,7 +250,7 @@ export default class TTSControl {
 
   async #play(s: Sentence) {
     await this.#loadPaused(s);
-    this.#tts.play();
+    await this.#tts.play();
   }
 
   async #loadPaused(s: Sentence) {
@@ -228,6 +271,7 @@ export default class TTSControl {
     try { this.#reader.removeAllHighlights(); } catch {}
     try { this.#tts.stop(); } catch {}
     this.#clearState();
+    this.#onErrorCallback?.();
   }
 
   #clearState() {
@@ -243,12 +287,18 @@ export default class TTSControl {
     this.#tts.pause();
   }
 
-  #resume() {
-    this.#tts.play();
+  async #resume() {
+    await this.#tts.play();
   }
 
-  async #nextPage() {
-    // TODO: consider tracking the chapter change and adding the next chapter text when we reach it
+  async #turnPage(boundaryState: StateOption): Promise<StateDetails> {
+    if (boundaryState === 'FINISHED_PLAYING' || boundaryState === 'FINISHED_PAUSED') {
+      return this.#turnToNextPage();
+    }
+    return this.#turnToPrevPage();
+  }
+
+  async #turnToNextPage(): Promise<StateDetails> {
     let sentences: Sentence[] = [];
     while (sentences.length === 0) {
       await this.#nav.nextPage();
@@ -259,11 +309,10 @@ export default class TTSControl {
     this.#tts.append(sentences);
 
     const action = sentences[0].partiallyOffPage ? 'next' : 'continue';
-    const st = this.#state.changeState(action);
-    await this.#handleNewState(st);
+    return this.#state.changeState(action);
   }
 
-  async #prevPage() {
+  async #turnToPrevPage(): Promise<StateDetails> {
     await this.#nav.prevPage();
 
     const sentences = await this.#reader.getDisplayedSentences();
@@ -271,7 +320,6 @@ export default class TTSControl {
     this.#tts.prepend(sentences);
 
     const action = sentences[sentences.length - 1].partiallyOffPage ? 'prev' : 'continue';
-    const st = this.#state.changeState(action);
-    await this.#handleNewState(st);
+    return this.#state.changeState(action);
   }
 }
