@@ -1,4 +1,5 @@
 import { BookReader } from './BookReader';
+import { ThemeId, DEFAULT_THEME, getTheme, isValidThemeId } from './ReaderTheme';
 import { TTSSourceProvider } from './tts/TTSSource';
 import TTSControl from './tts/TTSControl';
 import Navigation from './Navigation';
@@ -24,6 +25,24 @@ export default class App {
   reader: BookReader;
   #io: AppIO;
   #repo: BookRepository;
+
+  #themeKey = 'reader-theme';
+
+  get themeId(): ThemeId {
+    const stored = this.#io.stringStorage.get(this.#themeKey);
+    if (!stored) return DEFAULT_THEME;
+
+    /* Backward compat: old boolean values from dark mode toggle */
+    if (stored === 'true') return 'slate';
+    if (stored === 'false') return 'light';
+
+    return isValidThemeId(stored) ? stored : DEFAULT_THEME;
+  }
+
+  setTheme(id: ThemeId) {
+    this.#io.stringStorage.set(this.#themeKey, id);
+    this.reader.setTheme(getTheme(id));
+  }
 
   constructor(params: AppConsructorParams) {
     this.reader = params.bookReader;

@@ -1,20 +1,22 @@
+/* Initial defaults — must match LIGHT_THEME in app/ReaderTheme.ts */
+:root {
+  --reader-bg: #ffffff;
+  --reader-bg-overlay: #ffffffbf;
+  --reader-text: #333333;
+  --reader-text-secondary: #7575759f;
+  --reader-toc-bg: #ffffff;
+  --reader-toc-text: black;
+}
+
 #reader-view {
   position: relative;
   height: 100vh;
+  background-color: var(--reader-bg);
 }
 
 #render-area {
   width: 100%;
   height: 90vh;
-}
-
-#controls-area {
-  width: 100%;
-  position: fixed;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
 }
 
 .toc-fade-enter {

@@ -1,6 +1,7 @@
 import { Book as EpubjsBook, Rendition } from "epubjs";
 import { Book, BookLocation, PageRef, ToCItem } from "app/Book";
 import { BookReader } from "app/BookReader";
+import { ReaderThemeConfig } from "app/ReaderTheme";
 import ReaderAssistant from "./ReaderAssistant";
 import HashGenerator from "./HashGenerator";
 import * as TOC from "./EpubjsToC";
@@ -67,12 +68,20 @@ export default class EpubjsBookReader implements BookReader {
     return this.#book;
   }
 
+  #currentTheme: ReaderThemeConfig | null = null;
+  #themeDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
   render() {
     if (!this.#view) {
       throw new Error('Must provide view first');
     }
 
     this.#rendition = this.#epubjsBook.renderTo(this.#view, { width: "100%", height: "100%" });
+
+    this.#rendition.on("rendered", () => {
+      if (this.#currentTheme) this.#applyThemeStyles(this.#currentTheme);
+    });
+
     this.#rendition.display();
     this.#isRendered = true;
 
@@ -81,6 +90,31 @@ export default class EpubjsBookReader implements BookReader {
       this.#locationChangedListeners.forEach(l => l(loc));
       this.#locationChangedListeners = [];
     });
+  }
+
+  #applyThemeStyles(theme: ReaderThemeConfig) {
+    const bg = theme.vars['--reader-bg'];
+    const text = theme.vars['--reader-text'];
+    const linkColor = theme.isDark ? '#7eb8f7' : '#1a0dab';
+    const visitedColor = theme.isDark ? '#b39ddb' : '#681da8';
+
+    this.#rendition.themes.default({
+      "body": { "background-color": `${bg} !important`, "color": `${text} !important` },
+      "a, a:link": { "color": `${linkColor} !important` },
+      "a:visited": { "color": `${visitedColor} !important` },
+    });
+  }
+
+  setTheme(theme: ReaderThemeConfig) {
+    if (!this.#rendition) return;
+    this.#currentTheme = theme;
+    if (this.#themeDebounceTimer !== null) {
+      clearTimeout(this.#themeDebounceTimer);
+    }
+    this.#themeDebounceTimer = setTimeout(() => {
+      this.#themeDebounceTimer = null;
+      this.#applyThemeStyles(theme);
+    }, 50);
   }
 
   #getBookLocation(): BookLocation {

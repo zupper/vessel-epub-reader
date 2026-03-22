@@ -1,0 +1,55 @@
+#controls-drawer {
+  width: 100%;
+  position: fixed;
+  bottom: -72px;
+  display: flex;
+  flex-direction: column;
+  touch-action: none;
+}
+
+#controls-drawer.controls-drawer-snap {
+  transition: transform 0.25s ease-out, background-color 0.25s ease-out;
+}
+
+#drawer-handle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 0;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#drawer-handle:active {
+  cursor: grabbing;
+}
+
+#drawer-handle-pill {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: var(--reader-text-secondary);
+  opacity: 0.6;
+}
+
+#drawer-settings-panel {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: 72px;
+  padding: 0 16px;
+  gap: 12px;
+}
+
+.drawer-setting-button.MuiIconButton-root {
+  background-color: var(--reader-bg-overlay);
+  color: var(--reader-text-secondary);
+}
+
+#controls-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}

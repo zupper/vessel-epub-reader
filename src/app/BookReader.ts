@@ -1,4 +1,5 @@
 import { Book, BookLocation, PageRef, Sentence } from './Book';
+import { ReaderThemeConfig } from './ReaderTheme';
 
 export interface BookReader {
   open(bookOrURL: ArrayBuffer): Promise<Book>;
@@ -12,5 +13,6 @@ export interface BookReader {
   unhighlight: (sentenceId: string) => void;
   removeAllHighlights: () => void;
   isRendered: () => boolean;
+  setTheme: (theme: ReaderThemeConfig) => void;
 }
 

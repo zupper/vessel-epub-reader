@@ -8,8 +8,8 @@
 }
 
 #reading-controls .MuiIconButton-root {
-  background-color: #ffffffbf;
-  color: #7575759f;
+  background-color: var(--reader-bg-overlay);
+  color: var(--reader-text-secondary);
 }
 
 #tts-controls,
