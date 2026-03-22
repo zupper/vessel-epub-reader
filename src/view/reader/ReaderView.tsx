@@ -1,15 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { CSSTransition } from 'react-transition-group';
-import IconButton from '@mui/material/IconButton';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import LightModeIcon from '@mui/icons-material/LightMode';
 
 import App from 'app/App';
 import { ToCItem } from 'app/Book';
-import { getThemeVars } from 'app/ReaderTheme';
+import { ThemeId, getTheme, getThemeVars, getNextThemeId } from 'app/ReaderTheme';
 import EpubjsBookReader from 'infra/epub/EpubjsBookReader';
 
+import { ControlsDrawer } from './controls/ControlsDrawer';
 import { ReaderControls } from './controls/ReaderControls';
 import { TableOfContentsView } from './toc/TableOfContentsView';
 import { ChapterInfo } from './ChapterInfo';
@@ -17,13 +15,11 @@ import { ChapterInfo } from './ChapterInfo';
 import './ReaderView.css';
 import { useBookLocationContext } from '../BookLocationContext';
 
-function applyCssVars(isDark: boolean) {
-  const vars = getThemeVars(isDark);
+function applyCssVars(themeId: ThemeId) {
+  const vars = getThemeVars(themeId);
   const root = document.documentElement;
   Object.entries(vars).forEach(([key, value]) => root.style.setProperty(key, value));
 }
-
-const preventTouchMove = (e: TouchEvent) => e.preventDefault();
 
 export type ReaderViewProps = {
   app: App;
@@ -32,21 +28,19 @@ export type ReaderViewProps = {
 export const ReaderView = (params: ReaderViewProps) => {
   const [tocVisible, setTocVisible] = useState(false);
   const [toc, setToC] = useState(null);
-  const [isDark, setIsDark] = useState(() => params.app.isDarkMode);
+  const [themeId, setThemeId] = useState<ThemeId>(() => params.app.themeId);
   const bookReadyRef = useRef(false);
   const currentLocation = useBookLocationContext();
 
   const location = useLocation();
   const renderAreaRef = useRef(null);
 
-  const controlsAreaRef = useRef(null);
-
   useEffect(() => {
-    applyCssVars(isDark);
+    applyCssVars(themeId);
     if (bookReadyRef.current) {
-      params.app.reader.setTheme(isDark);
+      params.app.reader.setTheme(getTheme(themeId));
     }
-  }, [isDark]);
+  }, [themeId]);
 
   useEffect(() => {
     const reader = (params.app.reader as EpubjsBookReader);
@@ -56,28 +50,20 @@ export const ReaderView = (params: ReaderViewProps) => {
         .then(({ toc }) => {
           setToC(toc);
           bookReadyRef.current = true;
-          params.app.reader.setTheme(isDark);
+          params.app.reader.setTheme(getTheme(themeId));
         });
-    }
-
-    if (controlsAreaRef.current) {
-      controlsAreaRef.current.addEventListener( 'touchmove', preventTouchMove, { passive: false });
     }
 
     return () => {
       bookReadyRef.current = false;
       reader.view = null;
-
-      if (controlsAreaRef.current) {
-        controlsAreaRef.current.removeEventListener('touchmove', preventTouchMove);
-      }
     };
   }, []);
 
-  const toggleDarkMode = useCallback(() => {
-    setIsDark(prev => {
-      const next = !prev;
-      params.app.setDarkMode(next);
+  const cycleTheme = useCallback(() => {
+    setThemeId(prev => {
+      const next = getNextThemeId(prev);
+      params.app.setTheme(next);
       return next;
     });
   }, []);
@@ -96,17 +82,12 @@ export const ReaderView = (params: ReaderViewProps) => {
   return (
     <div
       id="reader-view">
-      <IconButton
-        id="dark-mode-toggle"
-        onClick={toggleDarkMode}
-        aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-        sx={{ visibility: tocVisible ? 'hidden' : 'visible' }}>
-        {isDark ? <LightModeIcon /> : <DarkModeIcon />}
-      </IconButton>
       <div
         id="render-area"
         ref={renderAreaRef}></div>
-      <div id="controls-area" ref={controlsAreaRef}>
+      <ControlsDrawer
+        themeId={themeId}
+        onCycleTheme={cycleTheme}>
         <ReaderControls
           app={params.app}
           onNextPage={nextPage}
@@ -115,7 +96,7 @@ export const ReaderView = (params: ReaderViewProps) => {
         <ChapterInfo
           chapter={currentLocation?.chapter}
           chapterProgress={currentLocation?.chapterProgress} />
-      </div>
+      </ControlsDrawer>
       <CSSTransition
         in={tocVisible}
         timeout={300}
