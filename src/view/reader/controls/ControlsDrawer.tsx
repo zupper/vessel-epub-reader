@@ -138,13 +138,17 @@ export const ControlsDrawer = (params: ControlsDrawerProps) => {
   }, [expanded]);
 
   const translateY = dragging ? dragOffset : (expanded ? SETTINGS_PANEL_HEIGHT : 0);
+  const bgOpacity = SETTINGS_PANEL_HEIGHT > 0 ? translateY / SETTINGS_PANEL_HEIGHT : 0;
   const theme = getTheme(params.themeId);
 
   return (
     <div
       id="controls-drawer"
       ref={drawerRef}
-      style={{ transform: `translateY(-${translateY}px)` }}
+      style={{
+        transform: `translateY(-${translateY}px)`,
+        backgroundColor: `color-mix(in srgb, ${theme.vars['--reader-bg-overlay']} ${Math.round(bgOpacity * 100)}%, transparent)`,
+      }}
       className={dragging ? '' : 'controls-drawer-snap'}>
 
       <div
