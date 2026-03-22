@@ -195,6 +195,9 @@ export default class TTSControl {
           break;
         }
       }
+    } catch {
+      this.#forceStop();
+      return;
     } finally {
       this.#stateTransitionInProgress = false;
     }
@@ -215,6 +218,17 @@ export default class TTSControl {
     this.#tts.removeEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback)
     this.#reader.removeAllHighlights();
     this.#tts.stop();
+    this.#clearState();
+  }
+
+  #forceStop() {
+    try { this.#tts.removeEventListener('sentencecomplete', this.#sentenceCompleteBoundCallback); } catch {}
+    try { this.#reader.removeAllHighlights(); } catch {}
+    try { this.#tts.stop(); } catch {}
+    this.#clearState();
+  }
+
+  #clearState() {
     this.#state = null;
     this.#pendingActions = [];
     if (this.#debounceTimer !== null) {
