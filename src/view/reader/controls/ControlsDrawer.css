@@ -1,7 +1,7 @@
 #controls-drawer {
   width: 100%;
   position: fixed;
-  bottom: -180px;
+  bottom: -200px;
   display: flex;
   flex-direction: column;
   touch-action: none;
@@ -37,7 +37,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 180px;
+  height: 200px;
   padding: 4px 0 8px;
   gap: 2px;
 }
@@ -146,6 +146,30 @@
   color: var(--reader-text);
   font-size: 14px;
   font-weight: 500;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.setting-label {
+  width: 48px;
+  flex-shrink: 0;
+  color: var(--reader-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.setting-value {
+  width: 48px;
+  flex-shrink: 0;
+  text-align: center;
+  color: var(--reader-text);
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   user-select: none;
   -webkit-user-select: none;
 }

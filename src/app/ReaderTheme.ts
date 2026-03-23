@@ -208,3 +208,23 @@ export function getPrevTtsSpeed(current: TtsSpeed): TtsSpeed | null {
 export function isValidTtsSpeed(value: number): value is TtsSpeed {
   return (TTS_SPEEDS as readonly number[]).includes(value);
 }
+
+// --- TTS Pitch ---
+
+export const TTS_PITCHES = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5, 1.75, 2.0] as const;
+export type TtsPitch = (typeof TTS_PITCHES)[number];
+export const DEFAULT_TTS_PITCH: TtsPitch = 1.0;
+
+export function getNextTtsPitch(current: TtsPitch): TtsPitch | null {
+  const idx = TTS_PITCHES.indexOf(current);
+  return idx < TTS_PITCHES.length - 1 ? TTS_PITCHES[idx + 1] : null;
+}
+
+export function getPrevTtsPitch(current: TtsPitch): TtsPitch | null {
+  const idx = TTS_PITCHES.indexOf(current);
+  return idx > 0 ? TTS_PITCHES[idx - 1] : null;
+}
+
+export function isValidTtsPitch(value: number): value is TtsPitch {
+  return (TTS_PITCHES as readonly number[]).includes(value);
+}

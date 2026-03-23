@@ -208,6 +208,11 @@ export default class TTSControl {
     this.#restartCurrentSentence();
   }
 
+  setPitch(pitch: number) {
+    this.#tts?.setPitch(pitch);
+    this.#restartCurrentSentence();
+  }
+
   setVoice(id: string) {
     this.#tts?.setVoice(id);
     this.#restartCurrentSentence();

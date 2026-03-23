@@ -24,6 +24,7 @@ export interface TTSSource extends EventTarget {
   stop: () => void;
   pause: () => void;
   setRate: (rate: number) => void;
+  setPitch: (pitch: number) => void;
   setVoice: (id: string) => void;
   getAvailableVoices: () => Promise<VoiceOption[]>;
 }

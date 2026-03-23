@@ -7,6 +7,7 @@ export default class WebSpeechTTSSource extends EventTarget implements TTSSource
   #currentSentence: Sentence | null;
   #sentenceCompleted: boolean;
   #rate: number;
+  #pitch: number;
   #voiceURI: string | null;
 
   constructor() {
@@ -16,6 +17,7 @@ export default class WebSpeechTTSSource extends EventTarget implements TTSSource
     this.#currentSentence = null;
     this.#sentenceCompleted = false;
     this.#rate = 1.0;
+    this.#pitch = 1.0;
     this.#voiceURI = null;
   }
 
@@ -26,6 +28,10 @@ export default class WebSpeechTTSSource extends EventTarget implements TTSSource
 
   setRate(rate: number) {
     this.#rate = Math.max(0.1, Math.min(10, rate));
+  }
+
+  setPitch(pitch: number) {
+    this.#pitch = Math.max(0, Math.min(2, pitch));
   }
 
   setVoice(uri: string) {
@@ -66,6 +72,7 @@ export default class WebSpeechTTSSource extends EventTarget implements TTSSource
     this.#sentenceCompleted = false;
     this.#utterance = new SpeechSynthesisUtterance(s.text);
     this.#utterance.rate = this.#rate;
+    this.#utterance.pitch = this.#pitch;
 
     if (this.#voiceURI) {
       const voices = this.#synth.getVoices();

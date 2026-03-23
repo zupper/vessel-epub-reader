@@ -47,6 +47,7 @@ export default class OpenTTSSource extends EventTarget implements TTSSource {
   stop() { this.#player.stop(); }
   pause() { this.#player.pause(); }
   setRate(_rate: number) {}
+  setPitch(_pitch: number) {}
   setVoice(_id: string) {}
   async getAvailableVoices(): Promise<VoiceOption[]> { return []; }
 }

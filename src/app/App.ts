@@ -4,6 +4,7 @@ import {
   FontSize, DEFAULT_FONT_SIZE, isValidFontSize,
   FontFamilyId, DEFAULT_FONT_FAMILY, getFontFamily, isValidFontFamilyId,
   TtsSpeed, DEFAULT_TTS_SPEED, isValidTtsSpeed,
+  TtsPitch, DEFAULT_TTS_PITCH, isValidTtsPitch,
 } from './ReaderTheme';
 import { TTSSourceProvider } from './tts/TTSSource';
 import TTSControl from './tts/TTSControl';
@@ -35,6 +36,7 @@ export default class App {
   #fontSizeKey = 'reader-font-size';
   #fontFamilyKey = 'reader-font-family';
   #ttsRateKey = 'tts-rate';
+  #ttsPitchKey = 'tts-pitch';
   #ttsVoiceKey = 'tts-voice';
 
   get themeId(): ThemeId {
@@ -86,6 +88,18 @@ export default class App {
   setTtsRate(rate: TtsSpeed) {
     this.#io.stringStorage.set(this.#ttsRateKey, String(rate));
     this.tts.setRate(rate);
+  }
+
+  get ttsPitch(): TtsPitch {
+    const stored = this.#io.stringStorage.get(this.#ttsPitchKey);
+    if (!stored) return DEFAULT_TTS_PITCH;
+    const parsed = Number(stored);
+    return isValidTtsPitch(parsed) ? parsed : DEFAULT_TTS_PITCH;
+  }
+
+  setTtsPitch(pitch: TtsPitch) {
+    this.#io.stringStorage.set(this.#ttsPitchKey, String(pitch));
+    this.tts.setPitch(pitch);
   }
 
   get ttsVoice(): string {

@@ -9,6 +9,7 @@ import {
   FontSize, getNextFontSize, getPrevFontSize,
   FontFamilyId, getNextFontFamily, getPrevFontFamily,
   TtsSpeed, getNextTtsSpeed, getPrevTtsSpeed,
+  TtsPitch, getNextTtsPitch, getPrevTtsPitch,
 } from 'app/ReaderTheme';
 import { VoiceOption } from 'app/tts/TTSSource';
 import EpubjsBookReader from 'infra/epub/EpubjsBookReader';
@@ -38,6 +39,7 @@ export const ReaderView = (params: ReaderViewProps) => {
   const [fontSize, setFontSize] = useState<FontSize>(() => params.app.fontSize);
   const [fontFamilyId, setFontFamilyId] = useState<FontFamilyId>(() => params.app.fontFamilyId);
   const [ttsRate, setTtsRate] = useState<TtsSpeed>(() => params.app.ttsRate);
+  const [ttsPitch, setTtsPitch] = useState<TtsPitch>(() => params.app.ttsPitch);
   const [ttsVoice, setTtsVoice] = useState<string>(() => params.app.ttsVoice);
   const [availableVoices, setAvailableVoices] = useState<VoiceOption[]>([]);
   const bookReadyRef = useRef(false);
@@ -68,6 +70,7 @@ export const ReaderView = (params: ReaderViewProps) => {
   useEffect(() => {
     params.app.tts.getAvailableVoices().then(setAvailableVoices);
     params.app.tts.setRate(params.app.ttsRate);
+    params.app.tts.setPitch(params.app.ttsPitch);
     if (params.app.ttsVoice) params.app.tts.setVoice(params.app.ttsVoice);
   }, []);
 
@@ -137,6 +140,24 @@ export const ReaderView = (params: ReaderViewProps) => {
     });
   }, []);
 
+  const increaseTtsPitch = useCallback(() => {
+    setTtsPitch(prev => {
+      const next = getNextTtsPitch(prev);
+      if (!next) return prev;
+      params.app.setTtsPitch(next);
+      return next;
+    });
+  }, []);
+
+  const decreaseTtsPitch = useCallback(() => {
+    setTtsPitch(prev => {
+      const next = getPrevTtsPitch(prev);
+      if (!next) return prev;
+      params.app.setTtsPitch(next);
+      return next;
+    });
+  }, []);
+
   const selectTtsVoice = useCallback((id: string) => {
     setTtsVoice(id);
     params.app.setTtsVoice(id);
@@ -189,6 +210,9 @@ export const ReaderView = (params: ReaderViewProps) => {
         ttsRate={ttsRate}
         onIncreaseTtsRate={increaseTtsRate}
         onDecreaseTtsRate={decreaseTtsRate}
+        ttsPitch={ttsPitch}
+        onIncreaseTtsPitch={increaseTtsPitch}
+        onDecreaseTtsPitch={decreaseTtsPitch}
         ttsVoice={ttsVoice}
         availableVoices={availableVoices}
         onNextTtsVoice={nextTtsVoice}
