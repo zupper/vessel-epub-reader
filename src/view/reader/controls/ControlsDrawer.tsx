@@ -10,8 +10,11 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import TextFieldsIcon from '@mui/icons-material/TextFields';
+import GraphicEqIcon from '@mui/icons-material/GraphicEq';
 
-import { ThemeId, FontSize, FontFamilyId, FONT_SIZES, getTheme, getFontFamily } from 'app/ReaderTheme';
+import { ThemeId, FontSize, FontFamilyId, FONT_SIZES, getTheme, getFontFamily, TtsSpeed, TTS_SPEEDS } from 'app/ReaderTheme';
+import { VoiceOption } from 'app/tts/TTSSource';
 
 import './ControlsDrawer.css';
 
@@ -31,6 +34,8 @@ const THEME_ICONS: Record<ThemeId, React.ReactElement> = {
 
 const THEME_ORDER: ThemeId[] = ['light', 'sepia', 'forest', 'warm-night', 'slate', 'amoled'];
 
+type SettingsTab = 'visual' | 'audio';
+
 export type ControlsDrawerProps = {
   themeId: ThemeId;
   onSelectTheme: (id: ThemeId) => void;
@@ -40,6 +45,14 @@ export type ControlsDrawerProps = {
   fontFamilyId: FontFamilyId;
   onNextFontFamily: () => void;
   onPrevFontFamily: () => void;
+  ttsRate: TtsSpeed;
+  onIncreaseTtsRate: () => void;
+  onDecreaseTtsRate: () => void;
+  ttsVoice: string;
+  availableVoices: VoiceOption[];
+  onNextTtsVoice: () => void;
+  onPrevTtsVoice: () => void;
+  onSelectTtsVoice: (id: string) => void;
   children: React.ReactNode;
 };
 
@@ -47,6 +60,7 @@ export const ControlsDrawer = (params: ControlsDrawerProps) => {
   const [expanded, setExpanded] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [activeTab, setActiveTab] = useState<SettingsTab>('visual');
 
   const startYRef = useRef(0);
   const draggingRef = useRef(false);
@@ -181,66 +195,137 @@ export const ControlsDrawer = (params: ControlsDrawerProps) => {
       </div>
 
       <div id="drawer-settings-panel">
-        <div className="settings-row" id="theme-row">
-          <div className="theme-scroll">
-            {THEME_ORDER.map(id => (
+        <div className="settings-tabs">
+          <button
+            className={`settings-tab ${activeTab === 'visual' ? 'settings-tab-active' : ''}`}
+            onClick={() => setActiveTab('visual')}
+            aria-label="Visual settings">
+            <TextFieldsIcon fontSize="small" />
+          </button>
+          <button
+            className={`settings-tab ${activeTab === 'audio' ? 'settings-tab-active' : ''}`}
+            onClick={() => setActiveTab('audio')}
+            aria-label="Audio settings">
+            <GraphicEqIcon fontSize="small" />
+          </button>
+        </div>
+
+        {activeTab === 'visual' && (
+          <>
+            <div className="settings-row" id="theme-row">
+              <div className="theme-scroll">
+                {THEME_ORDER.map(id => (
+                  <IconButton
+                    key={id}
+                    onClick={() => params.onSelectTheme(id)}
+                    aria-label={`Theme: ${getTheme(id).label}`}
+                    className={`drawer-setting-button theme-button ${id === params.themeId ? 'theme-active' : ''}`}
+                    size="medium">
+                    {THEME_ICONS[id]}
+                  </IconButton>
+                ))}
+              </div>
+            </div>
+
+            <div className="settings-row" id="font-size-row">
               <IconButton
-                key={id}
-                onClick={() => params.onSelectTheme(id)}
-                aria-label={`Theme: ${getTheme(id).label}`}
-                className={`drawer-setting-button theme-button ${id === params.themeId ? 'theme-active' : ''}`}
+                onClick={params.onDecreaseFontSize}
+                disabled={params.fontSize === FONT_SIZES[0]}
+                aria-label="Decrease font size"
+                className="drawer-setting-button"
                 size="medium">
-                {THEME_ICONS[id]}
+                <RemoveIcon />
               </IconButton>
-            ))}
-          </div>
-        </div>
+              <div className="font-size-dots">
+                {FONT_SIZES.map(size => (
+                  <span
+                    key={size}
+                    className={`size-dot ${size === params.fontSize ? 'size-dot-active' : ''}`} />
+                ))}
+              </div>
+              <IconButton
+                onClick={params.onIncreaseFontSize}
+                disabled={params.fontSize === FONT_SIZES[FONT_SIZES.length - 1]}
+                aria-label="Increase font size"
+                className="drawer-setting-button"
+                size="medium">
+                <AddIcon />
+              </IconButton>
+            </div>
 
-        <div className="settings-row" id="font-size-row">
-          <IconButton
-            onClick={params.onDecreaseFontSize}
-            disabled={params.fontSize === FONT_SIZES[0]}
-            aria-label="Decrease font size"
-            className="drawer-setting-button"
-            size="medium">
-            <RemoveIcon />
-          </IconButton>
-          <div className="font-size-dots">
-            {FONT_SIZES.map(size => (
-              <span
-                key={size}
-                className={`size-dot ${size === params.fontSize ? 'size-dot-active' : ''}`} />
-            ))}
-          </div>
-          <IconButton
-            onClick={params.onIncreaseFontSize}
-            disabled={params.fontSize === FONT_SIZES[FONT_SIZES.length - 1]}
-            aria-label="Increase font size"
-            className="drawer-setting-button"
-            size="medium">
-            <AddIcon />
-          </IconButton>
-        </div>
+            <div className="settings-row" id="font-family-row">
+              <IconButton
+                onClick={params.onPrevFontFamily}
+                aria-label="Previous font"
+                className="drawer-setting-button"
+                size="medium">
+                <ChevronLeftIcon />
+              </IconButton>
+              <span className="font-family-label">
+                {getFontFamily(params.fontFamilyId).label}
+              </span>
+              <IconButton
+                onClick={params.onNextFontFamily}
+                aria-label="Next font"
+                className="drawer-setting-button"
+                size="medium">
+                <ChevronRightIcon />
+              </IconButton>
+            </div>
+          </>
+        )}
 
-        <div className="settings-row" id="font-family-row">
-          <IconButton
-            onClick={params.onPrevFontFamily}
-            aria-label="Previous font"
-            className="drawer-setting-button"
-            size="medium">
-            <ChevronLeftIcon />
-          </IconButton>
-          <span className="font-family-label">
-            {getFontFamily(params.fontFamilyId).label}
-          </span>
-          <IconButton
-            onClick={params.onNextFontFamily}
-            aria-label="Next font"
-            className="drawer-setting-button"
-            size="medium">
-            <ChevronRightIcon />
-          </IconButton>
-        </div>
+        {activeTab === 'audio' && (
+          <>
+            <div className="settings-row" id="tts-speed-row">
+              <IconButton
+                onClick={params.onDecreaseTtsRate}
+                disabled={params.ttsRate === TTS_SPEEDS[0]}
+                aria-label="Decrease speed"
+                className="drawer-setting-button"
+                size="medium">
+                <RemoveIcon />
+              </IconButton>
+              <div className="font-size-dots">
+                {TTS_SPEEDS.map(speed => (
+                  <span
+                    key={speed}
+                    className={`size-dot ${speed === params.ttsRate ? 'size-dot-active' : ''}`} />
+                ))}
+              </div>
+              <IconButton
+                onClick={params.onIncreaseTtsRate}
+                disabled={params.ttsRate === TTS_SPEEDS[TTS_SPEEDS.length - 1]}
+                aria-label="Increase speed"
+                className="drawer-setting-button"
+                size="medium">
+                <AddIcon />
+              </IconButton>
+            </div>
+
+            {params.availableVoices.length > 0 && (
+              <div className="settings-row" id="tts-voice-row">
+                <IconButton
+                  onClick={params.onPrevTtsVoice}
+                  aria-label="Previous voice"
+                  className="drawer-setting-button"
+                  size="medium">
+                  <ChevronLeftIcon />
+                </IconButton>
+                <span className="font-family-label">
+                  {params.availableVoices.find(v => v.id === params.ttsVoice)?.name ?? 'Default'}
+                </span>
+                <IconButton
+                  onClick={params.onNextTtsVoice}
+                  aria-label="Next voice"
+                  className="drawer-setting-button"
+                  size="medium">
+                  <ChevronRightIcon />
+                </IconButton>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

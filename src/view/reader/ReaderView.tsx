@@ -8,7 +8,9 @@ import {
   ThemeId, getTheme, getThemeVars,
   FontSize, getNextFontSize, getPrevFontSize,
   FontFamilyId, getNextFontFamily, getPrevFontFamily,
+  TtsSpeed, getNextTtsSpeed, getPrevTtsSpeed,
 } from 'app/ReaderTheme';
+import { VoiceOption } from 'app/tts/TTSSource';
 import EpubjsBookReader from 'infra/epub/EpubjsBookReader';
 
 import { ControlsDrawer } from './controls/ControlsDrawer';
@@ -35,6 +37,9 @@ export const ReaderView = (params: ReaderViewProps) => {
   const [themeId, setThemeId] = useState<ThemeId>(() => params.app.themeId);
   const [fontSize, setFontSize] = useState<FontSize>(() => params.app.fontSize);
   const [fontFamilyId, setFontFamilyId] = useState<FontFamilyId>(() => params.app.fontFamilyId);
+  const [ttsRate, setTtsRate] = useState<TtsSpeed>(() => params.app.ttsRate);
+  const [ttsVoice, setTtsVoice] = useState<string>(() => params.app.ttsVoice);
+  const [availableVoices, setAvailableVoices] = useState<VoiceOption[]>([]);
   const bookReadyRef = useRef(false);
   const currentLocation = useBookLocationContext();
 
@@ -59,6 +64,12 @@ export const ReaderView = (params: ReaderViewProps) => {
       params.app.setFontFamily(fontFamilyId);
     }
   }, [fontFamilyId]);
+
+  useEffect(() => {
+    params.app.tts.getAvailableVoices().then(setAvailableVoices);
+    params.app.tts.setRate(params.app.ttsRate);
+    if (params.app.ttsVoice) params.app.tts.setVoice(params.app.ttsVoice);
+  }, []);
 
   useEffect(() => {
     const reader = (params.app.reader as EpubjsBookReader);
@@ -108,6 +119,47 @@ export const ReaderView = (params: ReaderViewProps) => {
     setFontFamilyId(prev => getPrevFontFamily(prev));
   }, []);
 
+  const increaseTtsRate = useCallback(() => {
+    setTtsRate(prev => {
+      const next = getNextTtsSpeed(prev);
+      if (!next) return prev;
+      params.app.setTtsRate(next);
+      return next;
+    });
+  }, []);
+
+  const decreaseTtsRate = useCallback(() => {
+    setTtsRate(prev => {
+      const next = getPrevTtsSpeed(prev);
+      if (!next) return prev;
+      params.app.setTtsRate(next);
+      return next;
+    });
+  }, []);
+
+  const selectTtsVoice = useCallback((id: string) => {
+    setTtsVoice(id);
+    params.app.setTtsVoice(id);
+  }, []);
+
+  const nextTtsVoice = useCallback(() => {
+    setTtsVoice(prev => {
+      const idx = availableVoices.findIndex(v => v.id === prev);
+      const next = availableVoices[(idx + 1) % availableVoices.length];
+      if (next) params.app.setTtsVoice(next.id);
+      return next?.id ?? prev;
+    });
+  }, [availableVoices]);
+
+  const prevTtsVoice = useCallback(() => {
+    setTtsVoice(prev => {
+      const idx = availableVoices.findIndex(v => v.id === prev);
+      const next = availableVoices[(idx - 1 + availableVoices.length) % availableVoices.length];
+      if (next) params.app.setTtsVoice(next.id);
+      return next?.id ?? prev;
+    });
+  }, [availableVoices]);
+
   const showToC = () => setTocVisible(true);
   const hideToC = () => setTocVisible(false);
 
@@ -133,7 +185,15 @@ export const ReaderView = (params: ReaderViewProps) => {
         onDecreaseFontSize={decreaseFontSize}
         fontFamilyId={fontFamilyId}
         onNextFontFamily={nextFontFamily}
-        onPrevFontFamily={prevFontFamily}>
+        onPrevFontFamily={prevFontFamily}
+        ttsRate={ttsRate}
+        onIncreaseTtsRate={increaseTtsRate}
+        onDecreaseTtsRate={decreaseTtsRate}
+        ttsVoice={ttsVoice}
+        availableVoices={availableVoices}
+        onNextTtsVoice={nextTtsVoice}
+        onPrevTtsVoice={prevTtsVoice}
+        onSelectTtsVoice={selectTtsVoice}>
         <ReaderControls
           app={params.app}
           onNextPage={nextPage}

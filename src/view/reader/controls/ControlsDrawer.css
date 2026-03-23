@@ -38,8 +38,39 @@
   flex-direction: column;
   align-items: center;
   height: 180px;
-  padding: 8px 0;
-  gap: 4px;
+  padding: 4px 0 8px;
+  gap: 2px;
+}
+
+.settings-tabs {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  max-width: 400px;
+  width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.settings-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--reader-text-secondary);
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  padding: 0;
+}
+
+.settings-tab-active {
+  opacity: 1;
+  color: var(--reader-text);
+  border-bottom: 2px solid var(--reader-text);
 }
 
 .settings-row {
