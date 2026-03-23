@@ -51,9 +51,8 @@ export default class WebSpeechTTSSource extends EventTarget implements TTSSource
       });
     }
 
-    // Filter to user's language prefix (e.g., 'en')
     const langPrefix = navigator.language.split('-')[0];
-    const filtered = voices.filter(v => v.lang.startsWith(langPrefix));
+    const filtered = voices.filter(v => v.lang.replace('_', '-').startsWith(langPrefix));
 
     // Fall back to all voices if nothing matches
     const list = filtered.length > 0 ? filtered : voices;
@@ -71,7 +70,10 @@ export default class WebSpeechTTSSource extends EventTarget implements TTSSource
     if (this.#voiceURI) {
       const voices = this.#synth.getVoices();
       const match = voices.find(v => v.voiceURI === this.#voiceURI);
-      if (match) this.#utterance.voice = match;
+      if (match) {
+        this.#utterance.voice = match;
+        this.#utterance.lang = match.lang.replace('_', '-');
+      }
     }
 
     this.#utterance.onend = () => {
