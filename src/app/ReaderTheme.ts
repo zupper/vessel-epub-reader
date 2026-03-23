@@ -114,3 +114,62 @@ export function getNextThemeId(current: ThemeId): ThemeId {
 export function isValidThemeId(value: string): value is ThemeId {
   return value in THEMES;
 }
+
+// --- Font Size ---
+
+export const FONT_SIZES = [80, 90, 100, 110, 120, 130, 150, 175, 200] as const;
+export type FontSize = (typeof FONT_SIZES)[number];
+export const DEFAULT_FONT_SIZE: FontSize = 100;
+
+export function getNextFontSize(current: FontSize): FontSize | null {
+  const idx = FONT_SIZES.indexOf(current);
+  return idx < FONT_SIZES.length - 1 ? FONT_SIZES[idx + 1] : null;
+}
+
+export function getPrevFontSize(current: FontSize): FontSize | null {
+  const idx = FONT_SIZES.indexOf(current);
+  return idx > 0 ? FONT_SIZES[idx - 1] : null;
+}
+
+export function isValidFontSize(value: number): value is FontSize {
+  return (FONT_SIZES as readonly number[]).includes(value);
+}
+
+// --- Font Family ---
+
+export type FontFamilyId = 'default' | 'georgia' | 'helvetica' | 'monospace';
+
+export type FontFamilyConfig = {
+  id: FontFamilyId;
+  label: string;
+  value: string;
+};
+
+const FONT_FAMILY_ORDER: FontFamilyId[] = ['default', 'georgia', 'helvetica', 'monospace'];
+
+const FONT_FAMILIES: Record<FontFamilyId, FontFamilyConfig> = {
+  default: { id: 'default', label: 'Default', value: '' },
+  georgia: { id: 'georgia', label: 'Georgia', value: 'Georgia, serif' },
+  helvetica: { id: 'helvetica', label: 'Helvetica', value: 'Helvetica Neue, Helvetica, Arial, sans-serif' },
+  monospace: { id: 'monospace', label: 'Mono', value: 'SFMono-Regular, Menlo, Consolas, monospace' },
+};
+
+export const DEFAULT_FONT_FAMILY: FontFamilyId = 'default';
+
+export function getFontFamily(id: FontFamilyId): FontFamilyConfig {
+  return FONT_FAMILIES[id] ?? FONT_FAMILIES[DEFAULT_FONT_FAMILY];
+}
+
+export function getNextFontFamily(current: FontFamilyId): FontFamilyId {
+  const idx = FONT_FAMILY_ORDER.indexOf(current);
+  return FONT_FAMILY_ORDER[(idx + 1) % FONT_FAMILY_ORDER.length];
+}
+
+export function getPrevFontFamily(current: FontFamilyId): FontFamilyId {
+  const idx = FONT_FAMILY_ORDER.indexOf(current);
+  return FONT_FAMILY_ORDER[(idx - 1 + FONT_FAMILY_ORDER.length) % FONT_FAMILY_ORDER.length];
+}
+
+export function isValidFontFamilyId(value: string): value is FontFamilyId {
+  return value in FONT_FAMILIES;
+}

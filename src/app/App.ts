@@ -1,5 +1,9 @@
 import { BookReader } from './BookReader';
-import { ThemeId, DEFAULT_THEME, getTheme, isValidThemeId } from './ReaderTheme';
+import {
+  ThemeId, DEFAULT_THEME, getTheme, isValidThemeId,
+  FontSize, DEFAULT_FONT_SIZE, isValidFontSize,
+  FontFamilyId, DEFAULT_FONT_FAMILY, getFontFamily, isValidFontFamilyId,
+} from './ReaderTheme';
 import { TTSSourceProvider } from './tts/TTSSource';
 import TTSControl from './tts/TTSControl';
 import Navigation from './Navigation';
@@ -27,6 +31,8 @@ export default class App {
   #repo: BookRepository;
 
   #themeKey = 'reader-theme';
+  #fontSizeKey = 'reader-font-size';
+  #fontFamilyKey = 'reader-font-family';
 
   get themeId(): ThemeId {
     const stored = this.#io.stringStorage.get(this.#themeKey);
@@ -42,6 +48,29 @@ export default class App {
   setTheme(id: ThemeId) {
     this.#io.stringStorage.set(this.#themeKey, id);
     this.reader.setTheme(getTheme(id));
+  }
+
+  get fontSize(): FontSize {
+    const stored = this.#io.stringStorage.get(this.#fontSizeKey);
+    if (!stored) return DEFAULT_FONT_SIZE;
+    const parsed = Number(stored);
+    return isValidFontSize(parsed) ? parsed : DEFAULT_FONT_SIZE;
+  }
+
+  setFontSize(size: FontSize) {
+    this.#io.stringStorage.set(this.#fontSizeKey, String(size));
+    this.reader.setFontSize(size);
+  }
+
+  get fontFamilyId(): FontFamilyId {
+    const stored = this.#io.stringStorage.get(this.#fontFamilyKey);
+    if (!stored) return DEFAULT_FONT_FAMILY;
+    return isValidFontFamilyId(stored) ? stored : DEFAULT_FONT_FAMILY;
+  }
+
+  setFontFamily(id: FontFamilyId) {
+    this.#io.stringStorage.set(this.#fontFamilyKey, id);
+    this.reader.setFontFamily(getFontFamily(id).value);
   }
 
   constructor(params: AppConsructorParams) {
