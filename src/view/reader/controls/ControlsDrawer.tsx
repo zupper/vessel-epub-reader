@@ -6,28 +6,40 @@ import EnergySavingsLeafIcon from '@mui/icons-material/EnergySavingsLeaf';
 import NightsStayIcon from '@mui/icons-material/NightsStay';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import ContrastIcon from '@mui/icons-material/Contrast';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
-import { ThemeId, getTheme } from 'app/ReaderTheme';
+import { ThemeId, FontSize, FontFamilyId, FONT_SIZES, getTheme, getFontFamily } from 'app/ReaderTheme';
 
 import './ControlsDrawer.css';
 
-const SETTINGS_PANEL_HEIGHT = 72;
+const SETTINGS_PANEL_HEIGHT = 160;
 const SNAP_THRESHOLD = 0.3;
 
 const preventTouchMove = (e: TouchEvent) => e.preventDefault();
 
 const THEME_ICONS: Record<ThemeId, React.ReactElement> = {
-  light: <WbSunnyIcon />,
-  sepia: <AutoStoriesIcon />,
-  forest: <EnergySavingsLeafIcon />,
-  'warm-night': <NightsStayIcon />,
-  slate: <DarkModeIcon />,
-  amoled: <ContrastIcon />,
+  light: <WbSunnyIcon fontSize="small" />,
+  sepia: <AutoStoriesIcon fontSize="small" />,
+  forest: <EnergySavingsLeafIcon fontSize="small" />,
+  'warm-night': <NightsStayIcon fontSize="small" />,
+  slate: <DarkModeIcon fontSize="small" />,
+  amoled: <ContrastIcon fontSize="small" />,
 };
+
+const THEME_ORDER: ThemeId[] = ['light', 'sepia', 'forest', 'warm-night', 'slate', 'amoled'];
 
 export type ControlsDrawerProps = {
   themeId: ThemeId;
-  onCycleTheme: () => void;
+  onSelectTheme: (id: ThemeId) => void;
+  fontSize: FontSize;
+  onIncreaseFontSize: () => void;
+  onDecreaseFontSize: () => void;
+  fontFamilyId: FontFamilyId;
+  onNextFontFamily: () => void;
+  onPrevFontFamily: () => void;
   children: React.ReactNode;
 };
 
@@ -169,12 +181,66 @@ export const ControlsDrawer = (params: ControlsDrawerProps) => {
       </div>
 
       <div id="drawer-settings-panel">
-        <IconButton
-          onClick={params.onCycleTheme}
-          aria-label={`Theme: ${theme.label}. Click to cycle.`}
-          className="drawer-setting-button">
-          {THEME_ICONS[params.themeId]}
-        </IconButton>
+        <div className="settings-row" id="theme-row">
+          <div className="theme-scroll">
+            {THEME_ORDER.map(id => (
+              <IconButton
+                key={id}
+                onClick={() => params.onSelectTheme(id)}
+                aria-label={`Theme: ${getTheme(id).label}`}
+                className={`drawer-setting-button theme-button ${id === params.themeId ? 'theme-active' : ''}`}
+                size="small">
+                {THEME_ICONS[id]}
+              </IconButton>
+            ))}
+          </div>
+        </div>
+
+        <div className="settings-row" id="font-size-row">
+          <IconButton
+            onClick={params.onDecreaseFontSize}
+            disabled={params.fontSize === FONT_SIZES[0]}
+            aria-label="Decrease font size"
+            className="drawer-setting-button"
+            size="small">
+            <RemoveIcon fontSize="small" />
+          </IconButton>
+          <div className="font-size-dots">
+            {FONT_SIZES.map(size => (
+              <span
+                key={size}
+                className={`size-dot ${size === params.fontSize ? 'size-dot-active' : ''}`} />
+            ))}
+          </div>
+          <IconButton
+            onClick={params.onIncreaseFontSize}
+            disabled={params.fontSize === FONT_SIZES[FONT_SIZES.length - 1]}
+            aria-label="Increase font size"
+            className="drawer-setting-button"
+            size="small">
+            <AddIcon fontSize="small" />
+          </IconButton>
+        </div>
+
+        <div className="settings-row" id="font-family-row">
+          <IconButton
+            onClick={params.onPrevFontFamily}
+            aria-label="Previous font"
+            className="drawer-setting-button"
+            size="small">
+            <ChevronLeftIcon fontSize="small" />
+          </IconButton>
+          <span className="font-family-label">
+            {getFontFamily(params.fontFamilyId).label}
+          </span>
+          <IconButton
+            onClick={params.onNextFontFamily}
+            aria-label="Next font"
+            className="drawer-setting-button"
+            size="small">
+            <ChevronRightIcon fontSize="small" />
+          </IconButton>
+        </div>
       </div>
     </div>
   );

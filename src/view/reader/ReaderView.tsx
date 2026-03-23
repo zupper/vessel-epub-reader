@@ -4,7 +4,11 @@ import { CSSTransition } from 'react-transition-group';
 
 import App from 'app/App';
 import { ToCItem } from 'app/Book';
-import { ThemeId, getTheme, getThemeVars, getNextThemeId } from 'app/ReaderTheme';
+import {
+  ThemeId, getTheme, getThemeVars,
+  FontSize, getNextFontSize, getPrevFontSize,
+  FontFamilyId, getNextFontFamily, getPrevFontFamily,
+} from 'app/ReaderTheme';
 import EpubjsBookReader from 'infra/epub/EpubjsBookReader';
 
 import { ControlsDrawer } from './controls/ControlsDrawer';
@@ -29,6 +33,8 @@ export const ReaderView = (params: ReaderViewProps) => {
   const [tocVisible, setTocVisible] = useState(false);
   const [toc, setToC] = useState(null);
   const [themeId, setThemeId] = useState<ThemeId>(() => params.app.themeId);
+  const [fontSize, setFontSize] = useState<FontSize>(() => params.app.fontSize);
+  const [fontFamilyId, setFontFamilyId] = useState<FontFamilyId>(() => params.app.fontFamilyId);
   const bookReadyRef = useRef(false);
   const currentLocation = useBookLocationContext();
 
@@ -43,6 +49,18 @@ export const ReaderView = (params: ReaderViewProps) => {
   }, [themeId]);
 
   useEffect(() => {
+    if (bookReadyRef.current) {
+      params.app.setFontSize(fontSize);
+    }
+  }, [fontSize]);
+
+  useEffect(() => {
+    if (bookReadyRef.current) {
+      params.app.setFontFamily(fontFamilyId);
+    }
+  }, [fontFamilyId]);
+
+  useEffect(() => {
     const reader = (params.app.reader as EpubjsBookReader);
     if (renderAreaRef.current) {
       reader.view = renderAreaRef.current;
@@ -51,6 +69,8 @@ export const ReaderView = (params: ReaderViewProps) => {
           setToC(toc);
           bookReadyRef.current = true;
           params.app.reader.setTheme(getTheme(themeId));
+          params.app.setFontSize(fontSize);
+          params.app.setFontFamily(fontFamilyId);
         });
     }
 
@@ -61,12 +81,31 @@ export const ReaderView = (params: ReaderViewProps) => {
     };
   }, []);
 
-  const cycleTheme = useCallback(() => {
-    setThemeId(prev => {
-      const next = getNextThemeId(prev);
-      params.app.setTheme(next);
-      return next;
+  const selectTheme = useCallback((id: ThemeId) => {
+    setThemeId(id);
+    params.app.setTheme(id);
+  }, []);
+
+  const increaseFontSize = useCallback(() => {
+    setFontSize(prev => {
+      const next = getNextFontSize(prev);
+      return next ?? prev;
     });
+  }, []);
+
+  const decreaseFontSize = useCallback(() => {
+    setFontSize(prev => {
+      const next = getPrevFontSize(prev);
+      return next ?? prev;
+    });
+  }, []);
+
+  const nextFontFamily = useCallback(() => {
+    setFontFamilyId(prev => getNextFontFamily(prev));
+  }, []);
+
+  const prevFontFamily = useCallback(() => {
+    setFontFamilyId(prev => getPrevFontFamily(prev));
   }, []);
 
   const showToC = () => setTocVisible(true);
@@ -88,7 +127,13 @@ export const ReaderView = (params: ReaderViewProps) => {
         ref={renderAreaRef}></div>
       <ControlsDrawer
         themeId={themeId}
-        onCycleTheme={cycleTheme}>
+        onSelectTheme={selectTheme}
+        fontSize={fontSize}
+        onIncreaseFontSize={increaseFontSize}
+        onDecreaseFontSize={decreaseFontSize}
+        fontFamilyId={fontFamilyId}
+        onNextFontFamily={nextFontFamily}
+        onPrevFontFamily={prevFontFamily}>
         <ReaderControls
           app={params.app}
           onNextPage={nextPage}
