@@ -191,7 +191,7 @@ export function isValidFontFamilyId(value: string): value is FontFamilyId {
 
 // --- TTS Speed ---
 
-export const TTS_SPEEDS = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0] as const;
+export const TTS_SPEEDS = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5, 1.75, 2.0] as const;
 export type TtsSpeed = (typeof TTS_SPEEDS)[number];
 export const DEFAULT_TTS_SPEED: TtsSpeed = 1.0;
 

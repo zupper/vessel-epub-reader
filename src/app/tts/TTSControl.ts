@@ -205,10 +205,19 @@ export default class TTSControl {
 
   setRate(rate: number) {
     this.#tts?.setRate(rate);
+    this.#restartCurrentSentence();
   }
 
   setVoice(id: string) {
     this.#tts?.setVoice(id);
+    this.#restartCurrentSentence();
+  }
+
+  #restartCurrentSentence() {
+    if (!this.#state || this.#state.state !== 'PLAYING') return;
+    const sentence = this.#state.sentence;
+    if (!sentence) return;
+    this.#play(sentence);
   }
 
   async getAvailableVoices(): Promise<VoiceOption[]> {
