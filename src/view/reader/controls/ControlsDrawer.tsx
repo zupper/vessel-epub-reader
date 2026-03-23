@@ -15,18 +15,18 @@ import { ThemeId, FontSize, FontFamilyId, FONT_SIZES, getTheme, getFontFamily } 
 
 import './ControlsDrawer.css';
 
-const SETTINGS_PANEL_HEIGHT = 160;
+const SETTINGS_PANEL_HEIGHT = 180;
 const SNAP_THRESHOLD = 0.3;
 
 const preventTouchMove = (e: TouchEvent) => e.preventDefault();
 
 const THEME_ICONS: Record<ThemeId, React.ReactElement> = {
-  light: <WbSunnyIcon fontSize="small" />,
-  sepia: <AutoStoriesIcon fontSize="small" />,
-  forest: <EnergySavingsLeafIcon fontSize="small" />,
-  'warm-night': <NightsStayIcon fontSize="small" />,
-  slate: <DarkModeIcon fontSize="small" />,
-  amoled: <ContrastIcon fontSize="small" />,
+  light: <WbSunnyIcon />,
+  sepia: <AutoStoriesIcon />,
+  forest: <EnergySavingsLeafIcon />,
+  'warm-night': <NightsStayIcon />,
+  slate: <DarkModeIcon />,
+  amoled: <ContrastIcon />,
 };
 
 const THEME_ORDER: ThemeId[] = ['light', 'sepia', 'forest', 'warm-night', 'slate', 'amoled'];
@@ -189,7 +189,7 @@ export const ControlsDrawer = (params: ControlsDrawerProps) => {
                 onClick={() => params.onSelectTheme(id)}
                 aria-label={`Theme: ${getTheme(id).label}`}
                 className={`drawer-setting-button theme-button ${id === params.themeId ? 'theme-active' : ''}`}
-                size="small">
+                size="medium">
                 {THEME_ICONS[id]}
               </IconButton>
             ))}
@@ -202,8 +202,8 @@ export const ControlsDrawer = (params: ControlsDrawerProps) => {
             disabled={params.fontSize === FONT_SIZES[0]}
             aria-label="Decrease font size"
             className="drawer-setting-button"
-            size="small">
-            <RemoveIcon fontSize="small" />
+            size="medium">
+            <RemoveIcon />
           </IconButton>
           <div className="font-size-dots">
             {FONT_SIZES.map(size => (
@@ -217,8 +217,8 @@ export const ControlsDrawer = (params: ControlsDrawerProps) => {
             disabled={params.fontSize === FONT_SIZES[FONT_SIZES.length - 1]}
             aria-label="Increase font size"
             className="drawer-setting-button"
-            size="small">
-            <AddIcon fontSize="small" />
+            size="medium">
+            <AddIcon />
           </IconButton>
         </div>
 
@@ -227,8 +227,8 @@ export const ControlsDrawer = (params: ControlsDrawerProps) => {
             onClick={params.onPrevFontFamily}
             aria-label="Previous font"
             className="drawer-setting-button"
-            size="small">
-            <ChevronLeftIcon fontSize="small" />
+            size="medium">
+            <ChevronLeftIcon />
           </IconButton>
           <span className="font-family-label">
             {getFontFamily(params.fontFamilyId).label}
@@ -237,8 +237,8 @@ export const ControlsDrawer = (params: ControlsDrawerProps) => {
             onClick={params.onNextFontFamily}
             aria-label="Next font"
             className="drawer-setting-button"
-            size="small">
-            <ChevronRightIcon fontSize="small" />
+            size="medium">
+            <ChevronRightIcon />
           </IconButton>
         </div>
       </div>
