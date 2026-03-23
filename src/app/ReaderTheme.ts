@@ -137,7 +137,11 @@ export function isValidFontSize(value: number): value is FontSize {
 
 // --- Font Family ---
 
-export type FontFamilyId = 'default' | 'georgia' | 'helvetica' | 'monospace';
+export type FontFamilyId =
+  | 'default'
+  | 'georgia' | 'palatino' | 'garamond' | 'times'
+  | 'helvetica' | 'verdana' | 'trebuchet' | 'tahoma'
+  | 'monospace';
 
 export type FontFamilyConfig = {
   id: FontFamilyId;
@@ -145,12 +149,23 @@ export type FontFamilyConfig = {
   value: string;
 };
 
-const FONT_FAMILY_ORDER: FontFamilyId[] = ['default', 'georgia', 'helvetica', 'monospace'];
+const FONT_FAMILY_ORDER: FontFamilyId[] = [
+  'default',
+  'georgia', 'palatino', 'garamond', 'times',
+  'helvetica', 'verdana', 'trebuchet', 'tahoma',
+  'monospace',
+];
 
 const FONT_FAMILIES: Record<FontFamilyId, FontFamilyConfig> = {
   default: { id: 'default', label: 'Default', value: '' },
   georgia: { id: 'georgia', label: 'Georgia', value: 'Georgia, serif' },
+  palatino: { id: 'palatino', label: 'Palatino', value: 'Palatino Linotype, Palatino, Book Antiqua, serif' },
+  garamond: { id: 'garamond', label: 'Garamond', value: 'Garamond, EB Garamond, serif' },
+  times: { id: 'times', label: 'Times', value: 'Times New Roman, Times, serif' },
   helvetica: { id: 'helvetica', label: 'Helvetica', value: 'Helvetica Neue, Helvetica, Arial, sans-serif' },
+  verdana: { id: 'verdana', label: 'Verdana', value: 'Verdana, Geneva, sans-serif' },
+  trebuchet: { id: 'trebuchet', label: 'Trebuchet', value: 'Trebuchet MS, Lucida Grande, sans-serif' },
+  tahoma: { id: 'tahoma', label: 'Tahoma', value: 'Tahoma, Segoe UI, sans-serif' },
   monospace: { id: 'monospace', label: 'Mono', value: 'SFMono-Regular, Menlo, Consolas, monospace' },
 };
 
