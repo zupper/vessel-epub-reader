@@ -9,6 +9,11 @@ export class SentenceCompleteEvent extends Event {
   }
 }
 
+export type VoiceOption = {
+  id: string;
+  name: string;
+};
+
 export interface TTSSource extends EventTarget {
   id: () => string;
   prepare: (s: Sentence) => Promise<void>;
@@ -18,6 +23,9 @@ export interface TTSSource extends EventTarget {
   play: (s?: Sentence) => Promise<void>;
   stop: () => void;
   pause: () => void;
+  setRate: (rate: number) => void;
+  setVoice: (id: string) => void;
+  getAvailableVoices: () => Promise<VoiceOption[]>;
 }
 
 export type TTSSourceConfig = {

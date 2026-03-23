@@ -1,5 +1,5 @@
 import { Sentence } from "app/Book";
-import { TTSSource, SentenceCompleteEvent } from "app/tts/TTSSource";
+import { TTSSource, SentenceCompleteEvent, VoiceOption } from "app/tts/TTSSource";
 import SoundSource, { SoundSourceParams } from "./SoundSource";
 import SoundCache from "./SoundCache";
 import HowlerPlayer from "./HowlerPlayer";
@@ -46,4 +46,7 @@ export default class OpenTTSSource extends EventTarget implements TTSSource {
   prepend(ss: Sentence[]) { this.#cache.prepend(ss); }
   stop() { this.#player.stop(); }
   pause() { this.#player.pause(); }
+  setRate(_rate: number) {}
+  setVoice(_id: string) {}
+  async getAvailableVoices(): Promise<VoiceOption[]> { return []; }
 }
