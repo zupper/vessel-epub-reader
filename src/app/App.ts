@@ -3,6 +3,7 @@ import {
   ThemeId, DEFAULT_THEME, getTheme, isValidThemeId,
   FontSize, DEFAULT_FONT_SIZE, isValidFontSize,
   FontFamilyId, DEFAULT_FONT_FAMILY, getFontFamily, isValidFontFamilyId,
+  TtsSpeed, DEFAULT_TTS_SPEED, isValidTtsSpeed,
 } from './ReaderTheme';
 import { TTSSourceProvider } from './tts/TTSSource';
 import TTSControl from './tts/TTSControl';
@@ -33,6 +34,8 @@ export default class App {
   #themeKey = 'reader-theme';
   #fontSizeKey = 'reader-font-size';
   #fontFamilyKey = 'reader-font-family';
+  #ttsRateKey = 'tts-rate';
+  #ttsVoiceKey = 'tts-voice';
 
   get themeId(): ThemeId {
     const stored = this.#io.stringStorage.get(this.#themeKey);
@@ -71,6 +74,27 @@ export default class App {
   setFontFamily(id: FontFamilyId) {
     this.#io.stringStorage.set(this.#fontFamilyKey, id);
     this.reader.setFontFamily(getFontFamily(id).value);
+  }
+
+  get ttsRate(): TtsSpeed {
+    const stored = this.#io.stringStorage.get(this.#ttsRateKey);
+    if (!stored) return DEFAULT_TTS_SPEED;
+    const parsed = Number(stored);
+    return isValidTtsSpeed(parsed) ? parsed : DEFAULT_TTS_SPEED;
+  }
+
+  setTtsRate(rate: TtsSpeed) {
+    this.#io.stringStorage.set(this.#ttsRateKey, String(rate));
+    this.tts.setRate(rate);
+  }
+
+  get ttsVoice(): string {
+    return this.#io.stringStorage.get(this.#ttsVoiceKey) ?? '';
+  }
+
+  setTtsVoice(id: string) {
+    this.#io.stringStorage.set(this.#ttsVoiceKey, id);
+    this.tts.setVoice(id);
   }
 
   constructor(params: AppConsructorParams) {

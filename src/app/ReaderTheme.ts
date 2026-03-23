@@ -188,3 +188,23 @@ export function getPrevFontFamily(current: FontFamilyId): FontFamilyId {
 export function isValidFontFamilyId(value: string): value is FontFamilyId {
   return value in FONT_FAMILIES;
 }
+
+// --- TTS Speed ---
+
+export const TTS_SPEEDS = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0] as const;
+export type TtsSpeed = (typeof TTS_SPEEDS)[number];
+export const DEFAULT_TTS_SPEED: TtsSpeed = 1.0;
+
+export function getNextTtsSpeed(current: TtsSpeed): TtsSpeed | null {
+  const idx = TTS_SPEEDS.indexOf(current);
+  return idx < TTS_SPEEDS.length - 1 ? TTS_SPEEDS[idx + 1] : null;
+}
+
+export function getPrevTtsSpeed(current: TtsSpeed): TtsSpeed | null {
+  const idx = TTS_SPEEDS.indexOf(current);
+  return idx > 0 ? TTS_SPEEDS[idx - 1] : null;
+}
+
+export function isValidTtsSpeed(value: number): value is TtsSpeed {
+  return (TTS_SPEEDS as readonly number[]).includes(value);
+}
