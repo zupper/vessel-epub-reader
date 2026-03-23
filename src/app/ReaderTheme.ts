@@ -21,6 +21,7 @@ const THEMES: Record<ThemeId, ReaderThemeConfig> = {
       '--reader-text-secondary': '#7575759f',
       '--reader-toc-bg': '#ffffff',
       '--reader-toc-text': '#333333',
+      '--reader-highlight': '#FFEB3B',
     },
   },
   sepia: {
@@ -34,6 +35,7 @@ const THEMES: Record<ThemeId, ReaderThemeConfig> = {
       '--reader-text-secondary': '#8a7a669f',
       '--reader-toc-bg': '#F4ECD8',
       '--reader-toc-text': '#5F4B32',
+      '--reader-highlight': '#E6C97A',
     },
   },
   forest: {
@@ -47,6 +49,7 @@ const THEMES: Record<ThemeId, ReaderThemeConfig> = {
       '--reader-text-secondary': '#3566509f',
       '--reader-toc-bg': '#B9DDB9',
       '--reader-toc-text': '#1B4332',
+      '--reader-highlight': '#81C784',
     },
   },
   'warm-night': {
@@ -60,6 +63,7 @@ const THEMES: Record<ThemeId, ReaderThemeConfig> = {
       '--reader-text-secondary': '#cc9f509f',
       '--reader-toc-bg': '#241400',
       '--reader-toc-text': '#FFD580',
+      '--reader-highlight': '#8B6914',
     },
   },
   slate: {
@@ -73,6 +77,7 @@ const THEMES: Record<ThemeId, ReaderThemeConfig> = {
       '--reader-text-secondary': '#a0a0a59f',
       '--reader-toc-bg': '#2c2c2e',
       '--reader-toc-text': '#E5E5EA',
+      '--reader-highlight': '#5856D6',
     },
   },
   amoled: {
@@ -86,6 +91,7 @@ const THEMES: Record<ThemeId, ReaderThemeConfig> = {
       '--reader-text-secondary': '#a0a0a09f',
       '--reader-toc-bg': '#0a0a0a',
       '--reader-toc-text': '#E8E8E8',
+      '--reader-highlight': '#BB86FC',
     },
   },
 };

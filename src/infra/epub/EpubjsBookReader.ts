@@ -196,7 +196,8 @@ export default class EpubjsBookReader implements BookReader {
   }
 
   highlight(sentenceId: string) {
-    this.#assistant.addHighlight(sentenceId);
+    const color = this.#currentTheme?.vars['--reader-highlight'];
+    this.#assistant.addHighlight(sentenceId, color);
   }
 
   unhighlight(sentenceId: string) {

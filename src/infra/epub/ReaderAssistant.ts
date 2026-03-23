@@ -51,12 +51,13 @@ export default class ReaderAssistant {
     return Promise.resolve(sentences);
   }
 
-  async addHighlight(sentenceId: string) {
+  async addHighlight(sentenceId: string, color?: string) {
     const range = this.#sentenceRanges[sentenceId];
     if (!range) return;
 
     const sentenceCfi = CFI.fromDOMRangeWithScreenCfi(range, this.#displayedCfiRange);
-    this.#rendition.annotations.highlight(sentenceCfi);
+    const styles = color ? { fill: color, 'fill-opacity': '0.3' } : undefined;
+    this.#rendition.annotations.highlight(sentenceCfi, {}, undefined, undefined, styles);
     this.#highlighted.push(sentenceId);
   }
 

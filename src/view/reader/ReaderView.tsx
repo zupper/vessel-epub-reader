@@ -55,6 +55,7 @@ export const ReaderView = (params: ReaderViewProps) => {
     }
 
     return () => {
+      params.app.tts.stopReading();
       bookReadyRef.current = false;
       reader.view = null;
     };

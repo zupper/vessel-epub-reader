@@ -21,12 +21,9 @@ export default class DefaultTTSSourceProvider implements TTSSourceProvider {
   }
 
   async getActiveSource() {
-    const factory = this.#factories.find(f => f.id() === this.#activeSource);
-    if (factory) {
-      return factory.make(await this.getConfig(factory.id()));
-    }
-
-    return null;
+    const factory = this.#factories.find(f => f.id() === this.#activeSource) ?? this.#factories[0];
+    if (!factory) throw new Error('No TTS source factories registered');
+    return factory.make(await this.getConfig(factory.id()));
   }
 
   activateSource(id: string): void {
@@ -37,8 +34,16 @@ export default class DefaultTTSSourceProvider implements TTSSourceProvider {
   }
 
   async getConfig(id: string) {
-    const config: TTSSourceConfig = JSON.parse(this.#stringStorage.get(`${SOURCE_CONFIG_KEY}${id}`));
-    return config ?? this.#factories.find(f => f.id() === id)?.defaultConfig();
+    try {
+      const raw = this.#stringStorage.get(`${SOURCE_CONFIG_KEY}${id}`);
+      if (raw) {
+        const config: TTSSourceConfig = JSON.parse(raw);
+        if (config) return config;
+      }
+    } catch {}
+
+    const factory = this.#factories.find(f => f.id() === id);
+    return factory?.defaultConfig() ?? ({} as TTSSourceConfig);
   }
 
   setConfig(id: string, config: TTSSourceConfig): void {
