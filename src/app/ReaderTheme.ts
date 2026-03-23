@@ -16,7 +16,7 @@ const THEMES: Record<ThemeId, ReaderThemeConfig> = {
     isDark: false,
     vars: {
       '--reader-bg': '#fafafa',
-      '--reader-bg-overlay': '#ffffffbf',
+      '--reader-bg-overlay': '#fffffff2',
       '--reader-text': '#333333',
       '--reader-text-secondary': '#7575759f',
       '--reader-toc-bg': '#ffffff',
@@ -30,7 +30,7 @@ const THEMES: Record<ThemeId, ReaderThemeConfig> = {
     isDark: false,
     vars: {
       '--reader-bg': '#FBF0D9',
-      '--reader-bg-overlay': '#FBF0D9bf',
+      '--reader-bg-overlay': '#FBF0D9f2',
       '--reader-text': '#5F4B32',
       '--reader-text-secondary': '#8a7a669f',
       '--reader-toc-bg': '#F4ECD8',
@@ -44,7 +44,7 @@ const THEMES: Record<ThemeId, ReaderThemeConfig> = {
     isDark: false,
     vars: {
       '--reader-bg': '#C8E6C9',
-      '--reader-bg-overlay': '#C8E6C9bf',
+      '--reader-bg-overlay': '#C8E6C9f2',
       '--reader-text': '#1B4332',
       '--reader-text-secondary': '#3566509f',
       '--reader-toc-bg': '#B9DDB9',
@@ -58,7 +58,7 @@ const THEMES: Record<ThemeId, ReaderThemeConfig> = {
     isDark: true,
     vars: {
       '--reader-bg': '#1A0D00',
-      '--reader-bg-overlay': '#2a1a0abf',
+      '--reader-bg-overlay': '#2a1a0af2',
       '--reader-text': '#FFD580',
       '--reader-text-secondary': '#cc9f509f',
       '--reader-toc-bg': '#241400',
@@ -72,7 +72,7 @@ const THEMES: Record<ThemeId, ReaderThemeConfig> = {
     isDark: true,
     vars: {
       '--reader-bg': '#1C1C1E',
-      '--reader-bg-overlay': '#2c2c2ebf',
+      '--reader-bg-overlay': '#2c2c2ef2',
       '--reader-text': '#E5E5EA',
       '--reader-text-secondary': '#a0a0a59f',
       '--reader-toc-bg': '#2c2c2e',
@@ -86,7 +86,7 @@ const THEMES: Record<ThemeId, ReaderThemeConfig> = {
     isDark: true,
     vars: {
       '--reader-bg': '#000000',
-      '--reader-bg-overlay': '#1a1a1abf',
+      '--reader-bg-overlay': '#1a1a1af2',
       '--reader-text': '#E8E8E8',
       '--reader-text-secondary': '#a0a0a09f',
       '--reader-toc-bg': '#0a0a0a',
