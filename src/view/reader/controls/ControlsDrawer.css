@@ -150,28 +150,32 @@
   -webkit-user-select: none;
 }
 
-.setting-label {
-  width: 48px;
-  flex-shrink: 0;
-  color: var(--reader-text-secondary);
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.setting-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
   user-select: none;
   -webkit-user-select: none;
 }
 
+.setting-label {
+  color: var(--reader-text-secondary);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+
 .setting-value {
-  width: 48px;
-  flex-shrink: 0;
-  text-align: center;
   color: var(--reader-text);
   font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  user-select: none;
-  -webkit-user-select: none;
+  line-height: 1.2;
 }
 
 #controls-content {

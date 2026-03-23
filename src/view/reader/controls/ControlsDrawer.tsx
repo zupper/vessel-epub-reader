@@ -283,7 +283,6 @@ export const ControlsDrawer = (params: ControlsDrawerProps) => {
         {activeTab === 'audio' && (
           <>
             <div className="settings-row" id="tts-speed-row">
-              <span className="setting-label">Speed</span>
               <IconButton
                 onClick={params.onDecreaseTtsRate}
                 disabled={params.ttsRate === TTS_SPEEDS[0]}
@@ -292,7 +291,10 @@ export const ControlsDrawer = (params: ControlsDrawerProps) => {
                 size="medium">
                 <RemoveIcon />
               </IconButton>
-              <span className="setting-value">{params.ttsRate}×</span>
+              <div className="setting-center">
+                <span className="setting-label">Speed</span>
+                <span className="setting-value">{params.ttsRate}×</span>
+              </div>
               <IconButton
                 onClick={params.onIncreaseTtsRate}
                 disabled={params.ttsRate === TTS_SPEEDS[TTS_SPEEDS.length - 1]}
@@ -303,73 +305,52 @@ export const ControlsDrawer = (params: ControlsDrawerProps) => {
               </IconButton>
             </div>
 
-            {IS_MOBILE ? (
-              <div className="settings-row" id="tts-pitch-row">
+            <div className="settings-row" id="tts-pitch-row">
+              <IconButton
+                onClick={params.onDecreaseTtsPitch}
+                disabled={params.ttsPitch === TTS_PITCHES[0]}
+                aria-label="Decrease pitch"
+                className="drawer-setting-button"
+                size="medium">
+                <RemoveIcon />
+              </IconButton>
+              <div className="setting-center">
                 <span className="setting-label">Pitch</span>
-                <IconButton
-                  onClick={params.onDecreaseTtsPitch}
-                  disabled={params.ttsPitch === TTS_PITCHES[0]}
-                  aria-label="Decrease pitch"
-                  className="drawer-setting-button"
-                  size="medium">
-                  <RemoveIcon />
-                </IconButton>
                 <span className="setting-value">{params.ttsPitch}</span>
+              </div>
+              <IconButton
+                onClick={params.onIncreaseTtsPitch}
+                disabled={params.ttsPitch === TTS_PITCHES[TTS_PITCHES.length - 1]}
+                aria-label="Increase pitch"
+                className="drawer-setting-button"
+                size="medium">
+                <AddIcon />
+              </IconButton>
+            </div>
+
+            {!IS_MOBILE && params.availableVoices.length > 0 && (
+              <div className="settings-row" id="tts-voice-row">
                 <IconButton
-                  onClick={params.onIncreaseTtsPitch}
-                  disabled={params.ttsPitch === TTS_PITCHES[TTS_PITCHES.length - 1]}
-                  aria-label="Increase pitch"
+                  onClick={params.onPrevTtsVoice}
+                  aria-label="Previous voice"
                   className="drawer-setting-button"
                   size="medium">
-                  <AddIcon />
+                  <ChevronLeftIcon />
+                </IconButton>
+                <div className="setting-center">
+                  <span className="setting-label">Voice</span>
+                  <span className="setting-value">
+                    {params.availableVoices.find(v => v.id === params.ttsVoice)?.name ?? 'Default'}
+                  </span>
+                </div>
+                <IconButton
+                  onClick={params.onNextTtsVoice}
+                  aria-label="Next voice"
+                  className="drawer-setting-button"
+                  size="medium">
+                  <ChevronRightIcon />
                 </IconButton>
               </div>
-            ) : (
-              <>
-                <div className="settings-row" id="tts-pitch-row">
-                  <span className="setting-label">Pitch</span>
-                  <IconButton
-                    onClick={params.onDecreaseTtsPitch}
-                    disabled={params.ttsPitch === TTS_PITCHES[0]}
-                    aria-label="Decrease pitch"
-                    className="drawer-setting-button"
-                    size="medium">
-                    <RemoveIcon />
-                  </IconButton>
-                  <span className="setting-value">{params.ttsPitch}</span>
-                  <IconButton
-                    onClick={params.onIncreaseTtsPitch}
-                    disabled={params.ttsPitch === TTS_PITCHES[TTS_PITCHES.length - 1]}
-                    aria-label="Increase pitch"
-                    className="drawer-setting-button"
-                    size="medium">
-                    <AddIcon />
-                  </IconButton>
-                </div>
-
-                {params.availableVoices.length > 0 && (
-                  <div className="settings-row" id="tts-voice-row">
-                    <span className="setting-label">Voice</span>
-                    <IconButton
-                      onClick={params.onPrevTtsVoice}
-                      aria-label="Previous voice"
-                      className="drawer-setting-button"
-                      size="medium">
-                      <ChevronLeftIcon />
-                    </IconButton>
-                    <span className="font-family-label">
-                      {params.availableVoices.find(v => v.id === params.ttsVoice)?.name ?? 'Default'}
-                    </span>
-                    <IconButton
-                      onClick={params.onNextTtsVoice}
-                      aria-label="Next voice"
-                      className="drawer-setting-button"
-                      size="medium">
-                      <ChevronRightIcon />
-                    </IconButton>
-                  </div>
-                )}
-              </>
             )}
           </>
         )}
