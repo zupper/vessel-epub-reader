@@ -25,6 +25,15 @@
   cursor: grabbing;
 }
 
+#drawer-handle-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 20px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--reader-bg) 60%, transparent);
+}
+
 #drawer-handle-pill {
   width: 40px;
   height: 4px;

@@ -192,7 +192,9 @@ export const ControlsDrawer = (params: ControlsDrawerProps) => {
         role="button"
         aria-label={expanded ? 'Collapse settings' : 'Expand settings'}
         tabIndex={0}>
-        <div id="drawer-handle-pill" />
+        <div id="drawer-handle-badge">
+          <div id="drawer-handle-pill" />
+        </div>
       </div>
 
       <div id="controls-content" ref={controlsContentRef}>
