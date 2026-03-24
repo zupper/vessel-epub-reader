@@ -139,35 +139,77 @@ export function isValidFontSize(value: number): value is FontSize {
 
 export type FontFamilyId =
   | 'default'
-  | 'georgia' | 'palatino' | 'garamond' | 'times'
-  | 'helvetica' | 'verdana' | 'trebuchet' | 'tahoma'
-  | 'monospace';
+  | 'lora' | 'literata' | 'source-sans'
+  | 'serif' | 'monospace';
 
 export type FontFamilyConfig = {
   id: FontFamilyId;
   label: string;
   value: string;
+  hosted: boolean;
 };
 
 const FONT_FAMILY_ORDER: FontFamilyId[] = [
-  'default',
-  'georgia', 'palatino', 'garamond', 'times',
-  'helvetica', 'verdana', 'trebuchet', 'tahoma',
-  'monospace',
+  'default', 'lora', 'literata', 'source-sans', 'serif', 'monospace',
 ];
 
 const FONT_FAMILIES: Record<FontFamilyId, FontFamilyConfig> = {
-  default: { id: 'default', label: 'Default', value: '' },
-  georgia: { id: 'georgia', label: 'Georgia', value: 'Georgia, serif' },
-  palatino: { id: 'palatino', label: 'Palatino', value: 'Palatino Linotype, Palatino, Book Antiqua, serif' },
-  garamond: { id: 'garamond', label: 'Garamond', value: 'Garamond, EB Garamond, serif' },
-  times: { id: 'times', label: 'Times', value: 'Times New Roman, Times, serif' },
-  helvetica: { id: 'helvetica', label: 'Helvetica', value: 'Helvetica Neue, Helvetica, Arial, sans-serif' },
-  verdana: { id: 'verdana', label: 'Verdana', value: 'Verdana, Geneva, sans-serif' },
-  trebuchet: { id: 'trebuchet', label: 'Trebuchet', value: 'Trebuchet MS, Lucida Grande, sans-serif' },
-  tahoma: { id: 'tahoma', label: 'Tahoma', value: 'Tahoma, Segoe UI, sans-serif' },
-  monospace: { id: 'monospace', label: 'Mono', value: 'SFMono-Regular, Menlo, Consolas, monospace' },
+  default: { id: 'default', label: 'Default', value: '', hosted: false },
+  lora: { id: 'lora', label: 'Lora', value: 'Lora, Georgia, serif', hosted: true },
+  literata: { id: 'literata', label: 'Literata', value: 'Literata, Georgia, serif', hosted: true },
+  'source-sans': { id: 'source-sans', label: 'Source Sans', value: '"Source Sans 3", Helvetica, Arial, sans-serif', hosted: true },
+  serif: { id: 'serif', label: 'Serif', value: 'Georgia, "Times New Roman", serif', hosted: false },
+  monospace: { id: 'monospace', label: 'Mono', value: 'SFMono-Regular, Menlo, Consolas, monospace', hosted: false },
 };
+
+/** @font-face CSS for epub iframe — uses absolute URLs so fonts resolve from any origin */
+export function getHostedFontCss(baseUrl: string): string {
+  const f = (file: string) => `${baseUrl}/fonts/${file}`;
+  return `
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('${f('Lora-Regular.woff2')}') format('woff2');
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('${f('Lora-Italic.woff2')}') format('woff2');
+}
+@font-face {
+  font-family: 'Literata';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('${f('Literata-Regular.woff2')}') format('woff2');
+}
+@font-face {
+  font-family: 'Literata';
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('${f('Literata-Italic.woff2')}') format('woff2');
+}
+@font-face {
+  font-family: 'Source Sans 3';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('${f('SourceSans3-Regular.woff2')}') format('woff2');
+}
+@font-face {
+  font-family: 'Source Sans 3';
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('${f('SourceSans3-Italic.woff2')}') format('woff2');
+}
+`;
+}
 
 export const DEFAULT_FONT_FAMILY: FontFamilyId = 'default';
 

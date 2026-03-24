@@ -1,7 +1,7 @@
 import { Book as EpubjsBook, Rendition } from "epubjs";
 import { Book, BookLocation, PageRef, ToCItem } from "app/Book";
 import { BookReader } from "app/BookReader";
-import { ReaderThemeConfig } from "app/ReaderTheme";
+import { ReaderThemeConfig, getHostedFontCss } from "app/ReaderTheme";
 import ReaderAssistant from "./ReaderAssistant";
 import HashGenerator from "./HashGenerator";
 import * as TOC from "./EpubjsToC";
@@ -79,6 +79,11 @@ export default class EpubjsBookReader implements BookReader {
     }
 
     this.#rendition = this.#epubjsBook.renderTo(this.#view, { width: "100%", height: "100%" });
+
+    const fontCss = getHostedFontCss(window.location.origin);
+    this.#rendition.hooks.content.register((contents: any) => {
+      contents.addStylesheetCss(fontCss);
+    });
 
     this.#rendition.on("rendered", () => {
       if (this.#currentTheme) this.#applyThemeStyles(this.#currentTheme);

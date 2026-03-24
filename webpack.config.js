@@ -41,6 +41,7 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: path.resolve(__dirname, "src/index.html") },
+        { from: path.resolve(__dirname, "src/fonts"), to: "fonts" },
       ],
     }),
   ],
