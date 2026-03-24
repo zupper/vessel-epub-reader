@@ -1,11 +1,14 @@
 import { Sentence } from "app/Book";
-import { TTSSource, SentenceCompleteEvent } from "app/tts/TTSSource";
+import { TTSSource, SentenceCompleteEvent, VoiceOption } from "app/tts/TTSSource";
 
 export default class WebSpeechTTSSource extends EventTarget implements TTSSource {
   #synth: SpeechSynthesis;
   #utterance: SpeechSynthesisUtterance;
   #currentSentence: Sentence | null;
   #sentenceCompleted: boolean;
+  #rate: number;
+  #pitch: number;
+  #voiceURI: string | null;
 
   constructor() {
     super();
@@ -13,6 +16,9 @@ export default class WebSpeechTTSSource extends EventTarget implements TTSSource
     this.#synth = window.speechSynthesis;
     this.#currentSentence = null;
     this.#sentenceCompleted = false;
+    this.#rate = 1.0;
+    this.#pitch = 1.0;
+    this.#voiceURI = null;
   }
 
   id() { return 'webtts'; }
@@ -20,12 +26,63 @@ export default class WebSpeechTTSSource extends EventTarget implements TTSSource
   append(_: Sentence[]) {}
   prepend(_: Sentence[]) {}
 
+  setRate(rate: number) {
+    this.#rate = Math.max(0.1, Math.min(10, rate));
+  }
+
+  setPitch(pitch: number) {
+    this.#pitch = Math.max(0, Math.min(2, pitch));
+  }
+
+  setVoice(uri: string) {
+    this.#voiceURI = uri;
+  }
+
+  async getAvailableVoices(): Promise<VoiceOption[]> {
+    let voices = this.#synth.getVoices();
+
+    // Voices may load async — wait for them if empty
+    if (voices.length === 0) {
+      voices = await new Promise<SpeechSynthesisVoice[]>(resolve => {
+        const handler = () => {
+          this.#synth.removeEventListener('voiceschanged', handler);
+          resolve(this.#synth.getVoices());
+        };
+        this.#synth.addEventListener('voiceschanged', handler);
+        // Timeout fallback — some browsers never fire voiceschanged
+        setTimeout(() => {
+          this.#synth.removeEventListener('voiceschanged', handler);
+          resolve(this.#synth.getVoices());
+        }, 1000);
+      });
+    }
+
+    const langPrefix = navigator.language.split('-')[0];
+    const filtered = voices.filter(v => v.lang.replace('_', '-').startsWith(langPrefix));
+
+    // Fall back to all voices if nothing matches
+    const list = filtered.length > 0 ? filtered : voices;
+    return list.map(v => ({ id: v.voiceURI, name: v.name }));
+  }
+
   async prepare(s: Sentence) {
     const wasSpeaking = this.#synth.speaking || this.#synth.pending;
     this.stop();
     this.#currentSentence = s;
     this.#sentenceCompleted = false;
     this.#utterance = new SpeechSynthesisUtterance(s.text);
+    this.#utterance.rate = this.#rate;
+    this.#utterance.pitch = this.#pitch;
+
+    if (this.#voiceURI) {
+      const voices = this.#synth.getVoices();
+      const match = voices.find(v => v.voiceURI === this.#voiceURI);
+      if (match) {
+        this.#utterance.voice = match;
+        this.#utterance.lang = match.lang.replace('_', '-');
+      }
+    }
+
     this.#utterance.onend = () => {
       this.#sentenceCompleted = true;
       this.dispatchEvent(new SentenceCompleteEvent(s.id));

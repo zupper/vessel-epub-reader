@@ -4,7 +4,14 @@ import { CSSTransition } from 'react-transition-group';
 
 import App from 'app/App';
 import { ToCItem } from 'app/Book';
-import { ThemeId, getTheme, getThemeVars, getNextThemeId } from 'app/ReaderTheme';
+import {
+  ThemeId, getTheme, getThemeVars,
+  FontSize, getNextFontSize, getPrevFontSize,
+  FontFamilyId, getNextFontFamily, getPrevFontFamily,
+  TtsSpeed, getNextTtsSpeed, getPrevTtsSpeed,
+  TtsPitch, getNextTtsPitch, getPrevTtsPitch,
+} from 'app/ReaderTheme';
+import { VoiceOption } from 'app/tts/TTSSource';
 import EpubjsBookReader from 'infra/epub/EpubjsBookReader';
 
 import { ControlsDrawer } from './controls/ControlsDrawer';
@@ -29,6 +36,12 @@ export const ReaderView = (params: ReaderViewProps) => {
   const [tocVisible, setTocVisible] = useState(false);
   const [toc, setToC] = useState(null);
   const [themeId, setThemeId] = useState<ThemeId>(() => params.app.themeId);
+  const [fontSize, setFontSize] = useState<FontSize>(() => params.app.fontSize);
+  const [fontFamilyId, setFontFamilyId] = useState<FontFamilyId>(() => params.app.fontFamilyId);
+  const [ttsRate, setTtsRate] = useState<TtsSpeed>(() => params.app.ttsRate);
+  const [ttsPitch, setTtsPitch] = useState<TtsPitch>(() => params.app.ttsPitch);
+  const [ttsVoice, setTtsVoice] = useState<string>(() => params.app.ttsVoice);
+  const [availableVoices, setAvailableVoices] = useState<VoiceOption[]>([]);
   const bookReadyRef = useRef(false);
   const currentLocation = useBookLocationContext();
 
@@ -43,6 +56,25 @@ export const ReaderView = (params: ReaderViewProps) => {
   }, [themeId]);
 
   useEffect(() => {
+    if (bookReadyRef.current) {
+      params.app.setFontSize(fontSize);
+    }
+  }, [fontSize]);
+
+  useEffect(() => {
+    if (bookReadyRef.current) {
+      params.app.setFontFamily(fontFamilyId);
+    }
+  }, [fontFamilyId]);
+
+  useEffect(() => {
+    params.app.tts.getAvailableVoices().then(setAvailableVoices);
+    params.app.tts.setRate(params.app.ttsRate);
+    params.app.tts.setPitch(params.app.ttsPitch);
+    if (params.app.ttsVoice) params.app.tts.setVoice(params.app.ttsVoice);
+  }, []);
+
+  useEffect(() => {
     const reader = (params.app.reader as EpubjsBookReader);
     if (renderAreaRef.current) {
       reader.view = renderAreaRef.current;
@@ -51,6 +83,8 @@ export const ReaderView = (params: ReaderViewProps) => {
           setToC(toc);
           bookReadyRef.current = true;
           params.app.reader.setTheme(getTheme(themeId));
+          params.app.setFontSize(fontSize);
+          params.app.setFontFamily(fontFamilyId);
         });
     }
 
@@ -61,13 +95,91 @@ export const ReaderView = (params: ReaderViewProps) => {
     };
   }, []);
 
-  const cycleTheme = useCallback(() => {
-    setThemeId(prev => {
-      const next = getNextThemeId(prev);
-      params.app.setTheme(next);
+  const selectTheme = useCallback((id: ThemeId) => {
+    setThemeId(id);
+    params.app.setTheme(id);
+  }, []);
+
+  const increaseFontSize = useCallback(() => {
+    setFontSize(prev => {
+      const next = getNextFontSize(prev);
+      return next ?? prev;
+    });
+  }, []);
+
+  const decreaseFontSize = useCallback(() => {
+    setFontSize(prev => {
+      const next = getPrevFontSize(prev);
+      return next ?? prev;
+    });
+  }, []);
+
+  const nextFontFamily = useCallback(() => {
+    setFontFamilyId(prev => getNextFontFamily(prev));
+  }, []);
+
+  const prevFontFamily = useCallback(() => {
+    setFontFamilyId(prev => getPrevFontFamily(prev));
+  }, []);
+
+  const increaseTtsRate = useCallback(() => {
+    setTtsRate(prev => {
+      const next = getNextTtsSpeed(prev);
+      if (!next) return prev;
+      params.app.setTtsRate(next);
       return next;
     });
   }, []);
+
+  const decreaseTtsRate = useCallback(() => {
+    setTtsRate(prev => {
+      const next = getPrevTtsSpeed(prev);
+      if (!next) return prev;
+      params.app.setTtsRate(next);
+      return next;
+    });
+  }, []);
+
+  const increaseTtsPitch = useCallback(() => {
+    setTtsPitch(prev => {
+      const next = getNextTtsPitch(prev);
+      if (!next) return prev;
+      params.app.setTtsPitch(next);
+      return next;
+    });
+  }, []);
+
+  const decreaseTtsPitch = useCallback(() => {
+    setTtsPitch(prev => {
+      const next = getPrevTtsPitch(prev);
+      if (!next) return prev;
+      params.app.setTtsPitch(next);
+      return next;
+    });
+  }, []);
+
+  const selectTtsVoice = useCallback((id: string) => {
+    setTtsVoice(id);
+    params.app.setTtsVoice(id);
+  }, []);
+
+  const nextTtsVoice = useCallback(() => {
+    setTtsVoice(prev => {
+      const idx = availableVoices.findIndex(v => v.id === prev);
+      const next = availableVoices[(idx + 1) % availableVoices.length];
+      if (next) params.app.setTtsVoice(next.id);
+      return next?.id ?? prev;
+    });
+  }, [availableVoices]);
+
+  const prevTtsVoice = useCallback(() => {
+    setTtsVoice(prev => {
+      const idx = availableVoices.findIndex(v => v.id === prev);
+      const next = availableVoices[(idx - 1 + availableVoices.length) % availableVoices.length];
+      if (next) params.app.setTtsVoice(next.id);
+      return next?.id ?? prev;
+    });
+  }, [availableVoices]);
 
   const showToC = () => setTocVisible(true);
   const hideToC = () => setTocVisible(false);
@@ -88,7 +200,24 @@ export const ReaderView = (params: ReaderViewProps) => {
         ref={renderAreaRef}></div>
       <ControlsDrawer
         themeId={themeId}
-        onCycleTheme={cycleTheme}>
+        onSelectTheme={selectTheme}
+        fontSize={fontSize}
+        onIncreaseFontSize={increaseFontSize}
+        onDecreaseFontSize={decreaseFontSize}
+        fontFamilyId={fontFamilyId}
+        onNextFontFamily={nextFontFamily}
+        onPrevFontFamily={prevFontFamily}
+        ttsRate={ttsRate}
+        onIncreaseTtsRate={increaseTtsRate}
+        onDecreaseTtsRate={decreaseTtsRate}
+        ttsPitch={ttsPitch}
+        onIncreaseTtsPitch={increaseTtsPitch}
+        onDecreaseTtsPitch={decreaseTtsPitch}
+        ttsVoice={ttsVoice}
+        availableVoices={availableVoices}
+        onNextTtsVoice={nextTtsVoice}
+        onPrevTtsVoice={prevTtsVoice}
+        onSelectTtsVoice={selectTtsVoice}>
         <ReaderControls
           app={params.app}
           onNextPage={nextPage}

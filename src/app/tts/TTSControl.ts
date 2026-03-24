@@ -5,7 +5,7 @@ import Navigation from "app/Navigation";
 import PlaybackState, { StateChangeAction, StateOption } from "./PlaybackState";
 import { StateDetails } from "./PlaybackState";
 
-import { TTSSource, TTSSourceConfig, TTSSourceProvider } from './TTSSource';
+import { TTSSource, TTSSourceConfig, TTSSourceProvider, VoiceOption } from './TTSSource';
 
 const DEBOUNCE_MS = 100;
 
@@ -201,6 +201,33 @@ export default class TTSControl {
     if (!this.getAvailableSources().includes(id)) throw new Error('Invalid TTS Source requested.');
     this.#ttsProvider.activateSource(id);
     this.#tts = await this.#ttsProvider.getActiveSource();
+  }
+
+  setRate(rate: number) {
+    this.#tts?.setRate(rate);
+    this.#restartCurrentSentence();
+  }
+
+  setPitch(pitch: number) {
+    this.#tts?.setPitch(pitch);
+    this.#restartCurrentSentence();
+  }
+
+  setVoice(id: string) {
+    this.#tts?.setVoice(id);
+    this.#restartCurrentSentence();
+  }
+
+  #restartCurrentSentence() {
+    if (!this.#state || this.#state.state !== 'PLAYING') return;
+    const sentence = this.#state.sentence;
+    if (!sentence) return;
+    this.#play(sentence);
+  }
+
+  async getAvailableVoices(): Promise<VoiceOption[]> {
+    await this.#ttsReady;
+    return this.#tts.getAvailableVoices();
   }
 
   #onSentenceComplete() {

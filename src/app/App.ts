@@ -1,5 +1,11 @@
 import { BookReader } from './BookReader';
-import { ThemeId, DEFAULT_THEME, getTheme, isValidThemeId } from './ReaderTheme';
+import {
+  ThemeId, DEFAULT_THEME, getTheme, isValidThemeId,
+  FontSize, DEFAULT_FONT_SIZE, isValidFontSize,
+  FontFamilyId, DEFAULT_FONT_FAMILY, getFontFamily, isValidFontFamilyId,
+  TtsSpeed, DEFAULT_TTS_SPEED, isValidTtsSpeed,
+  TtsPitch, DEFAULT_TTS_PITCH, isValidTtsPitch,
+} from './ReaderTheme';
 import { TTSSourceProvider } from './tts/TTSSource';
 import TTSControl from './tts/TTSControl';
 import Navigation from './Navigation';
@@ -27,6 +33,11 @@ export default class App {
   #repo: BookRepository;
 
   #themeKey = 'reader-theme';
+  #fontSizeKey = 'reader-font-size';
+  #fontFamilyKey = 'reader-font-family';
+  #ttsRateKey = 'tts-rate';
+  #ttsPitchKey = 'tts-pitch';
+  #ttsVoiceKey = 'tts-voice';
 
   get themeId(): ThemeId {
     const stored = this.#io.stringStorage.get(this.#themeKey);
@@ -42,6 +53,62 @@ export default class App {
   setTheme(id: ThemeId) {
     this.#io.stringStorage.set(this.#themeKey, id);
     this.reader.setTheme(getTheme(id));
+  }
+
+  get fontSize(): FontSize {
+    const stored = this.#io.stringStorage.get(this.#fontSizeKey);
+    if (!stored) return DEFAULT_FONT_SIZE;
+    const parsed = Number(stored);
+    return isValidFontSize(parsed) ? parsed : DEFAULT_FONT_SIZE;
+  }
+
+  setFontSize(size: FontSize) {
+    this.#io.stringStorage.set(this.#fontSizeKey, String(size));
+    this.reader.setFontSize(size);
+  }
+
+  get fontFamilyId(): FontFamilyId {
+    const stored = this.#io.stringStorage.get(this.#fontFamilyKey);
+    if (!stored) return DEFAULT_FONT_FAMILY;
+    return isValidFontFamilyId(stored) ? stored : DEFAULT_FONT_FAMILY;
+  }
+
+  setFontFamily(id: FontFamilyId) {
+    this.#io.stringStorage.set(this.#fontFamilyKey, id);
+    this.reader.setFontFamily(getFontFamily(id).value);
+  }
+
+  get ttsRate(): TtsSpeed {
+    const stored = this.#io.stringStorage.get(this.#ttsRateKey);
+    if (!stored) return DEFAULT_TTS_SPEED;
+    const parsed = Number(stored);
+    return isValidTtsSpeed(parsed) ? parsed : DEFAULT_TTS_SPEED;
+  }
+
+  setTtsRate(rate: TtsSpeed) {
+    this.#io.stringStorage.set(this.#ttsRateKey, String(rate));
+    this.tts.setRate(rate);
+  }
+
+  get ttsPitch(): TtsPitch {
+    const stored = this.#io.stringStorage.get(this.#ttsPitchKey);
+    if (!stored) return DEFAULT_TTS_PITCH;
+    const parsed = Number(stored);
+    return isValidTtsPitch(parsed) ? parsed : DEFAULT_TTS_PITCH;
+  }
+
+  setTtsPitch(pitch: TtsPitch) {
+    this.#io.stringStorage.set(this.#ttsPitchKey, String(pitch));
+    this.tts.setPitch(pitch);
+  }
+
+  get ttsVoice(): string {
+    return this.#io.stringStorage.get(this.#ttsVoiceKey) ?? '';
+  }
+
+  setTtsVoice(id: string) {
+    this.#io.stringStorage.set(this.#ttsVoiceKey, id);
+    this.tts.setVoice(id);
   }
 
   constructor(params: AppConsructorParams) {

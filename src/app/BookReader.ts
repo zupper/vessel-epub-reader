@@ -14,5 +14,7 @@ export interface BookReader {
   removeAllHighlights: () => void;
   isRendered: () => boolean;
   setTheme: (theme: ReaderThemeConfig) => void;
+  setFontSize: (percent: number) => void;
+  setFontFamily: (cssValue: string) => void;
 }
 

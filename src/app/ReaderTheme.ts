@@ -16,7 +16,7 @@ const THEMES: Record<ThemeId, ReaderThemeConfig> = {
     isDark: false,
     vars: {
       '--reader-bg': '#fafafa',
-      '--reader-bg-overlay': '#ffffffbf',
+      '--reader-bg-overlay': '#fffffff2',
       '--reader-text': '#333333',
       '--reader-text-secondary': '#7575759f',
       '--reader-toc-bg': '#ffffff',
@@ -30,7 +30,7 @@ const THEMES: Record<ThemeId, ReaderThemeConfig> = {
     isDark: false,
     vars: {
       '--reader-bg': '#FBF0D9',
-      '--reader-bg-overlay': '#FBF0D9bf',
+      '--reader-bg-overlay': '#FBF0D9f2',
       '--reader-text': '#5F4B32',
       '--reader-text-secondary': '#8a7a669f',
       '--reader-toc-bg': '#F4ECD8',
@@ -44,7 +44,7 @@ const THEMES: Record<ThemeId, ReaderThemeConfig> = {
     isDark: false,
     vars: {
       '--reader-bg': '#C8E6C9',
-      '--reader-bg-overlay': '#C8E6C9bf',
+      '--reader-bg-overlay': '#C8E6C9f2',
       '--reader-text': '#1B4332',
       '--reader-text-secondary': '#3566509f',
       '--reader-toc-bg': '#B9DDB9',
@@ -58,7 +58,7 @@ const THEMES: Record<ThemeId, ReaderThemeConfig> = {
     isDark: true,
     vars: {
       '--reader-bg': '#1A0D00',
-      '--reader-bg-overlay': '#2a1a0abf',
+      '--reader-bg-overlay': '#2a1a0af2',
       '--reader-text': '#FFD580',
       '--reader-text-secondary': '#cc9f509f',
       '--reader-toc-bg': '#241400',
@@ -72,7 +72,7 @@ const THEMES: Record<ThemeId, ReaderThemeConfig> = {
     isDark: true,
     vars: {
       '--reader-bg': '#1C1C1E',
-      '--reader-bg-overlay': '#2c2c2ebf',
+      '--reader-bg-overlay': '#2c2c2ef2',
       '--reader-text': '#E5E5EA',
       '--reader-text-secondary': '#a0a0a59f',
       '--reader-toc-bg': '#2c2c2e',
@@ -86,7 +86,7 @@ const THEMES: Record<ThemeId, ReaderThemeConfig> = {
     isDark: true,
     vars: {
       '--reader-bg': '#000000',
-      '--reader-bg-overlay': '#1a1a1abf',
+      '--reader-bg-overlay': '#1a1a1af2',
       '--reader-text': '#E8E8E8',
       '--reader-text-secondary': '#a0a0a09f',
       '--reader-toc-bg': '#0a0a0a',
@@ -113,4 +113,160 @@ export function getNextThemeId(current: ThemeId): ThemeId {
 
 export function isValidThemeId(value: string): value is ThemeId {
   return value in THEMES;
+}
+
+// --- Font Size ---
+
+export const FONT_SIZES = [80, 90, 100, 110, 120, 130, 150, 175, 200] as const;
+export type FontSize = (typeof FONT_SIZES)[number];
+export const DEFAULT_FONT_SIZE: FontSize = 100;
+
+export function getNextFontSize(current: FontSize): FontSize | null {
+  const idx = FONT_SIZES.indexOf(current);
+  return idx < FONT_SIZES.length - 1 ? FONT_SIZES[idx + 1] : null;
+}
+
+export function getPrevFontSize(current: FontSize): FontSize | null {
+  const idx = FONT_SIZES.indexOf(current);
+  return idx > 0 ? FONT_SIZES[idx - 1] : null;
+}
+
+export function isValidFontSize(value: number): value is FontSize {
+  return (FONT_SIZES as readonly number[]).includes(value);
+}
+
+// --- Font Family ---
+
+export type FontFamilyId =
+  | 'default'
+  | 'lora' | 'literata' | 'source-sans'
+  | 'serif' | 'monospace';
+
+export type FontFamilyConfig = {
+  id: FontFamilyId;
+  label: string;
+  value: string;
+  hosted: boolean;
+};
+
+const FONT_FAMILY_ORDER: FontFamilyId[] = [
+  'default', 'lora', 'literata', 'source-sans', 'serif', 'monospace',
+];
+
+const FONT_FAMILIES: Record<FontFamilyId, FontFamilyConfig> = {
+  default: { id: 'default', label: 'Default', value: '', hosted: false },
+  lora: { id: 'lora', label: 'Lora', value: 'Lora, Georgia, serif', hosted: true },
+  literata: { id: 'literata', label: 'Literata', value: 'Literata, Georgia, serif', hosted: true },
+  'source-sans': { id: 'source-sans', label: 'Source Sans', value: '"Source Sans 3", Helvetica, Arial, sans-serif', hosted: true },
+  serif: { id: 'serif', label: 'Serif', value: 'Georgia, "Times New Roman", serif', hosted: false },
+  monospace: { id: 'monospace', label: 'Mono', value: 'SFMono-Regular, Menlo, Consolas, monospace', hosted: false },
+};
+
+/** @font-face CSS for epub iframe — uses absolute URLs so fonts resolve from any origin */
+export function getHostedFontCss(baseUrl: string): string {
+  const f = (file: string) => `${baseUrl}/fonts/${file}`;
+  return `
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('${f('Lora-Regular.woff2')}') format('woff2');
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('${f('Lora-Italic.woff2')}') format('woff2');
+}
+@font-face {
+  font-family: 'Literata';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('${f('Literata-Regular.woff2')}') format('woff2');
+}
+@font-face {
+  font-family: 'Literata';
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('${f('Literata-Italic.woff2')}') format('woff2');
+}
+@font-face {
+  font-family: 'Source Sans 3';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('${f('SourceSans3-Regular.woff2')}') format('woff2');
+}
+@font-face {
+  font-family: 'Source Sans 3';
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('${f('SourceSans3-Italic.woff2')}') format('woff2');
+}
+`;
+}
+
+export const DEFAULT_FONT_FAMILY: FontFamilyId = 'default';
+
+export function getFontFamily(id: FontFamilyId): FontFamilyConfig {
+  return FONT_FAMILIES[id] ?? FONT_FAMILIES[DEFAULT_FONT_FAMILY];
+}
+
+export function getNextFontFamily(current: FontFamilyId): FontFamilyId {
+  const idx = FONT_FAMILY_ORDER.indexOf(current);
+  return FONT_FAMILY_ORDER[(idx + 1) % FONT_FAMILY_ORDER.length];
+}
+
+export function getPrevFontFamily(current: FontFamilyId): FontFamilyId {
+  const idx = FONT_FAMILY_ORDER.indexOf(current);
+  return FONT_FAMILY_ORDER[(idx - 1 + FONT_FAMILY_ORDER.length) % FONT_FAMILY_ORDER.length];
+}
+
+export function isValidFontFamilyId(value: string): value is FontFamilyId {
+  return value in FONT_FAMILIES;
+}
+
+// --- TTS Speed ---
+
+export const TTS_SPEEDS = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5, 1.75, 2.0] as const;
+export type TtsSpeed = (typeof TTS_SPEEDS)[number];
+export const DEFAULT_TTS_SPEED: TtsSpeed = 1.0;
+
+export function getNextTtsSpeed(current: TtsSpeed): TtsSpeed | null {
+  const idx = TTS_SPEEDS.indexOf(current);
+  return idx < TTS_SPEEDS.length - 1 ? TTS_SPEEDS[idx + 1] : null;
+}
+
+export function getPrevTtsSpeed(current: TtsSpeed): TtsSpeed | null {
+  const idx = TTS_SPEEDS.indexOf(current);
+  return idx > 0 ? TTS_SPEEDS[idx - 1] : null;
+}
+
+export function isValidTtsSpeed(value: number): value is TtsSpeed {
+  return (TTS_SPEEDS as readonly number[]).includes(value);
+}
+
+// --- TTS Pitch ---
+
+export const TTS_PITCHES = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5, 1.75, 2.0] as const;
+export type TtsPitch = (typeof TTS_PITCHES)[number];
+export const DEFAULT_TTS_PITCH: TtsPitch = 1.0;
+
+export function getNextTtsPitch(current: TtsPitch): TtsPitch | null {
+  const idx = TTS_PITCHES.indexOf(current);
+  return idx < TTS_PITCHES.length - 1 ? TTS_PITCHES[idx + 1] : null;
+}
+
+export function getPrevTtsPitch(current: TtsPitch): TtsPitch | null {
+  const idx = TTS_PITCHES.indexOf(current);
+  return idx > 0 ? TTS_PITCHES[idx - 1] : null;
+}
+
+export function isValidTtsPitch(value: number): value is TtsPitch {
+  return (TTS_PITCHES as readonly number[]).includes(value);
 }

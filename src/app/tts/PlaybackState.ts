@@ -88,6 +88,9 @@ export default class PlaybackState {
     this.#q = new PlaybackQueue([]);
   }
 
+  get state(): StateOption { return this.#currentState; }
+  get sentence(): Sentence | null { return this.#q.current(); }
+
   append(ss: Sentence[]) {
     this.#q = new PlaybackQueue(ss);
   }
